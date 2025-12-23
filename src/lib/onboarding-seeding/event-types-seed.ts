@@ -1306,7 +1306,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'Regular Bible study and scripture reflection gatherings.',
       icon: 'Book',
       slug: 'bible-studies',
-      system_type: 'event',
+      system_type: 'parish-event',
       order: 6
     })
     .select()
@@ -1432,7 +1432,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'Parish fundraising events and activities.',
       icon: 'DollarSign',
       slug: 'fundraisers',
-      system_type: 'event',
+      system_type: 'parish-event',
       order: 7
     })
     .select()
@@ -1553,7 +1553,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'Faith formation classes and catechesis programs.',
       icon: 'GraduationCap',
       slug: 'religious-education',
-      system_type: 'event',
+      system_type: 'parish-event',
       order: 8
     })
     .select()
@@ -1676,7 +1676,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'Parish staff meetings and administrative gatherings.',
       icon: 'Users',
       slug: 'staff-meetings',
-      system_type: 'event',
+      system_type: 'parish-event',
       order: 9
     })
     .select()
@@ -1794,7 +1794,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'General parish events and activities.',
       icon: 'CalendarDays',
       slug: 'other',
-      system_type: 'event',
+      system_type: 'parish-event',
       order: 10
     })
     .select()

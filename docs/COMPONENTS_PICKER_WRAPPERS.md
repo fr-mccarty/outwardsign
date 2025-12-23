@@ -209,7 +209,7 @@ const assignedMass = usePickerState<MassWithNames>()
 ---
 
 ### RoleAvailabilityModal
-**Path:** `src/app/(main)/masses/schedule/steps/role-availability-modal.tsx`
+**Path:** `src/app/(main)/mass-liturgies/schedule/steps/role-availability-modal.tsx`
 
 **Purpose:** Nested modal system for viewing minister availability by role and mass time during the mass scheduling wizard.
 
@@ -254,7 +254,7 @@ const [roleModalOpen, setRoleModalOpen] = useState(false)
 
 ---
 
-### GlobalLiturgicalEventPicker
+### LiturgicalCalendarEventPicker
 **Path:** `src/components/global-liturgical-event-picker.tsx`
 
 **Purpose:** Modal dialog for selecting global liturgical calendar events (feasts, solemnities, holy days).
@@ -273,9 +273,9 @@ const [roleModalOpen, setRoleModalOpen] = useState(false)
 
 **Usage:**
 ```tsx
-const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
+const liturgicalEvent = usePickerState<LiturgicalCalendarEvent>()
 
-<GlobalLiturgicalEventPicker
+<LiturgicalCalendarEventPicker
   open={liturgicalEvent.showPicker}
   onOpenChange={liturgicalEvent.setShowPicker}
   onSelect={liturgicalEvent.setValue}
@@ -288,11 +288,11 @@ const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 #### LiturgicalEventPickerField
 **Path:** `src/components/liturgical-event-picker-field.tsx`
 
-**Purpose:** Standardized wrapper for GlobalLiturgicalEventPicker with consistent button UI.
+**Purpose:** Standardized wrapper for LiturgicalCalendarEventPicker with consistent button UI.
 
 **Props:**
 - `label`: Field label
-- `value`: Selected GlobalLiturgicalEvent | null
+- `value`: Selected LiturgicalCalendarEvent | null
 - `onValueChange`: Event change handler
 - `showPicker`: Picker visibility state
 - `onShowPickerChange`: Picker visibility handler
@@ -305,7 +305,7 @@ const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 import { usePickerState } from '@/hooks/use-picker-state'
 import { LiturgicalEventPickerField } from '@/components/liturgical-event-picker-field'
 
-const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
+const liturgicalEvent = usePickerState<LiturgicalCalendarEvent>()
 
 <LiturgicalEventPickerField
   label="Liturgical Event"

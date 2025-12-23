@@ -101,7 +101,6 @@ These seeders only run in development via `npm run seed:dev`.
 | `seed-locations.ts` | Locations | Church, parish hall, funeral home |
 | `seed-masses.ts` | Mass records | Sunday and daily Masses |
 | `seed-mass-intentions.ts` | Intentions | Sample Mass intentions |
-| `seed-mass-role-assignments.ts` | Role assignments | Links people to Mass roles |
 | `seed-events.ts` | Events | Baptisms, quinceañeras, parish events |
 | `seed-weddings-funerals.ts` | Weddings/funerals | With readings from content library |
 | `seed-readings.ts` | Scripture readings | Tagged liturgical readings |

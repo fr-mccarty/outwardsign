@@ -56,7 +56,7 @@ If your event needs liturgical roles or ministry scheduling, it likely belongs a
 
 | Feature | Mass Settings | Parish Event Settings |
 |---------|---------------|----------------------|
-| Type definitions | Yes (`/settings/masses`) | Yes (`/settings/events`) |
+| Type definitions | Yes (`/settings/mass-liturgies`) | Yes (`/settings/events`) |
 | Recurring schedule | Yes | No |
 | Role definitions | Yes | No |
 | Role patterns | Yes | No |

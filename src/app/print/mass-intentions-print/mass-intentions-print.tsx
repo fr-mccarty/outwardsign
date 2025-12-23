@@ -56,12 +56,12 @@ export function MassIntentionsPrint() {
           })
           break
         case 'scheduled':
-          // Filter for mass intentions that have a master event assigned
-          data = data.filter(intention => intention.master_event_id != null)
+          // Filter for mass intentions that have a calendar event assigned
+          data = data.filter(intention => intention.calendar_event_id != null)
           break
         case 'unscheduled':
-          // Filter for mass intentions without a master event assigned
-          data = data.filter(intention => intention.master_event_id == null)
+          // Filter for mass intentions without a calendar event assigned
+          data = data.filter(intention => intention.calendar_event_id == null)
           break
         case 'date-range':
           if (startDate && endDate) {
@@ -229,13 +229,13 @@ export function MassIntentionsPrint() {
         <div className="grid grid-cols-3 gap-4 mb-8 text-center">
           <div className="border rounded p-3">
             <div className="text-2xl font-bold text-green-600">
-              {intentions.filter(i => i.master_event_id !== null).length}
+              {intentions.filter(i => i.calendar_event_id !== null).length}
             </div>
             <div className="text-sm text-muted-foreground">Scheduled</div>
           </div>
           <div className="border rounded p-3">
             <div className="text-2xl font-bold text-yellow-600">
-              {intentions.filter(i => i.master_event_id === null).length}
+              {intentions.filter(i => i.calendar_event_id === null).length}
             </div>
             <div className="text-sm text-muted-foreground">Unscheduled</div>
           </div>
@@ -264,7 +264,7 @@ export function MassIntentionsPrint() {
               {intentions.map((intention, index) => (
                 <tr key={intention.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}>
                   <td className="p-3 border-b align-top">
-                    {intention.master_event ? (
+                    {intention.calendar_event ? (
                       <div>
                         <div className="font-medium">Scheduled</div>
                       </div>
@@ -291,16 +291,16 @@ export function MassIntentionsPrint() {
                     {intention.requested_by ? `${intention.requested_by.first_name} ${intention.requested_by.last_name}` : '-'}
                   </td>
                   <td className="p-3 border-b align-top">
-                    {intention.master_event ? 'Assigned' : '-'}
+                    {intention.calendar_event ? 'Assigned' : '-'}
                   </td>
                   <td className="p-3 border-b align-top">
                     {formatCurrency(intention.stipend_in_cents ?? null)}
                   </td>
                   <td className="p-3 border-b align-top">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      intention.master_event_id !== null 
-                        ? 'bg-green-100 text-green-800' 
-                        : intention.master_event_id === null
+                      intention.calendar_event_id !== null
+                        ? 'bg-green-100 text-green-800'
+                        : intention.calendar_event_id === null
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>

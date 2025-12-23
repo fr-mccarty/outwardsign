@@ -2,7 +2,7 @@
 
 Mass settings in Outward Sign are split into two distinct areas: **Mass Types** and **Mass Configuration**. Together, they provide complete control over how a parish manages its Mass celebrations.
 
-## Mass Types (`/settings/masses`)
+## Mass Types (`/settings/mass-liturgies`)
 
 Mass Types define the different kinds of Masses your parish celebrates. Each type becomes a reusable template with its own icon and configuration.
 
@@ -57,7 +57,7 @@ View and manage parishioners who serve in liturgical ministries. For each volunt
 
 **Mass Configuration** answers: "How do we staff and schedule those Masses?"
 
-When creating a new Mass record, staff select a Mass Type (from `/settings/masses`). Role assignment patterns (from Mass Configuration) can then be applied to quickly populate the liturgical roles for that Mass.
+When creating a new Mass record, staff select a Mass Type (from `/settings/mass-liturgies`). Role assignment patterns (from Mass Configuration) can then be applied to quickly populate the liturgical roles for that Mass.
 
 ---
 

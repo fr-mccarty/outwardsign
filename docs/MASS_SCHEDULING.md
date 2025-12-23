@@ -4,7 +4,7 @@
 >
 > **Type:** Wizard-based workflow (8-step process)
 >
-> **Route:** `/masses/schedule`
+> **Route:** `/mass-liturgies/schedule`
 
 ---
 
@@ -64,7 +64,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 1: Date Range Selection
 
-**File:** `src/app/(main)/masses/schedule/steps/step-1-date-range.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-1-date-range.tsx`
 
 **Purpose:** Define the scheduling period
 
@@ -91,7 +91,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 2: Mass Times Selection
 
-**File:** `src/app/(main)/masses/schedule/steps/step-2-schedule-pattern.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-2-schedule-pattern.tsx`
 
 **Purpose:** Select which Mass time templates to use
 
@@ -125,7 +125,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 3: Role Template Selection
 
-**File:** `src/app/(main)/masses/schedule/steps/step-3-template-selection.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-3-template-selection.tsx`
 
 **Purpose:** Select which role templates to use for minister assignments
 
@@ -157,7 +157,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 4: Liturgical Events Selection
 
-**File:** `src/app/(main)/masses/schedule/steps/step-4-liturgical-events.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-4-liturgical-events.tsx`
 
 **Purpose:** Select which liturgical events should be associated with Masses
 
@@ -171,7 +171,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 **Data Captured:**
 ```typescript
 {
-  selectedLiturgicalEventIds: string[]  // Array of global_liturgical_events IDs
+  selectedLiturgicalEventIds: string[]  // Array of liturgical_calendar IDs
 }
 ```
 
@@ -186,7 +186,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 5: Proposed Schedule Review
 
-**File:** `src/app/(main)/masses/schedule/steps/step-5-proposed-schedule.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-5-proposed-schedule.tsx`
 
 **Purpose:** Review proposed Masses and exclude any that shouldn't be created
 
@@ -218,7 +218,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 6: Assign Ministers (Interactive Preview)
 
-**File:** `src/app/(main)/masses/schedule/steps/step-6-interactive-preview.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-6-interactive-preview.tsx`
 
 **Purpose:** Interactively assign people to roles for each Mass
 
@@ -254,7 +254,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 7: Workload Review
 
-**File:** `src/app/(main)/masses/schedule/steps/step-7-workload-review.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-7-workload-review.tsx`
 
 **Purpose:** Review minister workload distribution before creating Masses
 
@@ -299,7 +299,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 ### Step 8: Confirmation & Creation
 
-**File:** `src/app/(main)/masses/schedule/steps/step-8-confirmation.tsx`
+**File:** `src/app/(main)/mass-liturgies/schedule/steps/step-8-confirmation.tsx`
 
 **Purpose:** Create Masses in database and display results
 
@@ -352,7 +352,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 
 **Complete Button:**
 - Text: "Go to Masses"
-- Redirects to `/masses` list page
+- Redirects to `/mass-liturgies` list page
 
 **Technical Details:**
 - Masses created via `scheduleMasses()` server action
@@ -369,7 +369,7 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 **`masses`** - Individual Mass events
 - Links to `events` (date/time/location)
 - Links to `mass_roles_template` (role requirements)
-- Links to `global_liturgical_events` (liturgical calendar)
+- Links to `liturgical_calendar` (liturgical calendar)
 - Fields: `presider_id`, `homilist_id`, `status`, `announcements`, `petitions`, `note`
 
 **`mass_times_templates`** - Recurring schedule containers
@@ -475,7 +475,7 @@ interface ScheduleMassesResult {
 **Execution Flow:**
 
 #### Phase 1: Fetch Liturgical Events
-- Query `global_liturgical_events` for selected event IDs
+- Query `liturgical_calendar` for selected event IDs
 - Create date → liturgical event mapping
 
 #### Phase 2: Fetch Templates
@@ -589,7 +589,7 @@ For each Mass:
 ## File Structure
 
 ```
-src/app/(main)/masses/schedule/
+src/app/(main)/mass-liturgies/schedule/
 ├── page.tsx                                   # Server page (auth + breadcrumbs)
 ├── schedule-masses-client.tsx                 # Main wizard container (8 steps)
 ├── loading.tsx                                # Loading state
@@ -634,7 +634,7 @@ requireModuleAccess(userParish, 'masses')
 ```
 
 **Button Visibility:**
-The "Schedule Masses" button only appears on `/masses` page if user has appropriate permissions.
+The "Schedule Masses" button only appears on `/mass-liturgies` page if user has appropriate permissions.
 
 ---
 
@@ -667,7 +667,7 @@ The "Schedule Masses" button only appears on `/masses` page if user has appropri
   - Frosted glass backdrop (`bg-background/95 backdrop-blur-sm`)
 - Accessibility: Hidden `DialogTitle` for screen readers
 
-**Code Reference:** `src/app/(main)/masses/schedule/schedule-masses-client.tsx:671-714`
+**Code Reference:** `src/app/(main)/mass-liturgies/schedule/schedule-masses-client.tsx:671-714`
 
 ### Time Format Normalization
 

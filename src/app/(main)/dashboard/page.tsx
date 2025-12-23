@@ -316,14 +316,14 @@ export default async function DashboardPage() {
 
           {/* Static Quick Links */}
           <Link
-            href="/masses/create"
+            href="/mass-liturgies/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <CirclePlus className="h-6 w-6" />
             <span className="text-sm font-medium text-center">{t('dashboard.createMass')}</span>
           </Link>
           <Link
-            href="/masses/schedule"
+            href="/mass-liturgies/schedule"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <CalendarCheck className="h-6 w-6" />

@@ -100,7 +100,7 @@ This pattern applies to ALL pickers with `enableCreate={true}`:
 | MassPicker | "New Mass" | `MassPickerField` |
 | GroupPicker | "New Group" | `GroupPickerField` |
 
-**Note:** Pickers without inline creation (like GlobalLiturgicalEventPicker) do not have this button.
+**Note:** Pickers without inline creation (like LiturgicalCalendarEventPicker) do not have this button.
 
 ### Mobile/Narrow Screen Behavior
 

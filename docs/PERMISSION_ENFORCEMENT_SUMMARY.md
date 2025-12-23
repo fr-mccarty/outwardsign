@@ -41,7 +41,7 @@ Added permission checks to all create, update, and delete functions in the follo
 - ✅ `src/lib/actions/baptisms.ts` - Uses `requireModuleAccess(userParish, 'baptisms')`
 - ✅ `src/lib/actions/presentations.ts` - Uses `requireModuleAccess(userParish, 'presentations')`
 - ✅ `src/lib/actions/quinceaneras.ts` - Uses `requireModuleAccess(userParish, 'quinceaneras')`
-- ✅ `src/lib/actions/masses.ts` - Uses `requireModuleAccess(userParish, 'masses')`
+- ✅ `src/lib/actions/mass-liturgies.ts` - Uses `requireModuleAccess(userParish, 'masses')`
 - ✅ `src/lib/actions/mass-intentions.ts` - Uses `requireModuleAccess(userParish, 'mass-intentions')`
 - ✅ `src/lib/actions/groups.ts` - Uses `requireModuleAccess(userParish, 'groups')`
 

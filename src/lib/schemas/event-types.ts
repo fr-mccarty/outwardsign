@@ -6,7 +6,7 @@ export const createEventTypeSchema = z.object({
   description: z.string().optional().nullable(),
   icon: z.string().min(1, 'Icon is required'),
   slug: z.string().optional().nullable(),
-  system_type: z.enum(['mass', 'special-liturgy', 'event'], {
+  system_type: z.enum(['mass-liturgy', 'special-liturgy', 'parish-event'], {
     message: 'System type is required',
   }),
 })
@@ -17,7 +17,7 @@ export const updateEventTypeSchema = z.object({
   description: z.string().optional().nullable(),
   icon: z.string().min(1, 'Icon is required').optional(),
   slug: z.string().optional().nullable(),
-  system_type: z.enum(['mass', 'special-liturgy', 'event']).optional(),
+  system_type: z.enum(['mass-liturgy', 'special-liturgy', 'parish-event']).optional(),
 })
 
 // Export types using z.infer

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
@@ -19,7 +19,7 @@ import { Calendar, Book, Palette, Plus } from 'lucide-react'
 interface LiturgicalEventPreviewProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  event: GlobalLiturgicalEvent | null
+  event: LiturgicalCalendarEvent | null
 }
 
 export function LiturgicalEventPreview({
@@ -35,7 +35,7 @@ export function LiturgicalEventPreview({
 
   const handleCreateMass = () => {
     // Navigate to create mass page with liturgical event ID
-    router.push(`/masses/create?liturgical_event_id=${event.id}`)
+    router.push(`/mass-liturgies/create?liturgical_event_id=${event.id}`)
     onOpenChange(false)
   }
   const colors = event_data.color || []

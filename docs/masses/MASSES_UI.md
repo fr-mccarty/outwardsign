@@ -46,12 +46,12 @@
 
 **Pages to Build:**
 
-### 1. Mass Schedule (`/masses`)
+### 1. Mass Schedule (`/mass-liturgies`)
 - Existing list view enhanced with role assignment status
 - Color coding: Fully staffed (green), Partially staffed (yellow), Unstaffed (red)
 - Quick stats: Unfilled roles, pending confirmations
 
-### 2. Mass Detail/Edit (`/masses/[id]` or `/masses/[id]/edit`)
+### 2. Mass Detail/Edit (`/mass-liturgies/[id]` or `/mass-liturgies/[id]/edit`)
 - Enhanced form with role assignment section
 - For each role from template:
   - Show required count
@@ -59,7 +59,7 @@
   - Status badges (confirmed, pending, declined)
   - Quick actions: Notify, Remind, Find Substitute
 
-### 3. Mass Role Assignment Grid (`/masses/[id]/assignments`)
+### 3. Mass Role Assignment Grid (`/mass-liturgies/[id]/assignments`)
 - Table view:
   - Rows: Roles
   - Columns: Assigned person(s), Status, Actions
@@ -97,7 +97,7 @@
 - Manually assign substitutes
 - Communication tools
 
-### 9. Reports (`/reports/masses`)
+### 9. Reports (`/reports/mass-liturgies`)
 - Minister participation reports
 - Role coverage reports
 - No-show tracking

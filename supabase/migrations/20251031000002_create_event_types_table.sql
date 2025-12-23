@@ -10,14 +10,14 @@ CREATE TABLE event_types (
   icon TEXT NOT NULL DEFAULT 'FileText',
   "order" INTEGER NOT NULL DEFAULT 0,
   slug TEXT,
-  system_type TEXT NOT NULL DEFAULT 'event',
+  system_type TEXT NOT NULL DEFAULT 'parish-event',
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT unique_event_type_name_per_parish UNIQUE (parish_id, name),
   CONSTRAINT unique_event_type_slug_per_parish UNIQUE (parish_id, slug),
   CONSTRAINT check_event_type_order_non_negative CHECK ("order" >= 0),
-  CONSTRAINT event_types_system_type_check CHECK (system_type IN ('mass', 'special-liturgy', 'event'))
+  CONSTRAINT event_types_system_type_check CHECK (system_type IN ('mass-liturgy', 'special-liturgy', 'parish-event'))
 );
 
 -- Enable RLS
@@ -36,7 +36,7 @@ CREATE INDEX idx_event_types_system_type ON event_types(parish_id, system_type) 
 
 -- Column comments
 COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
-COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass, special-liturgy, event)';
+COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass-liturgy, special-liturgy, parish-event)';
 
 -- RLS Policies
 -- Parish members can read event types for their parish

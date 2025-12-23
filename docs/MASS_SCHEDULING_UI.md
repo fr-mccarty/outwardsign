@@ -4,7 +4,7 @@
 >
 > This document describes a **future calendar-based drag-and-drop interface** that has not been built. The current implementation uses a **wizard-based approach** documented in [MASS_SCHEDULING.md](./MASS_SCHEDULING.md).
 >
-> **Current Implementation:** 5-step wizard at `/masses/schedule` (date range → schedule pattern → template selection → review → results)
+> **Current Implementation:** 5-step wizard at `/mass-liturgies/schedule` (date range → schedule pattern → template selection → review → results)
 >
 > **This Document:** Design specification for a potential future calendar UI enhancement.
 
@@ -14,7 +14,7 @@
 
 The Mass Scheduling module would provide a calendar-based interface for scheduling Masses, linking them to liturgical events, and assigning ministers to serve in various roles. The primary interaction model would be drag-and-drop on a calendar view.
 
-**Route:** `/masses/schedule`
+**Route:** `/mass-liturgies/schedule`
 
 **Access:** Admin, Staff, Ministry-Leaders (with Masses module access)
 
@@ -171,7 +171,7 @@ Two-panel view:
 
 ## Minister Availability Management
 
-**Route:** `/masses/schedule/availability`
+**Route:** `/mass-liturgies/schedule/availability`
 
 **Purpose:** Configure which Masses each minister is available to serve at
 
@@ -215,7 +215,7 @@ Mary Johnson     |         |   ✓     |    ✓     |    ✓
 
 ## Mass Roles Management
 
-**Route:** `/masses/schedule/roles`
+**Route:** `/mass-liturgies/schedule/roles`
 
 **Purpose:** Define role types that exist in the parish
 
@@ -232,7 +232,7 @@ Mary Johnson     |         |   ✓     |    ✓     |    ✓
 
 ## Role Templates Management
 
-**Route:** `/masses/schedule/role-templates`
+**Route:** `/mass-liturgies/schedule/role-templates`
 
 **Purpose:** Define standard role requirements for different types of Masses
 
@@ -267,7 +267,7 @@ Mary Johnson     |         |   ✓     |    ✓     |    ✓
 
 ## Time Templates Management
 
-**Route:** `/masses/schedule/time-templates`
+**Route:** `/mass-liturgies/schedule/time-templates`
 
 **Purpose:** Define recurring Mass schedules
 

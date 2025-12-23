@@ -20,7 +20,7 @@
   - [EventPicker](#eventpicker)
   - [LocationPicker](#locationpicker)
   - [MassPicker](#masspicker)
-  - [GlobalLiturgicalEventPicker](#globalliturgicaleventpicker)
+  - [LiturgicalCalendarEventPicker](#globalliturgicaleventpicker)
   - [ReadingPickerModal](#readingpickermodal)
   - [RolePicker](#rolepicker)
 - [usePickerState Hook](#usepickerstate-hook)
@@ -384,19 +384,19 @@ interface MassPickerProps {
 
 ---
 
-### GlobalLiturgicalEventPicker
+### LiturgicalCalendarEventPicker
 
-**Entity:** GlobalLiturgicalEvent
+**Entity:** LiturgicalCalendarEvent
 **Inline Creation:** ❌ No
 **Special Features:** Year and locale filters
 
 **Props:**
 
 ```typescript
-interface GlobalLiturgicalEventPickerProps {
+interface LiturgicalCalendarEventPickerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (event: GlobalLiturgicalEvent) => void
+  onSelect: (event: LiturgicalCalendarEvent) => void
   selectedEventId?: string
   year?: number // Filter by year
   locale?: string // Filter by locale
@@ -406,7 +406,7 @@ interface GlobalLiturgicalEventPickerProps {
 **Usage:**
 
 ```typescript
-<GlobalLiturgicalEventPicker
+<LiturgicalCalendarEventPicker
   open={showPicker}
   onOpenChange={setShowPicker}
   onSelect={handleSelect}

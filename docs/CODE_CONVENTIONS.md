@@ -21,7 +21,7 @@ This document serves as a navigation hub for all coding standards and convention
 ### 🔴 Unified Event Data Model Patterns
 
 **System Type Metadata:**
-- System types (mass, special-liturgy, sacrament, event) are stored as enum field in `event_types.system_type`
+- System types (mass-liturgy, special-liturgy, parish-event) are stored as enum field in `event_types.system_type`
 - Metadata (icons, bilingual labels) is in `src/lib/constants/system-types.ts`, NOT in database
 - Use `SYSTEM_TYPE_METADATA` constant for labels and icons
 

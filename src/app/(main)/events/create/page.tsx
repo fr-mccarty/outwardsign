@@ -2,7 +2,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventFormWrapper } from '../event-form-wrapper'
-import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
 interface PageProps {
   searchParams: Promise<{ liturgical_event_id?: string }>
@@ -24,7 +24,7 @@ export default async function CreateEventPage({ searchParams }: PageProps) {
   // Fetch liturgical event if ID is provided
   let initialLiturgicalEvent = null
   if (liturgicalEventId) {
-    initialLiturgicalEvent = await getGlobalLiturgicalEvent(liturgicalEventId)
+    initialLiturgicalEvent = await getLiturgicalCalendarEvent(liturgicalEventId)
   }
 
   const breadcrumbs = [

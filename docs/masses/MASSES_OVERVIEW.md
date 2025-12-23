@@ -30,29 +30,27 @@
 
 ### What's Implemented ✅
 
-**Core Tables:**
-- ✅ `masses` - Individual Mass events
-- ✅ `mass_roles` - Role definitions (Lector, Usher, etc.)
-- ✅ `mass_roles_templates` - Template containers
-- ✅ `mass_roles_template_items` - Role requirements per template
-- ✅ `mass_role_instances` - Actual role assignments
-- ✅ `mass_role_members` - People serving in roles (simple membership)
+**Core Tables (Unified Event Model):**
+- ✅ `master_events` - Liturgical Days (e.g., "Fourth Sunday in Advent")
+- ✅ `calendar_events` - Individual Mass Times (10am, 12pm, 5pm)
+- ✅ `people_event_assignments` - Role assignments at calendar_event level
+- ✅ `groups` + `group_members` - Role capability management (who CAN serve)
+- ✅ `mass_intentions` - Mass intention requests linked to calendar_events
 - ✅ `person_blackout_dates` - Unavailability tracking
 
 **Features:**
-- ✅ Standard 9-file module structure (CRUD operations)
-- ✅ Event picker integration
-- ✅ People picker for presider/homilist
+- ✅ Standard 8-file module structure (CRUD operations)
+- ✅ People picker for presider/homilist with group-based filtering
 - ✅ Liturgical event picker
-- ✅ Mass Intentions (separate module, linked via event)
-- ✅ Bulk scheduling wizard with auto-assignment algorithm
+- ✅ Mass Intentions (separate module, linked via calendar_event)
+- ✅ Bulk scheduling wizard
+- ✅ Roster generation showing all Mass times for a liturgical day
+- ✅ Print/PDF/Word export for rosters
 
-**Auto-Assignment Algorithm:**
-- ✅ Role membership filtering (`mass_role_members`)
-- ✅ Blackout date checking (`person_blackout_dates`)
-- ✅ Conflict detection (double-booking prevention)
-- ✅ Workload balancing across ministers
-- See [MASSES_SCHEDULING.md](./MASSES_SCHEDULING.md) for details
+**Three-Concern Separation for Roles:**
+1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+2. **Role Capability** - Managed through groups + group_members (who CAN serve)
+3. **Role Assignments** - Stored in people_event_assignments (who IS serving)
 
 ### What's Not Yet Implemented ⏳
 
@@ -63,47 +61,54 @@
 - ❌ Minister self-service portal
 - ❌ Assignment history tracking and reporting
 
-### Database Tables (Implemented)
+### Database Schema (Current)
 
-**`masses` table:**
-- `id` - UUID primary key
-- `parish_id` - Foreign key to parishes
-- `event_id` - Foreign key to events (date/time/location)
-- `presider_id` - Foreign key to people (priest/deacon presiding)
-- `homilist_id` - Foreign key to people (who gives homily)
-- `liturgical_event_id` - Foreign key to global_liturgical_events (liturgical calendar)
-- `mass_roles_template_id` - Foreign key to mass_roles_templates
-- `pre_mass_announcement_id` - Foreign key to people (who makes pre-Mass announcement)
-- `pre_mass_announcement_topic` - Text field for announcement topic
-- `status` - Text (e.g., 'PLANNING', 'SCHEDULED', 'COMPLETED')
-- `mass_template_id` - Text (for different Mass types/templates)
-- `announcements` - Text (Mass announcements)
-- `note` - Text (internal notes)
-- `petitions` - Text (prayers of the faithful)
-- `created_at`, `updated_at` - Timestamps
+**Mass Liturgies use the unified event data model:**
+- `master_events` - Liturgical Day (system_type = 'mass-liturgy')
+  - Links to `event_types` (e.g., "Sunday Mass", "Daily Mass")
+  - Links to `liturgical_calendar` (liturgical calendar)
+  - Contains presider_id, homilist_id, field values (JSONB)
+- `calendar_events` - Individual Mass Times for that day
+  - Multiple calendar_events per master_event (10am, 12pm, 5pm)
+  - Each has location, date/time, title computed from master_event
+- `people_event_assignments` - Role assignments for specific Mass times
+  - Links to calendar_event (specific Mass time)
+  - Links to input_field_definition (role definition)
+  - Links to person (who is assigned)
+- `mass_intentions` - Mass intention requests
+  - Links to calendar_event (NOT master_event)
+
+**Legacy System (Removed):**
+- `masses` table - Deleted, migrated to master_events
+- `mass_roles` system (5 tables) - Deleted, replaced with groups + people_event_assignments
 
 **See [MASSES_DATABASE.md](./MASSES_DATABASE.md) for complete schema reference.**
 
 ### Current Module Structure (Implemented)
 
-**Standard 9-file pattern:**
-1. List Page - `src/app/(main)/masses/page.tsx`
-2. List Client - `src/app/(main)/masses/masses-list-client.tsx`
-3. Create Page - `src/app/(main)/masses/create/page.tsx`
-4. View Page - `src/app/(main)/masses/[id]/page.tsx`
-5. Edit Page - `src/app/(main)/masses/[id]/edit/page.tsx`
-6. Form Wrapper - `src/app/(main)/masses/mass-form-wrapper.tsx`
-7. Unified Form - `src/app/(main)/masses/mass-form.tsx`
-8. View Client - `src/app/(main)/masses/[id]/mass-view-client.tsx`
-9. Form Actions - `src/app/(main)/masses/[id]/mass-form-actions.tsx`
+**Standard 8-file pattern:**
+1. List Page - `src/app/(main)/mass-liturgies/page.tsx`
+2. List Client - `src/app/(main)/mass-liturgies/mass-liturgies-list-client.tsx`
+3. Create Page - `src/app/(main)/mass-liturgies/create/page.tsx`
+4. View Page - `src/app/(main)/mass-liturgies/[id]/page.tsx`
+5. Edit Page - `src/app/(main)/mass-liturgies/[id]/edit/page.tsx`
+6. Form Wrapper - `src/app/(main)/mass-liturgies/mass-liturgy-form-wrapper.tsx`
+7. Unified Form - `src/app/(main)/mass-liturgies/mass-liturgy-form.tsx`
+8. View Client - `src/app/(main)/mass-liturgies/[id]/mass-liturgy-view-client.tsx`
+
+**Additional Routes:**
+- Roster View - `src/app/(main)/mass-liturgies/[id]/roster/page.tsx`
+- Print Roster - `src/app/print/mass-liturgies/[id]/roster/page.tsx`
+- Mass Scheduling Wizard - `src/app/(main)/mass-liturgies/schedule/page.tsx`
 
 **Current Features:**
 - Basic CRUD operations
-- Event picker integration
-- People picker for presider/homilist
+- People picker for presider/homilist with group-based filtering
 - Liturgical event picker
 - Text fields for announcements, petitions, notes
-- Mass Intentions (separate module, linked via event)
+- Mass Intentions (separate module, linked via calendar_event)
+- Roster generation showing all Mass times for a liturgical day
+- Print/PDF/Word export for rosters
 
 ---
 

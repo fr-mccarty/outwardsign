@@ -20,7 +20,7 @@ import {
 export interface EventTypeFilterParams {
   search?: string
   sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  system_type?: 'mass' | 'special-liturgy' | 'event'
+  system_type?: 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 }
 
 /**
@@ -452,7 +452,7 @@ export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
  * Get event types filtered by system type
  */
 export async function getEventTypesBySystemType(
-  systemType: 'mass' | 'special-liturgy' | 'event'
+  systemType: 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 ): Promise<EventType[]> {
   return getEventTypes({ system_type: systemType })
 }

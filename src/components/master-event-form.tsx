@@ -188,7 +188,7 @@ export function MasterEventForm({
             calendar_events: calendarEvents
           })
           toast.success('Event updated successfully')
-          router.push(`/masses/${initialData.id}`)
+          router.push(`/mass-liturgies/${initialData.id}`)
         } else {
           const newEvent = await createEvent(eventType.id, {
             field_values: fieldValues,
@@ -196,7 +196,7 @@ export function MasterEventForm({
             calendar_events: calendarEvents
           })
           toast.success('Event created successfully')
-          router.push(`/masses/${newEvent.id}`)
+          router.push(`/mass-liturgies/${newEvent.id}`)
         }
       }
     } catch (error) {
@@ -478,7 +478,7 @@ export function MasterEventForm({
       <FormBottomActions
         isEditing={isEditing}
         isLoading={isSubmitting}
-        cancelHref={isEditing && initialData ? `/masses/${initialData.id}` : '/masses'}
+        cancelHref={isEditing && initialData ? `/mass-liturgies/${initialData.id}` : '/masses'}
         moduleName={eventType.name}
       />
     </form>

@@ -32,8 +32,8 @@ export const buildMassIntentionReport: ReportBuilder<MassIntentionReportParams> 
   const { intentions, totalStipends, startDate, endDate } = params
 
   const tableRows = intentions.map((intention) => {
-    // Extract date from master_event's first calendar event
-    const startDatetime = intention.master_event?.calendar_events?.[0]?.start_datetime
+    // Extract date from calendar_event
+    const startDatetime = intention.calendar_event?.start_datetime
     const massDate = startDatetime ? startDatetime.split('T')[0] : null
 
     return `

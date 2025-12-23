@@ -96,132 +96,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
-  // 4. Seed Mass Roles
-  // =====================================================
-  const defaultMassRoles = [
-    { parish_id: parishId, name: 'Lector', description: 'Proclaims the Word of God during Mass', is_active: true, display_order: 1 },
-    { parish_id: parishId, name: 'Eucharistic Minister', description: 'Distributes Holy Communion during Mass', is_active: true, display_order: 2 },
-    { parish_id: parishId, name: 'Server', description: 'Assists the priest at the altar during Mass', is_active: true, display_order: 3 },
-    { parish_id: parishId, name: 'Cantor', description: 'Leads the congregation in singing', is_active: true, display_order: 4 },
-    { parish_id: parishId, name: 'Usher', description: 'Welcomes parishioners and assists with seating and collection', is_active: true, display_order: 5 },
-    { parish_id: parishId, name: 'Sacristan', description: 'Prepares the sacred vessels and sanctuary for Mass', is_active: true, display_order: 6 },
-    { parish_id: parishId, name: 'Music Minister', description: 'Provides music during the liturgy', is_active: true, display_order: 7 },
-    { parish_id: parishId, name: 'Greeter', description: 'Welcomes parishioners as they arrive', is_active: true, display_order: 8 },
-    { parish_id: parishId, name: 'Coordinator', description: 'Coordinates and oversees liturgical ministries', is_active: true, display_order: 9 },
-    { parish_id: parishId, name: 'Gift Bearer', description: 'Brings up the gifts during the offertory', is_active: true, display_order: 10 },
-    { parish_id: parishId, name: 'Pre-Mass Speaker', description: 'Makes announcements before Mass begins', is_active: true, display_order: 11 },
-    { parish_id: parishId, name: 'Security Team', description: 'Ensures safety and security during Mass', is_active: true, display_order: 12 },
-  ]
-
-  const { data: massRoles, error: massRolesError } = await supabase
-    .from('mass_roles')
-    .insert(defaultMassRoles)
-    .select('id, name')
-
-  if (massRolesError) {
-    logError(`Error creating default mass roles: ${massRolesError.message}`)
-    throw new Error(`Failed to create default mass roles: ${massRolesError.message}`)
-  }
-
-  // =====================================================
-  // 5. Seed Mass Role Template
-  // =====================================================
-  const roleMap = new Map((massRoles || []).map((r) => [r.name, r.id]))
-
-  // Sunday Mass template - for Sundays and Solemnities
-  const { data: sundayTemplate, error: sundayTemplateError } = await supabase
-    .from('mass_roles_templates')
-    .insert({
-      parish_id: parishId,
-      name: 'Sunday Mass',
-      description: 'Full minister assignments for Sunday Mass and Solemnities',
-      is_active: true,
-      liturgical_contexts: ['SUNDAY', 'SOLEMNITY'],
-    })
-    .select()
-    .single()
-
-  if (sundayTemplateError) {
-    logError(`Error creating Sunday role template: ${sundayTemplateError.message}`)
-    throw new Error(`Failed to create Sunday role template: ${sundayTemplateError.message}`)
-  }
-
-  // Daily Mass template - for weekdays, memorials, feasts
-  const { data: dailyTemplate, error: dailyTemplateError } = await supabase
-    .from('mass_roles_templates')
-    .insert({
-      parish_id: parishId,
-      name: 'Daily Mass',
-      description: 'Minimal minister assignments for weekday Mass',
-      is_active: true,
-      liturgical_contexts: ['FEAST', 'MEMORIAL', 'WEEKDAY'],
-    })
-    .select()
-    .single()
-
-  if (dailyTemplateError) {
-    logError(`Error creating Daily role template: ${dailyTemplateError.message}`)
-    throw new Error(`Failed to create Daily role template: ${dailyTemplateError.message}`)
-  }
-
-  // Role template items with counts (for Sunday Mass)
-  const sundayRoleTemplateItems = [
-    { roleName: 'Lector', count: 1, position: 0 },
-    { roleName: 'Server', count: 2, position: 1 },
-    { roleName: 'Usher', count: 4, position: 2 },
-    { roleName: 'Security Team', count: 2, position: 3 },
-    { roleName: 'Eucharistic Minister', count: 3, position: 4 },
-  ]
-
-  const validSundayItems = sundayRoleTemplateItems
-    .filter((item) => roleMap.has(item.roleName))
-    .map((item) => ({
-      mass_roles_template_id: sundayTemplate.id,
-      mass_role_id: roleMap.get(item.roleName),
-      count: item.count,
-      position: item.position,
-    }))
-
-  if (validSundayItems.length > 0) {
-    const { error: sundayItemsError } = await supabase
-      .from('mass_roles_template_items')
-      .insert(validSundayItems)
-
-    if (sundayItemsError) {
-      logError(`Error creating Sunday template items: ${sundayItemsError.message}`)
-      throw new Error(`Failed to create Sunday template items: ${sundayItemsError.message}`)
-    }
-  }
-
-  // Role template items for Daily Mass (minimal)
-  const dailyRoleTemplateItems = [
-    { roleName: 'Lector', count: 1, position: 0 },
-    { roleName: 'Server', count: 1, position: 1 },
-    { roleName: 'Eucharistic Minister', count: 1, position: 2 },
-  ]
-
-  const validDailyItems = dailyRoleTemplateItems
-    .filter((item) => roleMap.has(item.roleName))
-    .map((item) => ({
-      mass_roles_template_id: dailyTemplate.id,
-      mass_role_id: roleMap.get(item.roleName),
-      count: item.count,
-      position: item.position,
-    }))
-
-  if (validDailyItems.length > 0) {
-    const { error: dailyItemsError } = await supabase
-      .from('mass_roles_template_items')
-      .insert(validDailyItems)
-
-    if (dailyItemsError) {
-      logError(`Error creating Daily template items: ${dailyItemsError.message}`)
-      throw new Error(`Failed to create Daily template items: ${dailyItemsError.message}`)
-    }
-  }
-
-  // =====================================================
-  // 7. Seed Mass Times Templates
+  // 4. Seed Mass Times Templates
   // =====================================================
   const massTimesTemplatesData = [
     {
@@ -402,7 +277,6 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     success: true,
     petitionTemplates: petitionTemplates || [],
     groupRoles: groupRoles || [],
-    massRoles: massRoles || [],
     eventTypes: [...userDefinedEventTypesResult.eventTypes, ...massEventTypesResult.eventTypes, ...specialLiturgyEventTypesResult.eventTypes],
     specialLiturgyEventTypesCount: (userDefinedEventTypesResult.specialLiturgyCount || 0) + specialLiturgyEventTypesResult.eventTypes.length,
     generalEventTypesCount: userDefinedEventTypesResult.generalEventCount || 0,

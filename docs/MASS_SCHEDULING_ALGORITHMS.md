@@ -429,7 +429,7 @@ These can run at different times:
 ## Current Implementation Status
 
 ### Algorithm 1: Mass Schedule Generation
-**Location**: `src/app/(main)/masses/schedule/steps/step-6-proposed-schedule.tsx`
+**Location**: `src/app/(main)/mass-liturgies/schedule/steps/step-6-proposed-schedule.tsx`
 
 **Function**: `generateProposedMasses()`
 

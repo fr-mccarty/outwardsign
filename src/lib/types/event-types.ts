@@ -9,7 +9,7 @@
  * System Type
  * Used to organize event types in the UI (sidebar navigation)
  */
-export type SystemType = 'mass' | 'special-liturgy' | 'event'
+export type SystemType = 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 
 /**
  * Field types available for input field definitions

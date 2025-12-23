@@ -142,7 +142,7 @@ async function importEvents(events: LiturgicalEvent[], locale: string) {
 
       // Use upsert to handle duplicates
       const { data, error } = await supabase
-        .from('global_liturgical_events')
+        .from('liturgical_calendar')
         .upsert(row, {
           onConflict: 'event_key,date,locale',
           ignoreDuplicates: false

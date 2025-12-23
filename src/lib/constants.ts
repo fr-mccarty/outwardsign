@@ -502,23 +502,6 @@ export const USER_PARISH_ROLE_LABELS: Record<UserParishRoleType, { en: string; e
 }
 
 // ============================================================================
-// MASS ROLES
-// ============================================================================
-// Mass roles are stored in the database as parish-specific entities.
-// Each parish can create and manage their own mass roles in the mass_roles table.
-// See: src/lib/actions/mass-roles.ts for CRUD operations
-// Default roles are seeded during parish creation in src/lib/actions/setup.ts
-
-// Mass Role Membership Type Constants
-export const MASS_ROLE_MEMBERSHIP_TYPE_VALUES = ['MEMBER', 'LEADER'] as const
-export type MassRoleMembershipType = typeof MASS_ROLE_MEMBERSHIP_TYPE_VALUES[number]
-
-export const MASS_ROLE_MEMBERSHIP_TYPE_LABELS: Record<MassRoleMembershipType, { en: string; es: string }> = {
-  MEMBER: { en: 'Member', es: 'Miembro' },
-  LEADER: { en: 'Leader', es: 'Líder' }
-}
-
-// ============================================================================
 // PETITION TEMPLATES
 // ============================================================================
 // Module categorization and language support for petition templates
@@ -582,7 +565,7 @@ export const INACTIVE_STATUS_LABELS = {
 
 // Dashboard Module Labels (for error messages and UI)
 export const DASHBOARD_MODULE_LABELS: Record<string, { en: string; es: string }> = {
-  masses: { en: 'Masses', es: 'Misas' },
+  'mass-liturgies': { en: 'Masses', es: 'Misas' },
   weddings: { en: 'Weddings', es: 'Bodas' },
   funerals: { en: 'Funerals', es: 'Funerales' },
   baptisms: { en: 'Baptisms', es: 'Bautismos' },
@@ -615,7 +598,7 @@ export const DOCUMENTATION_HOME_LABELS = {
     popularTopics: 'Popular Topics',
     topics: [
       { title: 'Planning a Wedding', href: '/documentation/en/features/weddings' },
-      { title: 'Managing Mass Intentions', href: '/documentation/en/features/masses' },
+      { title: 'Managing Mass Intentions', href: '/documentation/en/features/mass-liturgies' },
       { title: 'Creating Events', href: '/documentation/en/user-guides/events' },
       { title: 'Managing People', href: '/documentation/en/user-guides/people' },
       { title: 'Setting up Your Parish', href: '/documentation/en/getting-started/parish-setup' },
@@ -643,7 +626,7 @@ export const DOCUMENTATION_HOME_LABELS = {
     popularTopics: 'Temas Populares',
     topics: [
       { title: 'Planificación de una Boda', href: '/documentation/es/features/weddings' },
-      { title: 'Gestión de Intenciones de Misa', href: '/documentation/es/features/masses' },
+      { title: 'Gestión de Intenciones de Misa', href: '/documentation/es/features/mass-liturgies' },
       { title: 'Creación de Eventos', href: '/documentation/es/user-guides/events' },
       { title: 'Gestión de Personas', href: '/documentation/es/user-guides/people' },
       { title: 'Configuración de su Parroquia', href: '/documentation/es/getting-started/parish-setup' },

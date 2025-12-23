@@ -634,7 +634,7 @@ ORDER BY fd.order ASC;
    - Add functions for managing `people_event_assignments`
    - Update `MasterEventWithRelations` interface to include `people_event_assignments`
 
-2. **`src/lib/actions/masses.ts`**:
+2. **`src/lib/actions/mass-liturgies.ts`**:
    - Remove presider/homilist direct column updates
    - Migrate to `people_event_assignments` pattern
 
@@ -743,7 +743,7 @@ END FUNCTION
    - Remove presider/homilist PersonPicker fields
    - Add person assignment section (if template-level roles exist)
 
-2. **`src/app/(main)/masses/mass-form.tsx`**:
+2. **`src/app/(main)/mass-liturgies/mass-form.tsx`**:
    - Replace presider/homilist fields with assignment pattern
    - Use PersonPicker for template-level assignments
 
@@ -1103,7 +1103,7 @@ Test scenarios:
    - Remove presider_id/homilist_id tests
    - Update to verify people_event_assignments instead
 
-2. `tests/masses.spec.ts`:
+2. `tests/mass-liturgies.spec.ts`:
    - Update to use new assignment pattern
 
 3. `tests/event-types.spec.ts`:
@@ -1422,13 +1422,13 @@ During codebase analysis, the following inconsistencies were noted:
 5. ⬜ Update TypeScript interfaces in `src/lib/types.ts`
 6. ⬜ Implement `src/lib/actions/people-event-assignments.ts`
 7. ⬜ Update `src/lib/actions/master-events.ts`
-8. ⬜ Update `src/lib/actions/masses.ts`
+8. ⬜ Update `src/lib/actions/mass-liturgies.ts`
 9. ⬜ Update `src/lib/actions/event-types.ts`
 10. ⬜ Update `src/lib/actions/mass-times-template-items.ts`
 11. ⬜ Create `src/components/people-event-assignment-section.tsx`
 12. ⬜ Create `src/components/calendar-event-assignment-section.tsx`
 13. ⬜ Update `src/components/master-event-form.tsx`
-14. ⬜ Update `src/app/(main)/masses/mass-form.tsx`
+14. ⬜ Update `src/app/(main)/mass-liturgies/mass-form.tsx`
 15. ⬜ Update other affected components
 16. ⬜ Write unit tests (test-writer)
 17. ⬜ Run tests (test-runner-debugger)

@@ -277,7 +277,7 @@ All picker components that use **CorePicker** support edit mode:
 - **RolePicker** - Inline creation and editing of roles (used in Mass module for liturgical roles)
 
 ### ❌ Pickers WITHOUT Edit Mode:
-- **GlobalLiturgicalEventPicker** + LiturgicalEventPickerField - Read-only liturgical calendar data (Easter, Christmas, etc.). These are official church calendar events that should not be created or edited inline.
+- **LiturgicalCalendarEventPicker** + LiturgicalEventPickerField - Read-only liturgical calendar data (Easter, Christmas, etc.). These are official church calendar events that should not be created or edited inline.
 - **ReadingPickerModal** - **Does NOT use CorePicker**. Uses custom modal implementation with filtering/categorization for scripture readings. Readings have complex structure (multiple translations, categories) and are managed through dedicated forms, not inline editing.
 
 ## Affected Modules

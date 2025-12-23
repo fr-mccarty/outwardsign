@@ -132,8 +132,8 @@ export async function seedMasses(
 
   // Fetch liturgical events to link some Masses
   const { data: liturgicalEvents } = await supabase
-    .from('global_liturgical_events')
-    .select('id, date, name')
+    .from('liturgical_calendar')
+    .select('id, date, event_data')
     .gte('date', getMassDate(0))
     .lte('date', getMassDate(60))
     .order('date')

@@ -96,7 +96,7 @@ test.describe('Weekend Summary Module', () => {
 
     // Verify URL params reflect our selections
     await expect(page).toHaveURL(/date=/)
-    await expect(page).toHaveURL(/masses=true/)
+    await expect(page).toHaveURL(/mass-liturgies=true/)
 
     // Should NOT have sacraments or massRoles params
     expect(page.url()).not.toContain('sacraments=true')

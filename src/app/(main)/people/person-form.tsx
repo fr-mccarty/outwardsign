@@ -78,7 +78,6 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       state: person?.state || "",
       zipcode: person?.zipcode || "",
       note: person?.note || "",
-      mass_times_template_item_ids: person?.mass_times_template_item_ids || [],
     },
   })
 

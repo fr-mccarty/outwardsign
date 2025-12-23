@@ -145,7 +145,7 @@ The picker documentation is organized into category files for easy navigation:
 | **Event** | `EventPicker` | `EventPickerField` | ✅ Yes |
 | **Location** | `LocationPicker` | `LocationPickerField` | ✅ Yes |
 | **Mass** | `MassPicker` | `MassPickerField` | ❌ No |
-| **Global Liturgical Event** | `GlobalLiturgicalEventPicker` | - | ❌ No |
+| **Global Liturgical Event** | `LiturgicalCalendarEventPicker` | - | ❌ No |
 | **Reading** | `ReadingPickerModal` | - | ❌ No |
 | **Role** | `RolePicker` | `RolePickerField` | ✅ Yes |
 

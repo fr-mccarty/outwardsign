@@ -368,7 +368,7 @@ R: Sí, puedes solicitar: "Por la Familia Smith" o "Por John y Mary Doe" como un
 
 ## Características Relacionadas
 
-- [Gestión de Misas](./masses) - Crea y programa celebraciones de Misa
+- [Gestión de Misas](./mass-liturgies) - Crea y programa celebraciones de Misa
 - [Calendario](../user-guides/events) - Ve calendario parroquial y Misas próximas
 - [Gestión de Personas](../user-guides/people) - Rastrea solicitantes y relaciones
 - [Guía de Personal](../user-guides/staff-guide) - Guía completa para personal parroquial

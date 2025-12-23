@@ -9,7 +9,7 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { createEvent, updateEvent } from "@/lib/actions/master-events"
 import type { MasterEventWithRelations } from "@/lib/types"
 import type { Person, Location, ContentWithTags, Petition, Document, Group } from "@/lib/types"
-import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
+import type { LiturgicalCalendarEvent } from "@/lib/actions/liturgical-calendar"
 import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
 import { getEventTypeWithRelations } from "@/lib/actions/event-types"
 import { useRouter } from "next/navigation"
@@ -50,7 +50,7 @@ interface EventFormProps {
   event?: MasterEventWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
-  initialLiturgicalEvent?: GlobalLiturgicalEvent | null
+  initialLiturgicalEvent?: LiturgicalCalendarEvent | null
 }
 
 export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEvent }: EventFormProps) {
@@ -76,7 +76,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   }, [isSubmitting, onLoadingChange])
 
   // Picker states using usePickerState hook
-  const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
+  const liturgicalEvent = usePickerState<LiturgicalCalendarEvent>()
 
   // Event type templating state
   const [eventTypeId, setEventTypeId] = useState<string | null>(event?.event_type_id || null)

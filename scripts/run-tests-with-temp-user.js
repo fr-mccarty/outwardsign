@@ -80,7 +80,7 @@ async function main() {
     console.log(`   Parish: ${TEST_PARISH_NAME}\n`);
 
     // Step 1: Run setup script with dynamic credentials
-    const setupOutput = execSync('node scripts/setup-test-user.js', {
+    const setupOutput = execSync('npx tsx scripts/setup-test-user.ts', {
       encoding: 'utf-8',
       stdio: 'pipe',
       env: {

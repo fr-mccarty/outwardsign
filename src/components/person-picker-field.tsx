@@ -25,6 +25,7 @@ interface PersonPickerFieldProps {
   additionalVisibleFields?: string[] // Additional fields to show: 'email', 'phone_number', 'sex', 'note'
   requiredFields?: string[] // Fields that should be marked as required in the picker form
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
+  suggestedGroupIds?: string[] // Group IDs to filter suggested people
   testId?: string // Optional override for data-testid
   error?: string // Validation error message
 }
@@ -42,6 +43,7 @@ export function PersonPickerField({
   additionalVisibleFields,
   requiredFields,
   autoSetSex,
+  suggestedGroupIds,
   testId,
   error,
 }: PersonPickerFieldProps) {
@@ -160,6 +162,7 @@ export function PersonPickerField({
           editMode={value !== null}
           personToEdit={value}
           autoSetSex={autoSetSex}
+          suggestedGroupIds={suggestedGroupIds}
         />
       </PickerField>
 

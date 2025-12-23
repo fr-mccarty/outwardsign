@@ -19,6 +19,8 @@ interface EventTypePickerProps {
   onSelect: (eventType: EventType) => void
   selectedId?: string
   openToNew?: boolean
+  /** Filter to only show event types with this system_type. Defaults to 'parish-event'. */
+  systemType?: 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 }
 
 export function EventTypePicker({
@@ -27,6 +29,7 @@ export function EventTypePicker({
   onSelect,
   selectedId,
   openToNew = false,
+  systemType = 'parish-event',
 }: EventTypePickerProps) {
   const [items, setItems] = useState<EventType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -36,7 +39,9 @@ export function EventTypePicker({
       try {
         setIsLoading(true)
         const eventTypes = await getActiveEventTypes()
-        setItems(eventTypes)
+        // Filter by system_type
+        const filtered = eventTypes.filter(et => et.system_type === systemType)
+        setItems(filtered)
       } catch (error) {
         console.error('Failed to load event types:', error)
       } finally {
@@ -47,7 +52,7 @@ export function EventTypePicker({
     if (open) {
       loadEventTypes()
     }
-  }, [open])
+  }, [open, systemType])
 
   const createFields: PickerFieldConfig[] = useMemo(
     () => [
@@ -82,7 +87,7 @@ export function EventTypePicker({
       name: formData.name as string,
       icon: formData.icon as string,
       description: formData.description as string | undefined,
-      system_type: 'event', // Default to 'event' system_type
+      system_type: systemType,
     })
 
     // Add to local state

@@ -4,7 +4,7 @@
 >
 > This document covers patterns for the unified form component and view client component that handle data entry and display.
 
-> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/masses/`).
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/mass-liturgies/`).
 
 ## Table of Contents
 

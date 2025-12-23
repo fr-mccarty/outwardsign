@@ -163,6 +163,7 @@ export function PeopleEventAssignmentSection({
               onShowPickerChange={(open) => setPickerStates(prev => ({ ...prev, [field.id]: open }))}
               placeholder={`Select ${field.name}`}
               required={field.required}
+              suggestedGroupIds={field.input_filter_tags || undefined}
             />
 
             {assignment && (

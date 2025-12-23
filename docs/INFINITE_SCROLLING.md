@@ -564,7 +564,7 @@ For each module with infinite scroll:
 - Group Baptisms (`/group-baptisms`)
 - Presentations (`/presentations`)
 - Quinceañeras (`/quinceaneras`)
-- Masses (`/masses`)
+- Masses (`/mass-liturgies`)
 - Mass Intentions (`/mass-intentions`)
 - Events (`/events`)
 - Locations (`/locations`)
@@ -578,7 +578,7 @@ For each module with infinite scroll:
 - EventPicker
 - LocationPicker
 - MassPicker
-- GlobalLiturgicalEventPicker
+- LiturgicalCalendarEventPicker
 - ReadingPickerModal
 - RolePicker
 

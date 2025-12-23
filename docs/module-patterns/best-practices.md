@@ -4,7 +4,7 @@
 >
 > This document covers common patterns, best practices, error handling, and troubleshooting tips for module development.
 
-> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/masses/`).
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/mass-liturgies/`).
 
 ## Table of Contents
 

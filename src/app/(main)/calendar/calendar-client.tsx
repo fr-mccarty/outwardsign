@@ -8,7 +8,7 @@ import { CalendarView, CalendarItem } from '@/components/calendar/types'
 import { PageContainer } from '@/components/page-container'
 import { CalendarCalendarEventItem } from '@/lib/actions/master-events'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { getGlobalLiturgicalEventsByMonth, GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEventsByMonth, LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -22,7 +22,7 @@ interface CalendarClientProps {
 
 interface LiturgicalCalendarItem extends CalendarItem {
   isLiturgical: boolean
-  liturgicalEvent?: GlobalLiturgicalEvent
+  liturgicalEvent?: LiturgicalCalendarEvent
   liturgicalColor?: string
   moduleType?: string | null
   start_time?: string | null
@@ -81,9 +81,9 @@ export function CalendarClient({ occasions, initialView, initialDate }: Calendar
   const [currentDate, setCurrentDate] = useState(parsedInitialDate)
   const [view, setView] = useState<CalendarView>(initialView)
   const [showLiturgical, setShowLiturgical] = useState(true) // Default to ON
-  const [liturgicalEvents, setLiturgicalEvents] = useState<GlobalLiturgicalEvent[]>([])
+  const [liturgicalEvents, setLiturgicalEvents] = useState<LiturgicalCalendarEvent[]>([])
   const [loadingLiturgical, setLoadingLiturgical] = useState(false)
-  const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
+  const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<LiturgicalCalendarEvent | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
   // Ensure URL has view parameter on initial load
@@ -148,7 +148,7 @@ export function CalendarClient({ occasions, initialView, initialDate }: Calendar
       try {
         const year = currentDate.getFullYear()
         const month = currentDate.getMonth() + 1
-        const events = await getGlobalLiturgicalEventsByMonth(year, month, 'en_US')
+        const events = await getLiturgicalCalendarEventsByMonth(year, month, 'en_US')
         setLiturgicalEvents(events)
       } catch (error) {
         console.error('Error fetching liturgical events:', error)
@@ -238,7 +238,7 @@ export function CalendarClient({ occasions, initialView, initialDate }: Calendar
       // Navigate to the module
       // Special case: "mass" → "masses" (not "masss")
       const modulePath = calendarItem.moduleType === 'mass'
-        ? '/masses'
+        ? '/mass-liturgies'
         : `/${calendarItem.moduleType}s` // weddings, funerals, baptisms, etc.
       router.push(`${modulePath}/${calendarItem.module_id}`)
     } else if (calendarItem.event_type_slug && calendarItem.event_id) {

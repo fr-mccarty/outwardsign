@@ -217,6 +217,7 @@ export function CalendarEventAssignmentSection({
           onShowPickerChange={setShowPicker}
           placeholder={`Select person for ${activeField.name}`}
           openToNewPerson={false}
+          suggestedGroupIds={activeField.input_filter_tags || undefined}
         />
       )}
 

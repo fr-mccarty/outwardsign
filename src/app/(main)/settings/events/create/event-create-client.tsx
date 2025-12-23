@@ -35,7 +35,7 @@ export function EventCreateClient() {
     defaultValues: {
       name: '',
       icon: 'Calendar',
-      system_type: 'event', // Fixed system_type
+      system_type: 'parish-event', // Fixed system_type
     },
   })
 
@@ -48,7 +48,7 @@ export function EventCreateClient() {
       const eventType = await createEventType({
         name: data.name,
         icon: data.icon,
-        system_type: 'event', // Always set to event
+        system_type: 'parish-event', // Always set to parish-event
       })
       toast.success('Event type created successfully')
       router.push(`/settings/event-types/${eventType.slug}`)

@@ -12,7 +12,6 @@ import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Groups Membership', () => {
   let groupId: string;
-  let personId: string;
 
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
@@ -32,7 +31,6 @@ test.describe('Groups Membership', () => {
     await page.fill('input#last_name', `Member ${Date.now()}`);
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
-    personId = page.url().split('/').at(-2)!;
 
     await page.close();
   });

@@ -5,13 +5,13 @@ import { EventForm } from './event-form'
 import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
 import type { MasterEventWithRelations } from '@/lib/types'
-import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
 interface EventFormWrapperProps {
   event?: MasterEventWithRelations
   title: string
   description: string
-  initialLiturgicalEvent?: GlobalLiturgicalEvent | null
+  initialLiturgicalEvent?: LiturgicalCalendarEvent | null
 }
 
 export function EventFormWrapper({

@@ -150,8 +150,8 @@ Print views are located under `/print/`:
 |--------|--------------|---------|
 | Groups | `/print/groups/[id]` | `/print/groups/abc-123` |
 | People | `/print/people/[id]` | `/print/people/abc-123` |
-| Masses | `/print/masses/[id]` | `/print/masses/abc-123` |
-| Mass Scripts | `/print/masses/[id]/scripts/[script_id]` | `/print/masses/abc/scripts/def` |
+| Masses | `/print/mass-liturgies/[id]` | `/print/mass-liturgies/abc-123` |
+| Mass Scripts | `/print/mass-liturgies/[id]/scripts/[script_id]` | `/print/mass-liturgies/abc/scripts/def` |
 | Event Scripts | `/print/events/[type]/[id]/scripts/[script_id]` | `/print/events/weddings/abc/scripts/def` |
 | Mass Intentions | `/print/mass-intentions/[id]` | `/print/mass-intentions/abc-123` |
 | Announcements | `/print/announcements/[id]` | `/print/announcements/123` |

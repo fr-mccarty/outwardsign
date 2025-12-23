@@ -368,7 +368,7 @@ A: Yes, you can request: "For the Smith Family" or "For John and Mary Doe" as on
 
 ## Related Features
 
-- [Managing Masses](./masses) - Create and schedule Mass celebrations
+- [Managing Masses](./mass-liturgies) - Create and schedule Mass celebrations
 - [Calendar](../user-guides/events) - View parish calendar and upcoming Masses
 - [Managing People](../user-guides/people) - Track requesters and relationships
 - [Staff Guide](../user-guides/staff-guide) - Complete guide for parish staff

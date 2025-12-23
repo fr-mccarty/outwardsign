@@ -46,7 +46,7 @@ System type metadata (icons, bilingual labels) is stored in application constant
 
 **masses table (deleted):**
 - Migrated to unified structure via `master_events`
-- All masses are now `master_events` with `event_type_id` pointing to event_types where `system_type = 'mass'`
+- All masses are now `master_events` with `event_type_id` pointing to event_types where `system_type = 'mass-liturgy'`
 
 **Migration Files:**
 - `20251216000001_update_event_types_system_type.sql`
@@ -93,8 +93,8 @@ This will run all configured seeders defined in `scripts/seed.ts`, including:
 The application uses global liturgical calendar data from [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com).
 
 **Current Migrations:**
-- `20251109000002_seed_global_liturgical_events_2025_en_US.sql` - 538 events for 2025
-- `20251109000003_seed_global_liturgical_events_2026_en_US.sql` - 547 events for 2026
+- `20251109000002_seed_liturgical_calendar_2025_en_US.sql` - 538 events for 2025
+- `20251109000003_seed_liturgical_calendar_2026_en_US.sql` - 547 events for 2026
 
 ### Creating New Liturgical Calendar Migrations
 
@@ -109,18 +109,18 @@ To create a migration file for a new year (e.g., 2027), use the Task tool with t
 
 3. **Create SQL migration file** at:
    ```
-   supabase/migrations/YYYYMMDD000004_seed_global_liturgical_events_2027_en.sql
+   supabase/migrations/YYYYMMDD000004_seed_liturgical_calendar_2027_en.sql
    ```
    (Increment the sequence number: 000004, 000005, etc.)
 
 4. **Follow this format:**
    ```sql
-   -- Seed global_liturgical_events table for year 2027 (locale: en)
+   -- Seed liturgical_calendar table for year 2027 (locale: en)
    -- Generated from https://litcal.johnromanodorazio.com/api/dev/calendar
    -- Total events: [count]
    -- Generated on: [ISO timestamp]
 
-   INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
+   INSERT INTO liturgical_calendar (event_key, date, year, locale, event_data)
    VALUES ('EventKey', 'YYYY-MM-DD', 2027, 'en', '{...full JSON...}'::jsonb)
    ON CONFLICT (event_key, date, locale) DO NOTHING;
    ```
@@ -133,7 +133,7 @@ To create a migration file for a new year (e.g., 2027), use the Task tool with t
 
 6. **Reference existing file** for exact format:
    ```
-   supabase/migrations/20251109000002_seed_global_liturgical_events_2025_en_US.sql
+   supabase/migrations/20251109000002_seed_liturgical_calendar_2025_en_US.sql
    ```
 
 ### Alternative: Dynamic API Seeding (Future Use)
@@ -176,7 +176,7 @@ Edit `scripts/seed.ts` and add to the `seeders` array:
 
 - **Current approach:** Liturgical data is seeded via SQL migrations for faster database resets during development
 - **Future approach:** TypeScript scripts (above) fetch from API - useful for production or when migrations become too large
-- Data is stored in `global_liturgical_events` table with JSONB for full event data
+- Data is stored in `liturgical_calendar` table with JSONB for full event data
 - Migrations run automatically when you run `npm run db:fresh`
 - Indexed for efficient date range queries
 

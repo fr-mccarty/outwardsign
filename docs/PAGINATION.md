@@ -47,7 +47,7 @@ Pagination divides large datasets into smaller, manageable pages to improve:
 Pagination is currently implemented inconsistently across the application:
 
 **✅ Has Pagination:**
-- **Masses** (`/masses`) - Full server-side pagination with URL params
+- **Masses** (`/mass-liturgies`) - Full server-side pagination with URL params
 - **People (Picker)** - CorePicker component supports pagination
 - **Global Liturgical Events (Picker)** - CorePicker component supports pagination
 
@@ -900,9 +900,9 @@ const updatePage = (newPage: number) => {
 
 The Masses module is the reference implementation for server-side pagination. See:
 
-- Server page: `src/app/(main)/masses/page.tsx`
-- Client component: `src/app/(main)/masses/masses-list-client.tsx`
-- Server action: `src/lib/actions/masses.ts`
+- Server page: `src/app/(main)/mass-liturgies/page.tsx`
+- Client component: `src/app/(main)/mass-liturgies/mass-liturgies-list-client.tsx`
+- Server action: `src/lib/actions/mass-liturgies.ts`
 
 **Key Features:**
 - URL-based pagination state
@@ -1168,7 +1168,7 @@ Default page sizes by module type:
 
 ```typescript
 test('pagination controls work correctly', async ({ page }) => {
-  await page.goto('/masses')
+  await page.goto('/mass-liturgies')
 
   // Check initial state
   await expect(page.locator('text=Page 1 of')).toBeVisible()
@@ -1183,7 +1183,7 @@ test('pagination controls work correctly', async ({ page }) => {
   await expect(page).toHaveURL(/page=1/)
 
   // Filter resets to page 1
-  await page.goto('/masses?page=3')
+  await page.goto('/mass-liturgies?page=3')
   await page.selectOption('select[name="status"]', 'ACTIVE')
   await expect(page).toHaveURL(/page=1/)
 })

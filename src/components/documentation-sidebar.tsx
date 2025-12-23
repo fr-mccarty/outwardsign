@@ -94,7 +94,7 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
         },
         {
           title: lang === 'en' ? 'Mass Intentions' : 'Intenciones de Misa',
-          href: `/documentation/${lang}/features/masses`,
+          href: `/documentation/${lang}/features/mass-liturgies`,
         },
       ],
     },

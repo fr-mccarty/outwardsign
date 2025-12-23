@@ -10,7 +10,7 @@ export const createMassIntentionSchema = z.object({
   stipend_in_cents: z.number().optional().nullable(),
   note: z.string().optional().nullable(),
   requested_by_id: z.string().uuid().optional().nullable(),
-  master_event_id: z.string().uuid().optional().nullable(),  // References master_events table
+  calendar_event_id: z.string().uuid().optional().nullable(),  // References calendar_events table
   mass_intention_template_id: z.string().optional().nullable(),
 })
 
@@ -23,7 +23,7 @@ export const updateMassIntentionSchema = z.object({
   stipend_in_cents: z.number().optional().nullable(),
   note: z.string().optional().nullable(),
   requested_by_id: z.string().uuid().optional().nullable(),
-  master_event_id: z.string().uuid().optional().nullable(),  // References master_events table
+  calendar_event_id: z.string().uuid().optional().nullable(),  // References calendar_events table
   mass_intention_template_id: z.string().optional().nullable(),
 })
 

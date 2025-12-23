@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 
@@ -10,7 +10,7 @@ interface LiturgicalEventItemMonthProps {
     id: string
     title: string
     liturgicalColor?: string
-    liturgicalEvent?: GlobalLiturgicalEvent
+    liturgicalEvent?: LiturgicalCalendarEvent
   }
   onClick?: (e: React.MouseEvent) => void
 }

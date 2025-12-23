@@ -113,7 +113,7 @@
 
 ### Mass Form Integration
 
-**Location:** `src/app/(main)/masses/mass-form.tsx`
+**Location:** `src/app/(main)/mass-liturgies/mass-liturgy-form.tsx`
 
 **Role Assignment Section Code:**
 ```typescript

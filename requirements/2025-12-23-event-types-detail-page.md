@@ -292,7 +292,7 @@ When staff view/print an event:
 ### Existing Features This Touches
 
 **Settings Pages:**
-- `/settings/masses` - Mass types list
+- `/settings/mass-liturgies` - Mass types list
 - `/settings/events` - Event types list
 - `/settings/special-liturgies` - Special liturgy types list
 - All three pages link to the new detail page
@@ -571,7 +571,7 @@ LAYOUT:
 - Two large navigation cards (ContentCard components):
   1. "Manage Custom Fields" → /settings/event-types/{slug}/fields
   2. "Manage Scripts" → /settings/event-types/{slug}/scripts (only shown for special-liturgy)
-- Back button to parent settings page (/settings/masses, /settings/events, or /settings/special-liturgies)
+- Back button to parent settings page (/settings/mass-liturgies, /settings/events, or /settings/special-liturgies)
 ```
 
 **Conditional Navigation Logic:**

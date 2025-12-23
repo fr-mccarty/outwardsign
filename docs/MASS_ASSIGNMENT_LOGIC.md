@@ -176,7 +176,7 @@ The assignment system relies on:
 - `mass_roles`: Links roles to templates
 - `people`: Minister information
 - `person_mass_roles`: Links people to roles they can serve (qualifications)
-- `global_liturgical_events`: Calendar of liturgical celebrations
+- `liturgical_calendar`: Calendar of liturgical celebrations
 
 ## Related Documentation
 

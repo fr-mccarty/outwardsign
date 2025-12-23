@@ -236,7 +236,6 @@ export interface Person {
   sex?: Sex
   note?: string
   avatar_url?: string  // Storage path to profile photo in person-avatars bucket
-  mass_times_template_item_ids?: string[]
   // Parishioner portal fields
   preferred_communication_channel?: 'email' | 'sms'
   parishioner_portal_enabled?: boolean
@@ -294,7 +293,7 @@ export interface EventType {
   icon: string // Lucide icon name
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
-  system_type: 'mass' | 'special-liturgy' | 'event' // System type for categorization
+  system_type: 'mass-liturgy' | 'special-liturgy' | 'parish-event' // System type for categorization
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -348,18 +347,6 @@ export interface GroupRole {
   updated_at: string
 }
 
-export interface MassRolesTemplate {
-  id: string
-  parish_id: string
-  name: string
-  description?: string
-  is_active: boolean
-  note?: string
-  parameters?: Record<string, any>
-  created_at: string
-  updated_at: string
-}
-
 export interface Mass {
   id: string
   parish_id: string
@@ -367,7 +354,6 @@ export interface Mass {
   presider_id?: string
   homilist_id?: string
   liturgical_event_id?: string
-  mass_roles_template_id?: string
   mass_time_template_item_id?: string
   event_type_id?: string | null
   field_values?: Record<string, any>
@@ -383,162 +369,10 @@ export interface Mass {
   updated_at: string
 }
 
-// Mass role definitions (Lector, Usher, Server, etc.)
-export interface MassRole {
-  id: string
-  parish_id: string
-  name: string
-  description?: string
-  note?: string
-  is_active: boolean
-  display_order?: number | null
-  created_at: string
-  updated_at: string
-}
-
-// Mass role members (people who serve in liturgical mass roles)
-export interface MassRoleMember {
-  id: string
-  person_id: string
-  parish_id: string
-  mass_role_id?: string
-  membership_type: 'MEMBER' | 'LEADER'
-  notes?: string
-  active: boolean
-  created_at: string
-  updated_at: string
-}
-
-// Mass role member with person and role details
-export interface MassRoleMemberWithDetails extends MassRoleMember {
-  person: Person
-  mass_role: MassRole | null
-}
-
-// Actual mass role assignments (person assigned to a mass role)
-export interface MassRoleInstance {
-  id: string
-  mass_id: string
-  person_id: string
-  mass_roles_template_item_id: string
-  created_at: string
-  updated_at: string
-}
-
-// Mass role template items (role requirements within a template)
-export interface MassRoleTemplateItem {
-  id: string
-  mass_roles_template_id: string
-  mass_role_id: string
-  count: number
-  note?: string
-  position: number
-  created_at: string
-  updated_at: string
-}
-
-// Mass role template item with role details
-export interface MassRoleTemplateItemWithRole extends MassRoleTemplateItem {
-  mass_role: MassRole
-}
-
-// Mass role template with items
-export interface MassRoleTemplateWithItems extends MassRolesTemplate {
-  items: MassRoleTemplateItemWithRole[]
-}
-
-// Mass role instance with details
-export interface MassRoleInstanceWithDetails extends MassRoleInstance {
-  person: Person | null
-  template_item: MassRoleTemplateItemWithRole
-}
-
-// Mass role preferences (availability and scheduling preferences)
-export interface MassRolePreference {
-  id: string
-  person_id: string
-  parish_id: string
-  mass_role_id: string | null
-  preferred_days: string[] | null
-  available_days: string[] | null
-  unavailable_days: string[] | null
-  preferred_times: string[] | null
-  unavailable_times: string[] | null
-  desired_frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL' | null
-  max_per_month: number | null
-  languages: { language: string; level: string }[] | null
-  notes: string | null
-  active: boolean
-  created_at: string
-  updated_at: string
-}
-
-// Mass role preference with person and role details
-export interface MassRolePreferenceWithDetails extends MassRolePreference {
-  person: Person
-  mass_role: MassRole | null
-}
-
-// Blackout dates (unavailability periods)
-export interface MassRoleBlackoutDate {
-  id: string
-  person_id: string
-  start_date: string
-  end_date: string
-  reason: string | null
-  created_at: string
-}
-
-// Blackout date with person details
-export interface MassRoleBlackoutDateWithPerson extends MassRoleBlackoutDate {
-  person: Person
-}
-
-// Create/Update data types
-export interface CreateMassRolePreferenceData {
-  person_id: string
-  mass_role_id?: string | null
-  preferred_days?: string[]
-  available_days?: string[]
-  unavailable_days?: string[]
-  preferred_times?: string[]
-  unavailable_times?: string[]
-  desired_frequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL'
-  max_per_month?: number
-  languages?: { language: string; level: string }[]
-  notes?: string
-  active?: boolean
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface UpdateMassRolePreferenceData extends Partial<CreateMassRolePreferenceData> {}
-
-export interface CreateMassRoleBlackoutDateData {
-  person_id: string
-  start_date: string
-  end_date: string
-  reason?: string
-}
-
-export interface UpdateMassRoleBlackoutDateData {
-  start_date?: string
-  end_date?: string
-  reason?: string
-}
-
-// Person role statistics
-export interface PersonRoleStats {
-  total_assignments: number
-  assignments_this_month: number
-  assignments_this_year: number
-  last_assignment_date: string | null
-  roles: string[]
-}
-
 export interface MassIntention {
   id: string
   parish_id: string
-  master_event_id?: string  // References master_events table (was mass_id)
+  calendar_event_id?: string  // References calendar_events table (specific mass times)
   mass_offered_for?: string
   requested_by_id?: string
   date_received?: string
@@ -583,7 +417,7 @@ export interface CreateEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
-  system_type: 'mass' | 'special-liturgy' | 'event'
+  system_type: 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 }
 
 export interface UpdateEventTypeData {
@@ -591,7 +425,7 @@ export interface UpdateEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
-  system_type?: 'mass' | 'special-liturgy' | 'event'
+  system_type?: 'mass-liturgy' | 'special-liturgy' | 'parish-event'
 }
 
 // Input Field Definitions (fields for event types)

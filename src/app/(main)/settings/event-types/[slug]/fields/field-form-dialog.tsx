@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { MultiSelect } from '@/components/multi-select'
 import { SaveButton } from '@/components/save-button'
 import { CancelButton } from '@/components/cancel-button'
 import type { EventTypeWithRelations, InputFieldDefinition, InputFieldType } from '@/lib/types/event-types'
@@ -36,6 +37,7 @@ import {
   createInputFieldDefinition,
   updateInputFieldDefinition,
 } from '@/lib/actions/input-field-definitions'
+import { getActiveGroups, type Group } from '@/lib/actions/groups'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 
@@ -88,6 +90,7 @@ export function FieldFormDialog({
 }: FieldFormDialogProps) {
   const t = useTranslations()
   const [isSaving, setIsSaving] = useState(false)
+  const [groups, setGroups] = useState<Group[]>([])
 
   const formSchema = z.object({
     name: z.string().min(1, 'Field name is required'),
@@ -101,6 +104,7 @@ export function FieldFormDialog({
     is_key_person: z.boolean(),
     is_primary: z.boolean(),
     list_id: z.string().nullable().optional(),
+    input_filter_tags: z.array(z.string()).optional(),
   })
 
   type FormValues = z.infer<typeof formSchema>
@@ -115,8 +119,26 @@ export function FieldFormDialog({
       is_key_person: false,
       is_primary: false,
       list_id: null,
+      input_filter_tags: [],
     },
   })
+
+  // Load active groups when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadGroups()
+    }
+  }, [open])
+
+  const loadGroups = async () => {
+    try {
+      const activeGroups = await getActiveGroups()
+      setGroups(activeGroups)
+    } catch (error) {
+      console.error('Failed to load groups:', error)
+      toast.error('Failed to load groups')
+    }
+  }
 
   // Reset form when dialog opens with field data
   useEffect(() => {
@@ -130,6 +152,7 @@ export function FieldFormDialog({
           is_key_person: field.is_key_person,
           is_primary: field.is_primary,
           list_id: field.list_id,
+          input_filter_tags: field.input_filter_tags || [],
         })
       } else {
         form.reset({
@@ -140,6 +163,7 @@ export function FieldFormDialog({
           is_key_person: false,
           is_primary: false,
           list_id: null,
+          input_filter_tags: [],
         })
       }
     }
@@ -181,6 +205,7 @@ export function FieldFormDialog({
           is_key_person: values.is_key_person,
           is_primary: values.is_primary,
           list_id: values.list_id || null,
+          input_filter_tags: values.input_filter_tags || [],
         })
         toast.success(t('eventType.fields.updateSuccess'))
       } else {
@@ -194,6 +219,7 @@ export function FieldFormDialog({
           is_key_person: values.is_key_person,
           is_primary: values.is_primary,
           list_id: values.list_id || null,
+          input_filter_tags: values.input_filter_tags || [],
         })
         toast.success(t('eventType.fields.createSuccess'))
       }
@@ -364,6 +390,36 @@ export function FieldFormDialog({
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Group Filtering (only for person type) */}
+            {watchType === 'person' && (
+              <FormField
+                control={form.control}
+                name="input_filter_tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Filter by Ministry Groups (Optional)</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={groups.map(group => ({
+                          value: group.id,
+                          label: group.name,
+                        }))}
+                        selected={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Select groups to suggest for this role..."
+                        disabled={isSaving}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      When assigning this role, people from these groups will be suggested first.
+                      Anyone can still be selected.
+                    </FormDescription>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

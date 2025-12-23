@@ -37,6 +37,14 @@ export default async function EditDynamicEventPage({ params }: PageProps) {
     notFound()
   }
 
+  // Redirect mass-liturgy and special-liturgy types to their dedicated modules
+  if (eventType.system_type === 'mass-liturgy') {
+    redirect(`/mass-liturgies/${id}/edit`)
+  }
+  if (eventType.system_type === 'special-liturgy') {
+    redirect(`/special-liturgies/${eventType.slug}/${id}/edit`)
+  }
+
   // TODO: Build dynamic title from key person names once field resolution is implemented
   const title = eventType.name
 

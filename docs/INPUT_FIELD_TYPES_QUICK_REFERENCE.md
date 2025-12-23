@@ -60,6 +60,45 @@ input_filter_tags: ['reading']
 - `calendar_event` - Creates calendar entries with date/time/location
 - `spacer` - UI-only visual separator
 
+## Placeholder Syntax (for Script Templates)
+
+Custom fields can be referenced in script templates using placeholder syntax.
+
+### Basic Placeholder
+
+```
+{{property_name}}
+```
+
+**Example:**
+```
+The wedding will take place on {{wedding_date}}.
+```
+
+### Nested Properties (Person Fields)
+
+Person fields support nested property access:
+
+```
+{{field_name.first_name}}
+{{field_name.last_name}}
+{{field_name.full_name}}
+```
+
+**Example:**
+```
+We gather today to celebrate the marriage of {{bride.first_name}} and {{groom.first_name}}.
+```
+
+### Standard Placeholders
+
+Always available in script templates:
+- `{{event_date}}` - Primary calendar event date
+- `{{event_time}}` - Primary calendar event time
+- `{{event_location}}` - Primary calendar event location
+
+**See Also:** [EVENT_TYPE_CONFIGURATION.md](./EVENT_TYPE_CONFIGURATION.md) for complete placeholder documentation
+
 ## Schema Location
 
 Type definitions: `src/lib/types/event-types.ts`

@@ -150,7 +150,7 @@ interface ProposedMass {
 ```
 
 ### Conflict Detection Code
-Location: `src/app/(main)/masses/schedule/schedule-masses-client.tsx`
+Location: `src/app/(main)/mass-liturgies/schedule/schedule-masses-client.tsx`
 
 Function: `generateProposedMasses()`
 

@@ -442,7 +442,7 @@ A: Most parishes generate 3-6 months at a time. Some go further for annual plann
 
 ## Related Features
 
-- [Managing Masses](./masses) - Work with individual Mass celebrations
+- [Managing Masses](./mass-liturgies) - Work with individual Mass celebrations
 - [Mass Intentions](./mass-intentions) - Track Mass intention requests
 - [Calendar](../user-guides/events) - View all parish events including Masses
 - [Managing People](../user-guides/people) - Parish directory

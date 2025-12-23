@@ -31,17 +31,18 @@ This document provides comprehensive architectural patterns and guidelines for O
 2. **master_events** - Specific event instances (John & Jane's Wedding, Easter Vigil 2025, Zumba Jan 15)
 3. **calendar_events** - Date/time/location entries that appear on the calendar
 
-**System Types (4 Categories):**
-All event_types belong to one of four system types (stored as enum field):
-- `mass` - Masses
-- `special-liturgy` - Special Liturgies
-- `sacrament` - Sacraments
-- `event` - Events
+**System Types (3 Categories):**
+All event_types belong to one of three system types (stored as enum field):
+- `mass-liturgy` - Mass Liturgies (Masses)
+- `special-liturgy` - Special Liturgies (including sacramental celebrations)
+- `parish-event` - Parish Events (non-liturgical activities)
 
 **Key Relationships:**
 - `master_events.event_type_id` → `event_types.id` (NOT NULL)
 - `calendar_events.master_event_id` → `master_events.id` (NOT NULL)
 - `calendar_events.input_field_definition_id` → `input_field_definitions.id` (NOT NULL)
+- `people_event_assignments.calendar_event_id` → `calendar_events.id`
+- `people_event_assignments.input_field_definition_id` → `input_field_definitions.id` (role definition)
 
 **Title Computation:**
 Calendar event titles are computed (not stored):
@@ -52,10 +53,15 @@ Examples:
 - "Mark and Susan's Wedding - Rehearsal" (2 calendar events)
 - "9am Mass Jan 19" (1 calendar event, no suffix)
 
-**Role Assignments:**
-- Roles are defined in `event_types.role_definitions` (JSONB)
-- Assignments stored in `master_event_roles` table
-- Roles belong to master_events, NOT calendar_events
+**Role Assignments (Three-Concern Separation):**
+1. **Role Definitions** - Defined in `event_types.role_definitions` (via input_field_definitions JSONB)
+2. **Role Capability** - Managed through `groups` + `group_members` (who CAN serve in roles)
+3. **Role Assignments** - Stored in `people_event_assignments` table (who IS serving at specific calendar_events)
+
+**Mass Liturgies Clarification:**
+- `master_event` = Liturgical Day (e.g., "Fourth Sunday in Advent")
+- `calendar_events` = Individual Mass Times (10am, 12pm, 5pm for that day)
+- Role assignments are at the calendar_event level (specific Mass time), not master_event level
 
 ### Parish Structure
 
@@ -69,7 +75,7 @@ Examples:
 
 **Database tables:** plural form
 ```
-events, masses, people, locations, groups
+master_events, calendar_events, people, locations, groups
 ```
 
 **Database columns:** singular form
@@ -80,8 +86,8 @@ status (not statuses)
 
 **TypeScript interfaces:** singular form
 ```typescript
-interface Event { }
-interface Mass { }
+interface MasterEvent { }
+interface CalendarEvent { }
 interface Person { }
 ```
 
@@ -334,7 +340,7 @@ export default async function Page() {
 - Email/password login
 - JWT-based authentication
 - Session stored in Supabase Auth
-- Used for: `/dashboard`, `/weddings`, `/masses`, etc.
+- Used for: `/dashboard`, `/weddings`, `/mass-liturgies`, etc.
 
 **Parishioner Auth (Custom Magic Link):**
 - Email-only magic link

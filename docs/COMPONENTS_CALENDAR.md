@@ -73,7 +73,7 @@ Liturgical events:
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 
 const [previewOpen, setPreviewOpen] = useState(false)
-const [selectedEvent, setSelectedEvent] = useState<GlobalLiturgicalEvent | null>(null)
+const [selectedEvent, setSelectedEvent] = useState<LiturgicalCalendarEvent | null>(null)
 
 <LiturgicalEventPreview
   open={previewOpen}

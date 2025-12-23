@@ -51,7 +51,7 @@ All documentation in this directory must follow these standards:
 
 **Development Guides:**
 - [MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md) - Complete checklist for creating new modules
-- [TESTING_GUIDE.md](./TESTING_GUIDE.md) - Test patterns, authentication, debugging
+- [testing/TESTING.md](./testing/TESTING.md) - Test patterns, authentication, debugging
 - [CODE_CONVENTIONS.md](./CODE_CONVENTIONS.md) - Coding standards and conventions
 - [DATABASE.md](./DATABASE.md) - Database management procedures
 - [CONSOLE_HELPERS.md](./CONSOLE_HELPERS.md) - Standardized console logging utilities
@@ -81,3 +81,33 @@ Documentation should be:
 - **Split** when files exceed 1000 lines
 - **Cleaned** of outdated or deprecated information
 - **Linked** to related documentation throughout the project
+
+### File Size Limits
+
+| Threshold | Action |
+|-----------|--------|
+| **600+ lines** | Consider splitting |
+| **800+ lines** | Add monitoring note |
+| **1000+ lines** | MUST split immediately |
+
+### When Creating New Documentation
+
+1. Check if documentation already exists (avoid duplication)
+2. Determine correct location (`/docs` vs `src/app/documentation/content/`)
+3. Add TOC if file will exceed 300 lines
+4. Update CLAUDE.md if it's critical documentation
+5. Verify all internal links work
+
+### Quarterly Audit
+
+```bash
+# Find files over 800 lines
+find docs -name "*.md" -type f -exec wc -l {} + | awk '$1 >= 800 {print $1, $2}' | sort -rn
+```
+
+### Archive Strategy
+
+Move to `docs/archive/` when content becomes:
+- Obsolete patterns (replaced by new approach)
+- Migration guides (after migration complete)
+- Historical changelogs (not actively referenced)

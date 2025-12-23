@@ -90,7 +90,7 @@ Parish defines their liturgical roles:
 
 ### Phase 4: Create Mass Event
 
-**Location:** `/masses/create`
+**Location:** `/mass-liturgies/create`
 
 **Workflow:**
 1. Create Mass with basic info (event, presider, homilist, etc.)
@@ -101,7 +101,7 @@ Parish defines their liturgical roles:
 
 ### Phase 5: Assign People to Roles
 
-**Location:** `/masses/{id}/edit`
+**Location:** `/mass-liturgies/{id}/edit`
 
 **UI Behavior:**
 1. If Mass has `mass_roles_template_id` set:
@@ -117,7 +117,7 @@ Parish defines their liturgical roles:
 
 **Data Flow:**
 ```typescript
-// mass-form.tsx
+// mass-liturgy-form.tsx
 const handleSelectPersonForRole = async (person: Person) => {
   if (!isEditing || !mass?.id || !currentRoleId) {
     toast.error('Please save the mass before assigning roles')
@@ -287,7 +287,7 @@ Clicks "Create Mass" → Mass is saved with ID `mass-20250126`
 
 ### Step 5: Assign People to Roles
 
-Staff member goes to `/masses/mass-20250126/edit`
+Staff member goes to `/mass-liturgies/mass-20250126/edit`
 
 The form displays role assignment section showing template requirements:
 

@@ -72,7 +72,7 @@ https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2026?locale=en_US
 
 ## Database Structure
 
-### Table: `global_liturgical_events`
+### Table: `liturgical_calendar`
 
 **Schema:**
 
@@ -88,10 +88,10 @@ https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2026?locale=en_US
 | `updated_at` | TIMESTAMPTZ | Record update timestamp |
 
 **Indexes:**
-- `idx_global_liturgical_events_date` - Date range queries
-- `idx_global_liturgical_events_year_locale` - Year and locale filtering
-- `idx_global_liturgical_events_event_key` - Event key lookups
-- `idx_global_liturgical_events_event_data` - JSONB queries (GIN index)
+- `idx_liturgical_calendar_date` - Date range queries
+- `idx_liturgical_calendar_year_locale` - Year and locale filtering
+- `idx_liturgical_calendar_event_key` - Event key lookups
+- `idx_liturgical_calendar_event_data` - JSONB queries (GIN index)
 
 **Constraints:**
 - `UNIQUE (event_key, date, locale)` - Prevents duplicate events
@@ -102,7 +102,7 @@ https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2026?locale=en_US
 
 **Migration File:**
 ```
-supabase/migrations/20251109000001_create_global_liturgical_events_table.sql
+supabase/migrations/20251109000001_create_liturgical_calendar_table.sql
 ```
 
 ---
@@ -116,8 +116,8 @@ There are two ways to import liturgical calendar data: migration files (recommen
 **Why?** Migration files run automatically when resetting the database (`npm run db:fresh`), making local development faster.
 
 **Current Migrations:**
-- `20251109000002_seed_global_liturgical_events_2025_en_US.sql` - 538 events for 2025
-- `20251109000003_seed_global_liturgical_events_2026_en_US.sql` - 547 events for 2026
+- `20251109000002_seed_liturgical_calendar_2025_en_US.sql` - 538 events for 2025
+- `20251109000003_seed_liturgical_calendar_2026_en_US.sql` - 547 events for 2026
 
 **Note:** The existing 2025 and 2026 migrations were generated before the US-specific endpoint was implemented. While they contain valid data, they may be missing some US-specific observances. Consider regenerating them using the updated script to ensure all US-specific holy days and observances are included.
 
@@ -146,16 +146,16 @@ tsx scripts/generate-global-liturgical-migration.ts 2027 es
 
 **Migration File Format:**
 ```sql
--- Seed global_liturgical_events table for year 2027 (locale: en_US)
+-- Seed liturgical_calendar table for year 2027 (locale: en_US)
 -- Generated from https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2027
 -- Total events: 547
 -- Generated on: 2025-11-14T12:00:00.000Z
 
-INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
+INSERT INTO liturgical_calendar (event_key, date, year, locale, event_data)
 VALUES ('Advent1', '2027-11-28', 2027, 'en_US', '{"event_key":"Advent1",...}'::jsonb)
 ON CONFLICT (event_key, date, locale) DO NOTHING;
 
-INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
+INSERT INTO liturgical_calendar (event_key, date, year, locale, event_data)
 VALUES ('StAndrewAp', '2027-11-30', 2027, 'en_US', '{"event_key":"StAndrewAp",...}'::jsonb)
 ON CONFLICT (event_key, date, locale) DO NOTHING;
 
@@ -233,46 +233,46 @@ Outward Sign provides Server Actions for querying liturgical events from the fro
 
 ### Available Functions
 
-#### `getGlobalLiturgicalEvents()`
+#### `getLiturgicalCalendarEvents()`
 
 Get liturgical events for a date range.
 
 ```typescript
-import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEvents } from '@/lib/actions/global-liturgical-events'
 
-const events = await getGlobalLiturgicalEvents(
+const events = await getLiturgicalCalendarEvents(
   '2025-12-01',  // startDate
   '2025-12-31',  // endDate
   'en_US'        // locale (optional, default: 'en_US')
 )
 ```
 
-**Returns:** `GlobalLiturgicalEvent[]`
+**Returns:** `LiturgicalCalendarEvent[]`
 
-#### `getGlobalLiturgicalEventsByMonth()`
+#### `getLiturgicalCalendarEventsByMonth()`
 
 Get liturgical events for a specific month.
 
 ```typescript
-import { getGlobalLiturgicalEventsByMonth } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEventsByMonth } from '@/lib/actions/global-liturgical-events'
 
-const events = await getGlobalLiturgicalEventsByMonth(
+const events = await getLiturgicalCalendarEventsByMonth(
   2025,    // year
   12,      // month (1-12)
   'en_US'  // locale (optional)
 )
 ```
 
-**Returns:** `GlobalLiturgicalEvent[]`
+**Returns:** `LiturgicalCalendarEvent[]`
 
-#### `getGlobalLiturgicalEventsPaginated()`
+#### `getLiturgicalCalendarEventsPaginated()`
 
 Get paginated liturgical events for a date range.
 
 ```typescript
-import { getGlobalLiturgicalEventsPaginated } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEventsPaginated } from '@/lib/actions/global-liturgical-events'
 
-const result = await getGlobalLiturgicalEventsPaginated(
+const result = await getLiturgicalCalendarEventsPaginated(
   '2025-01-01',  // startDate
   '2025-12-31',  // endDate
   'en_US',       // locale
@@ -283,24 +283,24 @@ const result = await getGlobalLiturgicalEventsPaginated(
   }
 )
 
-console.log(result.items)       // GlobalLiturgicalEvent[]
+console.log(result.items)       // LiturgicalCalendarEvent[]
 console.log(result.totalCount)  // number
 console.log(result.totalPages)  // number
 ```
 
-**Returns:** `PaginatedResult<GlobalLiturgicalEvent>`
+**Returns:** `PaginatedResult<LiturgicalCalendarEvent>`
 
-#### `getGlobalLiturgicalEvent()`
+#### `getLiturgicalCalendarEvent()`
 
 Get a single liturgical event by ID.
 
 ```typescript
-import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEvent } from '@/lib/actions/global-liturgical-events'
 
-const event = await getGlobalLiturgicalEvent('event-uuid-here')
+const event = await getLiturgicalCalendarEvent('event-uuid-here')
 ```
 
-**Returns:** `GlobalLiturgicalEvent | null`
+**Returns:** `LiturgicalCalendarEvent | null`
 
 ---
 
@@ -315,7 +315,7 @@ const event = await getGlobalLiturgicalEvent('event-uuid-here')
 tsx scripts/generate-global-liturgical-migration.ts 2028
 
 # Review the file
-cat supabase/migrations/YYYYMMDD000004_seed_global_liturgical_events_2028_en_US.sql
+cat supabase/migrations/YYYYMMDD000004_seed_liturgical_calendar_2028_en_US.sql
 
 # Apply migration
 supabase db push
@@ -336,7 +336,7 @@ npm run seed:liturgical -- --year=2028 --locale=en_US
 ### Migration File Naming Convention
 
 ```
-YYYYMMDD000XXX_seed_global_liturgical_events_YYYY_LOCALE.sql
+YYYYMMDD000XXX_seed_liturgical_calendar_YYYY_LOCALE.sql
 ```
 
 **Components:**
@@ -346,9 +346,9 @@ YYYYMMDD000XXX_seed_global_liturgical_events_YYYY_LOCALE.sql
 - `LOCALE` - Locale code (e.g., `en`, `es`, `en_US`)
 
 **Examples:**
-- `20251114000004_seed_global_liturgical_events_2027_en_US.sql`
-- `20251114000005_seed_global_liturgical_events_2027_es.sql`
-- `20251114000006_seed_global_liturgical_events_2028_en_US.sql`
+- `20251114000004_seed_liturgical_calendar_2027_en_US.sql`
+- `20251114000005_seed_liturgical_calendar_2027_es.sql`
+- `20251114000006_seed_liturgical_calendar_2028_en_US.sql`
 
 ---
 
@@ -383,20 +383,20 @@ The Liturgical Calendar API supports multiple locales. Common locales include:
 3. Query with locale parameter:
    ```typescript
    // Query Spanish events
-   const events = await getGlobalLiturgicalEvents('2025-01-01', '2025-12-31', 'es')
+   const events = await getLiturgicalCalendarEvents('2025-01-01', '2025-12-31', 'es')
 
    // Query English (US) events
-   const events = await getGlobalLiturgicalEvents('2025-01-01', '2025-12-31', 'en_US')
+   const events = await getLiturgicalCalendarEvents('2025-01-01', '2025-12-31', 'en_US')
    ```
 
 ---
 
 ## Event Data Structure
 
-### GlobalLiturgicalEvent Interface
+### LiturgicalCalendarEvent Interface
 
 ```typescript
-export interface GlobalLiturgicalEvent {
+export interface LiturgicalCalendarEvent {
   id: string
   event_key: string
   date: string  // YYYY-MM-DD
@@ -475,11 +475,11 @@ export interface GlobalLiturgicalEvent {
 ### Display Liturgical Calendar on Dashboard
 
 ```typescript
-import { getGlobalLiturgicalEventsByMonth } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEventsByMonth } from '@/lib/actions/global-liturgical-events'
 
 export default async function DashboardPage() {
   const now = new Date()
-  const events = await getGlobalLiturgicalEventsByMonth(
+  const events = await getLiturgicalCalendarEventsByMonth(
     now.getFullYear(),
     now.getMonth() + 1,
     'en_US'
@@ -503,10 +503,10 @@ export default async function DashboardPage() {
 ### Pre-fill Mass Form with Liturgical Event
 
 ```typescript
-import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
+import { getLiturgicalCalendarEvents } from '@/lib/actions/global-liturgical-events'
 
 export default async function MassFormPage({ params }: { params: { date: string } }) {
-  const events = await getGlobalLiturgicalEvents(params.date, params.date, 'en_US')
+  const events = await getLiturgicalCalendarEvents(params.date, params.date, 'en_US')
   const liturgicalEvent = events[0]
 
   return (
@@ -544,10 +544,10 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 ### No Events Returned from Query
 
-**Problem:** `getGlobalLiturgicalEvents()` returns empty array
+**Problem:** `getLiturgicalCalendarEvents()` returns empty array
 
 **Solutions:**
-- Check if data exists for the year: `SELECT * FROM global_liturgical_events WHERE year = 2025 LIMIT 1`
+- Check if data exists for the year: `SELECT * FROM liturgical_calendar WHERE year = 2025 LIMIT 1`
 - Verify locale matches: use `'en_US'` not `'en'` (or check what's in database)
 - Check date range is valid and formatted correctly (YYYY-MM-DD)
 
@@ -567,4 +567,4 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 - **Migration Script:** `scripts/generate-global-liturgical-migration.ts`
 - **Import Script:** `scripts/import-liturgical-events.ts`
 - **Server Actions:** `src/lib/actions/global-liturgical-events.ts`
-- **Database Migration:** `supabase/migrations/20251109000001_create_global_liturgical_events_table.sql`
+- **Database Migration:** `supabase/migrations/20251109000001_create_liturgical_calendar_table.sql`

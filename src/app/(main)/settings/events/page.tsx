@@ -15,7 +15,7 @@ export default async function EventsPage() {
   const t = await getTranslations()
 
   // Fetch event event types
-  const eventTypes = await getEventTypes({ system_type: 'event' })
+  const eventTypes = await getEventTypes({ system_type: 'parish-event' })
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },

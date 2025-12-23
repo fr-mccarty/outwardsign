@@ -83,7 +83,7 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
         Save as Template
       </Button>
       <Button asChild variant="outline" className="w-full">
-        <Link href={`/settings/events/${eventType.id}`}>
+        <Link href={`/settings/event-types/${eventType.slug}/scripts`}>
           <Settings className="h-4 w-4 mr-2" />
           Configure Scripts
         </Link>

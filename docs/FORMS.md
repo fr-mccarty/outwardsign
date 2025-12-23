@@ -144,8 +144,35 @@ The following components should be used in all forms for consistency:
 ### Core Form Components:
 - **`SaveButton`** - Handles loading state, shows spinner while saving
 - **`CancelButton`** - Standard cancel button with routing
+- **`FormBottomActions`** - Wrapper for module forms (enforces correct button order)
 - **`FormInput`** - All-in-one form field component (**REQUIRED** for all inputs/selects/textareas)
 - **`EventDisplay`** - Display event date/time/location in forms
+
+### 🔴 Save/Cancel Button Pattern (CRITICAL)
+
+**Button Order:** Cancel FIRST (left), Save SECOND (right)
+
+```tsx
+// ✅ CORRECT - For module forms, use FormBottomActions
+<FormBottomActions
+  isEditing={isEditing}
+  isLoading={isLoading}
+  cancelHref={isEditing ? `/entities/${entity.id}` : '/entities'}
+  moduleName="Entity"
+/>
+
+// ✅ CORRECT - For pickers/dialogs, use components directly
+<div className="flex gap-2 justify-end">
+  <CancelButton onClick={onCancel}>Cancel</CancelButton>
+  <SaveButton isLoading={isLoading}>Save</SaveButton>
+</div>
+```
+
+**Critical Rules:**
+- **Order:** Cancel → Save (left to right)
+- **Sizing:** Both buttons SAME width (NO `flex-1` on either button)
+- **Alignment:** Right-aligned container (`justify-end`)
+- **Variants:** Cancel = outline, Save = primary (default)
 
 ### Picker Components:
 
@@ -156,7 +183,7 @@ The following components should be used in all forms for consistency:
 4. **`ReadingPickerModal`** - Select scripture readings with category filters (Wedding, Funeral, Baptism, etc.)
 5. **`MassPicker`** - Select scheduled masses with search and date display
 6. **`RolePicker`** - Select liturgical ministry roles (Lector, EMHC, Altar Server, Cantor, Usher, etc.)
-7. **`GlobalLiturgicalEventPicker`** - Select global liturgical calendar events (feasts, solemnities, holy days)
+7. **`LiturgicalCalendarEventPicker`** - Select global liturgical calendar events (feasts, solemnities, holy days)
 
 **Additional Components:**
 - **`PetitionEditor`** - Edit petitions with template insertion

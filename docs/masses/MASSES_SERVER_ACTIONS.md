@@ -13,7 +13,7 @@
 
 ## Mass CRUD Operations
 
-**File:** `src/lib/actions/masses.ts`
+**File:** `src/lib/actions/mass-liturgies.ts`
 
 **Key Functions:**
 - `getMasses(filters?)` - Fetch masses with presider/homilist/event relations
@@ -35,7 +35,7 @@
 
 ## Mass Role Instance Functions
 
-**File:** `src/lib/actions/masses.ts`
+**File:** `src/lib/actions/mass-liturgies.ts`
 
 **Functions:**
 - `getMassRoles(massId)` - Get all role assignments for a specific mass
@@ -49,7 +49,7 @@
 
 ## Mass Intention Linking Functions
 
-**File:** `src/lib/actions/masses.ts`
+**File:** `src/lib/actions/mass-liturgies.ts`
 
 **Functions:**
 - `linkMassIntention(massId, massIntentionId)` - Link a mass intention to a mass

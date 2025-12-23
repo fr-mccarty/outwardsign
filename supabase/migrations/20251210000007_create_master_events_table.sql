@@ -1,12 +1,13 @@
 -- Create master_events table (formerly dynamic_events)
 -- Purpose: Master event containers for sacraments (Weddings, Funerals, etc.)
 --          Stores dynamic field_values JSON and manual minister assignment
--- Related: event_types, calendar_events
+-- Related: event_types, calendar_events, liturgical_calendar
 
 CREATE TABLE master_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   event_type_id UUID NOT NULL REFERENCES event_types(id) ON DELETE RESTRICT,
+  liturgical_calendar_id UUID REFERENCES liturgical_calendar(id) ON DELETE SET NULL,
   field_values JSONB NOT NULL DEFAULT '{}'::jsonb,
   status TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -25,6 +26,7 @@ GRANT ALL ON master_events TO service_role;
 -- Indexes
 CREATE INDEX idx_master_events_parish_id ON master_events(parish_id);
 CREATE INDEX idx_master_events_event_type_id ON master_events(event_type_id);
+CREATE INDEX idx_master_events_liturgical_calendar_id ON master_events(liturgical_calendar_id);
 CREATE INDEX idx_master_events_field_values_gin ON master_events USING GIN (field_values);
 CREATE INDEX idx_master_events_status ON master_events(status);
 
@@ -85,4 +87,5 @@ CREATE TRIGGER master_events_updated_at
 
 -- Comments
 COMMENT ON TABLE master_events IS 'Master events (sacrament containers) with JSONB field_values. ON DELETE RESTRICT for event_type_id prevents deletion of event types with existing events.';
+COMMENT ON COLUMN master_events.liturgical_calendar_id IS 'Optional link to liturgical_calendar for events tied to a specific liturgical day (e.g., Christmas Mass, Easter Vigil). ON DELETE SET NULL preserves the event if the calendar entry is removed.';
 COMMENT ON COLUMN master_events.status IS 'Event status (values defined in application constants)';

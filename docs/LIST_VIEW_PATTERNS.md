@@ -73,7 +73,7 @@ This document catalogs the three main list view patterns used throughout the app
 | Quinceaneras | `/quinceaneras` | `status` (module) |
 | Presentations | `/presentations` | `status` (module) |
 | Events | `/events` | - |
-| Masses | `/masses` | `status` (mass) |
+| Masses | `/mass-liturgies` | `status` (mass) |
 | Mass Intentions | `/mass-intentions` | `status` (mass-intention) |
 | Mass Times | `/mass-times` | `is_active` → ACTIVE/INACTIVE |
 | Mass Role Templates | `/mass-role-templates` | `is_active` → ACTIVE/INACTIVE |

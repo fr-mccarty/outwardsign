@@ -35,25 +35,26 @@ Outward Sign uses a **unified 3-level event data model** that consolidates all p
 
 **System Types (3 Categories):**
 All event_types belong to one of three **system types** (stored as enum field with CHECK constraint):
-- **mass** - Masses (system_type = 'mass')
+- **mass-liturgy** - Mass Liturgies (system_type = 'mass-liturgy')
 - **special-liturgy** - Special Liturgies including sacramental celebrations (system_type = 'special-liturgy')
-- **event** - Events (system_type = 'event')
+- **parish-event** - Parish Events (system_type = 'parish-event')
 
 System type metadata (icons, bilingual labels) is stored in application constants at `src/lib/constants/system-types.ts`, not in the database.
 
 **Key Design Decisions:**
 - Every calendar_event MUST have a master_event (NOT NULL FK)
 - Titles are computed (not stored) from master_event + field_name
-- Roles belong to master_events, NOT calendar_events
+- Roles are defined in event_types.role_definitions (JSONB), assignments in people_event_assignments
+- Role capability is managed through groups + group_members
 - Scripts are generated from master_events, NOT calendar_events
 
 ### Code Modules by System Type
 
 | System Type | Module Route | Event Types Examples |
 |-------------|-------------|----------------------|
-| **mass** | `/masses` | Sunday Mass, Daily Mass, Funeral Mass |
+| **mass-liturgy** | `/mass-liturgies` | Sunday Mass, Daily Mass, Funeral Mass |
 | **special-liturgy** | `/special-liturgies/[event_type_slug]` | Wedding, Baptism, Funeral, Easter Vigil, Stations of the Cross |
-| **event** | `/events/[event_type_id]` | Bible Study, Zumba, Parish Picnic, Finance Committee Meeting |
+| **parish-event** | `/events/[event_type_id]` | Bible Study, Zumba, Parish Picnic, Finance Committee Meeting |
 
 **Event Types are user-configured** - Parish administrators create event types through Settings pages (Settings → Masses, Settings → Special Liturgies, etc.) with custom fields, role definitions, and script templates.
 
@@ -90,14 +91,14 @@ System type metadata (icons, bilingual labels) is stored in application constant
    - Create Mass Intention (`/mass-intentions/create`)
    - Report (`/mass-intentions/report`)
 7. **Mass Scheduling** (Collapsible Section)
-   - Schedule Masses (`/masses/schedule`)
+   - Schedule Masses (`/mass-liturgies/schedule`)
    - Mass Times Templates (`/mass-times-templates`)
    - Mass Role Templates (`/mass-role-templates`)
    - Mass Roles (`/mass-roles`)
    - Role Members (`/mass-role-members`)
 8. **Masses** (Collapsible Section)
-   - Our Masses (`/masses`)
-   - New Mass (`/masses/create`)
+   - Our Masses (`/mass-liturgies`)
+   - New Mass (`/mass-liturgies/create`)
 9. **People** (Collapsible Section) - Always visible
    - Our People (`/people`)
    - Create Person (`/people/create`)
@@ -124,32 +125,43 @@ When Event Types are configured, they appear in a separate "Event Types" section
 
 All core modules use the **unified event data model** with master_events → calendar_events hierarchy.
 
-### Masses Module
+### Mass Liturgies Module
 
 **Purpose:** Mass celebrations with liturgical calendar integration
 
-**Route:** `/masses`
+**Route:** `/mass-liturgies`
 
-**System Type:** `mass`
+**System Type:** `mass-liturgy`
 
 **Database Tables:**
-- `master_events` (with event_type_id → event_types where system_type = 'mass')
-- `calendar_events` (scheduled occurrences)
-- `master_event_roles` (role assignments)
+- `master_events` (with event_type_id → event_types where system_type = 'mass-liturgy')
+- `calendar_events` (scheduled occurrences - individual Mass times)
+- `people_event_assignments` (role assignments via calendar_events)
+- `mass_intentions` (Mass intention requests linked to calendar_events)
 
 **Key Features:**
-- Standard 8-file module structure (follows masses module pattern)
+- Standard 8-file module structure (reference implementation for modules)
 - Mass scheduling wizard for bulk creation
-- Role assignment (Lector, EMHC, Altar Server, etc.) via master_event_roles
-- Liturgical calendar integration
+- Role assignment (Lector, EMHC, Altar Server, etc.) via people_event_assignments
+- Role capability managed through groups + group_members
+- Liturgical calendar integration (master_event = Liturgical Day, calendar_events = Mass Times)
 - Script generation from event_type templates
+- Roster generation showing all Mass times for a liturgical day with role assignments
+- Print/PDF/Word export for rosters
+
+**Three-Concern Separation for Roles:**
+1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+2. **Role Capability** - Managed through groups + group_members (who CAN serve)
+3. **Role Assignments** - Stored in people_event_assignments (who IS serving at specific Mass times)
 
 **Key Files:**
-- `src/app/(main)/masses/page.tsx` - List page (server)
-- `src/app/(main)/masses/masses-list-client.tsx` - List client
-- `src/app/(main)/masses/mass-form.tsx` - Unified form
-- `src/app/(main)/masses/[id]/page.tsx` - View page
-- `src/app/(main)/masses/[id]/edit/page.tsx` - Edit page
+- `src/app/(main)/mass-liturgies/page.tsx` - List page (server)
+- `src/app/(main)/mass-liturgies/mass-liturgies-list-client.tsx` - List client
+- `src/app/(main)/mass-liturgies/mass-liturgy-form.tsx` - Unified form
+- `src/app/(main)/mass-liturgies/[id]/page.tsx` - View page
+- `src/app/(main)/mass-liturgies/[id]/edit/page.tsx` - Edit page
+- `src/app/(main)/mass-liturgies/[id]/roster/page.tsx` - Roster view page (shows all Mass times for liturgical day)
+- `src/app/print/mass-liturgies/[id]/roster/page.tsx` - Print roster page
 
 ### Special Liturgies Module
 
@@ -182,12 +194,12 @@ All core modules use the **unified event data model** with master_events → cal
 
 **Route:** `/events/[event_type_id]`
 
-**System Type:** `event`
+**System Type:** `parish-event`
 
 **Database Tables:**
-- `master_events` (with event_type_id → event_types where system_type = 'event')
+- `master_events` (with event_type_id → event_types where system_type = 'parish-event')
 - `calendar_events` (scheduled occurrences)
-- `master_event_roles` (role assignments for volunteers)
+- `people_event_assignments` (role assignments for volunteers)
 
 **Architecture:**
 - Standard 8-file module structure
@@ -332,6 +344,15 @@ These modules support the Mass Scheduling functionality:
 - Configure scripts and templates
 - Set icons and display order
 
+**Detail Pages:**
+- `/settings/event-types/{slug}` - Event type configuration hub
+- `/settings/event-types/{slug}/fields` - Custom field definitions management
+- `/settings/event-types/{slug}/scripts` - Script templates (special liturgies only)
+- `/settings/event-types/{slug}/scripts/[scriptId]` - Script builder with sections
+
+**Key Documentation:**
+- [EVENT_TYPE_CONFIGURATION.md](./EVENT_TYPE_CONFIGURATION.md) - Complete configuration guide
+
 ### Content Library
 
 **Route:** `/settings/content-library`
@@ -432,9 +453,9 @@ All module labels are provided in **English** and **Spanish**.
 
 | Module | English | Spanish | Icon |
 |--------|---------|---------|------|
-| **Masses** | Masses | Misas | BookOpen |
+| **Mass Liturgies** | Mass Liturgies | Liturgias de Misa | BookOpen |
 | **Special Liturgies** | Special Liturgies | Liturgias Especiales | Star |
-| **Events** | Events | Eventos | CalendarDays |
+| **Parish Events** | Parish Events | Eventos Parroquiales | CalendarDays |
 
 **Other Core Modules:**
 
@@ -470,8 +491,8 @@ Icons are from **Lucide React**.
 
 | Module | Icon Component |
 |--------|---------------|
-| **Events** | `CalendarDays` |
-| **Masses** | `CirclePlus` |
+| **Parish Events** | `CalendarDays` |
+| **Mass Liturgies** | `CirclePlus` |
 | **Mass Intentions** | `ScrollText` |
 | **People** | `User` |
 | **Families** | `Users2` |
@@ -489,8 +510,8 @@ Icons are from **Lucide React**.
 
 | Module | Base Route | Patterns |
 |--------|------------|----------|
-| **Events** | `/events` | `/events`, `/events/create`, `/events/[type]/[id]`, `/events/[type]/[id]/edit` |
-| **Masses** | `/masses` | `/masses`, `/masses/create`, `/masses/[id]`, `/masses/[id]/edit`, `/masses/schedule` |
+| **Parish Events** | `/events` | `/events`, `/events/create`, `/events/[type]/[id]`, `/events/[type]/[id]/edit` |
+| **Mass Liturgies** | `/mass-liturgies` | `/mass-liturgies`, `/mass-liturgies/create`, `/mass-liturgies/[id]`, `/mass-liturgies/[id]/edit`, `/mass-liturgies/[id]/roster`, `/mass-liturgies/schedule` |
 | **Mass Intentions** | `/mass-intentions` | `/mass-intentions`, `/mass-intentions/create`, `/mass-intentions/[id]`, `/mass-intentions/[id]/edit`, `/mass-intentions/report` |
 
 ### Supporting Module Routes
@@ -517,6 +538,10 @@ Icons are from **Lucide React**.
 |--------|-------|
 | **Settings Hub** | `/settings` |
 | **Event Types** | `/settings/event-types` |
+| **Event Type Detail Hub** | `/settings/event-types/[slug]` |
+| **Event Type Fields** | `/settings/event-types/[slug]/fields` |
+| **Event Type Scripts** | `/settings/event-types/[slug]/scripts` |
+| **Script Builder** | `/settings/event-types/[slug]/scripts/[scriptId]` |
 | **Content Library** | `/settings/content-library` |
 | **Category Tags** | `/settings/category-tags` |
 | **Custom Lists** | `/settings/custom-lists` |
@@ -538,16 +563,17 @@ Icons are from **Lucide React**.
 | **event_types** | User-defined templates for all system types | `event_type` |
 | **master_events** | Specific event instances (John & Jane's Wedding, Easter Vigil 2025) | `master_event` |
 | **calendar_events** | Date/time/location entries that appear on calendar | `calendar_event` |
-| **master_event_roles** | Role assignments for master_events | `master_event_role` |
+| **people_event_assignments** | Role assignments for calendar_events | `people_event_assignment` |
 
 **Key Relationships:**
-- `event_types.system_type` → enum ('mass', 'special-liturgy', 'event')
+- `event_types.system_type` → enum ('mass-liturgy', 'special-liturgy', 'parish-event')
 - `master_events.event_type_id` → `event_types.id` (NOT NULL)
 - `calendar_events.master_event_id` → `master_events.id` (NOT NULL)
 - `calendar_events.input_field_definition_id` → `input_field_definitions.id` (NOT NULL)
-- `master_event_roles.master_event_id` → `master_events.id`
+- `people_event_assignments.calendar_event_id` → `calendar_events.id`
+- `people_event_assignments.input_field_definition_id` → `input_field_definitions.id` (role definition)
 
-**Note:** The `masses` table was deleted and migrated to the unified structure. All masses are now `master_events` with `event_type_id` pointing to an event_type where `system_type = 'mass'`.
+**Note:** The legacy `masses` table and `mass_roles` system were removed. All masses are now `master_events` with `event_type_id` pointing to an event_type where `system_type = 'mass-liturgy'`. Role assignments use the unified `people_event_assignments` table, with role capability managed through `groups` + `group_members`.
 
 ### Other Core Tables
 

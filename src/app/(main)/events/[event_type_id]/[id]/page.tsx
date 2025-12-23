@@ -39,6 +39,14 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
     notFound()
   }
 
+  // Redirect mass-liturgy and special-liturgy types to their dedicated modules
+  if (eventType.system_type === 'mass-liturgy') {
+    redirect(`/mass-liturgies/${id}`)
+  }
+  if (eventType.system_type === 'special-liturgy') {
+    redirect(`/special-liturgies/${eventType.slug}/${id}`)
+  }
+
   // Fetch scripts for this event type
   const scripts = await getScripts(event.event_type_id)
 

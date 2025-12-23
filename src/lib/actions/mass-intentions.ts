@@ -5,7 +5,7 @@ import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { MassIntention, Person, MasterEvent } from '@/lib/types'
+import { MassIntention, Person, CalendarEvent } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
 import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
 import {
@@ -24,7 +24,7 @@ export interface MassIntentionFilterParams {
 }
 
 export interface MassIntentionWithNames extends MassIntention {
-  master_event?: MasterEvent | null
+  calendar_event?: CalendarEvent | null
   requested_by?: Person | null
 }
 
@@ -68,7 +68,7 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
     .from('mass_intentions')
     .select(`
       *,
-      master_event:master_events(*),
+      calendar_event:calendar_events(*),
       requested_by:people!requested_by_id(*)
     `)
 
@@ -178,7 +178,7 @@ export async function getMassIntentionsPaginated(params?: PaginatedParams): Prom
     .from('mass_intentions')
     .select(`
       *,
-      master_event:master_events(*),
+      calendar_event:calendar_events(*),
       requested_by:people!requested_by_id(*)
     `, { count: 'exact' })
 
@@ -256,7 +256,7 @@ export async function getMassIntention(id: string): Promise<MassIntention | null
 
 // Enhanced mass intention interface with all related data
 export interface MassIntentionWithRelations extends MassIntention {
-  master_event?: MasterEvent | null
+  calendar_event?: CalendarEvent | null
   requested_by?: Person | null
 }
 
@@ -282,18 +282,81 @@ export async function getMassIntentionWithRelations(id: string): Promise<MassInt
 
   // Fetch all related data in parallel
   const [
-    masterEventData,
+    calendarEventData,
     requestedByData
   ] = await Promise.all([
-    intention.master_event_id ? supabase.from('master_events').select('*').eq('id', intention.master_event_id).single() : Promise.resolve({ data: null }),
+    intention.calendar_event_id ? supabase.from('calendar_events').select('*').eq('id', intention.calendar_event_id).single() : Promise.resolve({ data: null }),
     intention.requested_by_id ? supabase.from('people').select('*').eq('id', intention.requested_by_id).single() : Promise.resolve({ data: null })
   ])
 
   return {
     ...intention,
-    master_event: masterEventData.data,
+    calendar_event: calendarEventData.data,
     requested_by: requestedByData.data
   }
+}
+
+/**
+ * Get all mass intentions for a specific calendar event
+ */
+export async function getMassIntentionsByCalendarEvent(calendarEventId: string): Promise<MassIntentionWithNames[]> {
+  const { supabase } = await createAuthenticatedClient()
+
+  const { data, error } = await supabase
+    .from('mass_intentions')
+    .select(`
+      *,
+      requested_by:people!requested_by_id(*)
+    `)
+    .eq('calendar_event_id', calendarEventId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    logError('Error fetching mass intentions for calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    throw new Error('Failed to fetch mass intentions')
+  }
+
+  return data || []
+}
+
+/**
+ * Get all mass intentions for multiple calendar events (batch fetch)
+ * Returns a map of calendar_event_id -> intentions
+ */
+export async function getMassIntentionsByCalendarEvents(calendarEventIds: string[]): Promise<Map<string, MassIntentionWithNames[]>> {
+  if (calendarEventIds.length === 0) {
+    return new Map()
+  }
+
+  const { supabase } = await createAuthenticatedClient()
+
+  const { data, error } = await supabase
+    .from('mass_intentions')
+    .select(`
+      *,
+      requested_by:people!requested_by_id(*)
+    `)
+    .in('calendar_event_id', calendarEventIds)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    logError('Error fetching mass intentions for calendar events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    throw new Error('Failed to fetch mass intentions')
+  }
+
+  // Group by calendar_event_id
+  const intentionsMap = new Map<string, MassIntentionWithNames[]>()
+  for (const intention of data || []) {
+    if (intention.calendar_event_id) {
+      const existing = intentionsMap.get(intention.calendar_event_id) || []
+      existing.push(intention)
+      intentionsMap.set(intention.calendar_event_id, existing)
+    }
+  }
+
+  return intentionsMap
 }
 
 export async function createMassIntention(data: CreateMassIntentionData): Promise<MassIntention> {
@@ -308,7 +371,7 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
     .insert([
       {
         parish_id: parishId,
-        master_event_id: data.master_event_id || null,
+        calendar_event_id: data.calendar_event_id || null,
         mass_offered_for: data.mass_offered_for || null,
         requested_by_id: data.requested_by_id || null,
         date_received: data.date_received || null,
@@ -384,7 +447,7 @@ export async function deleteMassIntention(id: string): Promise<void> {
 }
 
 export interface MassIntentionReportData extends MassIntention {
-  master_event?: MasterEvent & { calendar_events?: { start_datetime: string }[] } | null
+  calendar_event?: CalendarEvent | null
   requested_by?: Person | null
 }
 
@@ -409,15 +472,12 @@ export async function getMassIntentionsReport(
   const startDate = params?.startDate
   const endDate = params?.endDate
 
-  // First, get all mass intentions with their related master events and calendar events
+  // First, get all mass intentions with their related calendar events
   const { data: intentions, error } = await supabase
     .from('mass_intentions')
     .select(`
       *,
-      master_event:master_events(
-        *,
-        calendar_events(start_datetime)
-      ),
+      calendar_event:calendar_events(*),
       requested_by:people!requested_by_id(*)
     `)
     .order('created_at', { ascending: false })
@@ -435,16 +495,15 @@ export async function getMassIntentionsReport(
     }
   }
 
-  // Filter by date range on the master event's primary calendar event start_datetime
+  // Filter by date range on the calendar event's start_datetime
   const filteredIntentions = intentions.filter(intention => {
-    // If no master event or calendar events, exclude from report
-    const primaryCalendarEvent = intention.master_event?.calendar_events?.[0]
-    if (!primaryCalendarEvent?.start_datetime) {
+    // If no calendar event, exclude from report
+    if (!intention.calendar_event?.start_datetime) {
       return false
     }
 
     // Extract just the date part from the datetime
-    const massDate = primaryCalendarEvent.start_datetime.split('T')[0]
+    const massDate = intention.calendar_event.start_datetime.split('T')[0]
 
     // If both dates provided, check range
     if (startDate && endDate) {

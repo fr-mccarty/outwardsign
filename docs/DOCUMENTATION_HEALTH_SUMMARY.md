@@ -36,13 +36,13 @@ Files approaching the 1000-line limit but well-organized:
 **After:** Split into focused subdirectory
 
 **Created Files:**
-- `docs/masses/README.md` - Navigation hub
-- `docs/masses/MASSES_OVERVIEW.md` - Implementation status
-- `docs/masses/MASSES_ROLE_SYSTEM.md` - Role definitions and templates
-- `docs/masses/MASSES_SCHEDULING.md` - Scheduling workflows
-- `docs/masses/MASSES_DATABASE.md` - Schema reference
-- `docs/masses/MASSES_SERVER_ACTIONS.md` - Server actions
-- `docs/masses/MASSES_UI.md` - UI specifications
+- `docs/mass-liturgies/README.md` - Navigation hub
+- `docs/mass-liturgies/MASSES_OVERVIEW.md` - Implementation status
+- `docs/mass-liturgies/MASSES_ROLE_SYSTEM.md` - Role definitions and templates
+- `docs/mass-liturgies/MASSES_SCHEDULING.md` - Scheduling workflows
+- `docs/mass-liturgies/MASSES_DATABASE.md` - Schema reference
+- `docs/mass-liturgies/MASSES_SERVER_ACTIONS.md` - Server actions
+- `docs/mass-liturgies/MASSES_UI.md` - UI specifications
 
 **Original File:** Moved to `docs/archive/MASSES.md`
 

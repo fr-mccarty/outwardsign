@@ -4,7 +4,7 @@
 
 This document provides an overview and navigation guide for the 8 main component files that make up each module in Outward Sign. For detailed implementation patterns, code examples, and best practices, see the linked pattern documents.
 
-**Reference Module:** Always use the Wedding module (`src/app/(main)/weddings/`) as the canonical implementation example.
+**Reference Module:** Always use the Mass Liturgies module (`src/app/(main)/mass-liturgies/`) as the canonical implementation example.
 
 ---
 

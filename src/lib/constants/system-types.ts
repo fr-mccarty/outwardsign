@@ -2,12 +2,12 @@
  * System Types for Unified Event Data Model
  *
  * Defines the three system types that categorize all parish activities:
- * - mass: Regular and special Masses
+ * - mass-liturgy: Regular and special Masses
  * - special-liturgy: Non-Mass liturgical celebrations (including sacraments like Weddings, Baptisms, etc.)
- * - event: Non-liturgical parish activities
+ * - parish-event: Non-liturgical parish activities
  */
 
-export const SYSTEM_TYPE_VALUES = ['mass', 'special-liturgy', 'event'] as const;
+export const SYSTEM_TYPE_VALUES = ['mass-liturgy', 'special-liturgy', 'parish-event'] as const;
 export type SystemType = typeof SYSTEM_TYPE_VALUES[number];
 
 export interface SystemTypeMetadata {
@@ -18,10 +18,10 @@ export interface SystemTypeMetadata {
 }
 
 export const SYSTEM_TYPE_METADATA: Record<SystemType, SystemTypeMetadata> = {
-  mass: {
-    slug: 'mass',
-    name_en: 'Masses',
-    name_es: 'Misas',
+  'mass-liturgy': {
+    slug: 'mass-liturgy',
+    name_en: 'Mass Liturgies',
+    name_es: 'Liturgias de Misa',
     icon: 'BookOpen',
   },
   'special-liturgy': {
@@ -30,10 +30,10 @@ export const SYSTEM_TYPE_METADATA: Record<SystemType, SystemTypeMetadata> = {
     name_es: 'Liturgias Especiales',
     icon: 'Star',
   },
-  event: {
-    slug: 'event',
-    name_en: 'Events',
-    name_es: 'Eventos',
+  'parish-event': {
+    slug: 'parish-event',
+    name_en: 'Parish Events',
+    name_es: 'Eventos Parroquiales',
     icon: 'CalendarDays',
   },
 } as const;

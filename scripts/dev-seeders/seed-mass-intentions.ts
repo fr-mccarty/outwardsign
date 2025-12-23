@@ -47,7 +47,7 @@ export async function seedMassIntentions(
 
   const massEventTypeIds = massEventTypes?.map(et => et.id) || []
 
-  // Get existing masses to link some intentions to
+  // Get existing calendar events for masses to link some intentions to
   const { data: existingMasses } = await supabase
     .from('master_events')
     .select('id')
@@ -57,7 +57,18 @@ export async function seedMassIntentions(
     .order('created_at', { ascending: false })
     .limit(10)
 
-  const massIds = existingMasses?.map(m => m.id) || []
+  const masterEventIds = existingMasses?.map(m => m.id) || []
+
+  // Get calendar events for these masses
+  const { data: calendarEvents } = await supabase
+    .from('calendar_events')
+    .select('id')
+    .in('master_event_id', masterEventIds)
+    .is('deleted_at', null)
+    .order('start_datetime', { ascending: false })
+    .limit(10)
+
+  const calendarEventIds = calendarEvents?.map(ce => ce.id) || []
 
   // Helper to get a date in the past or future
   const getDate = (daysOffset: number) => {
@@ -69,13 +80,13 @@ export async function seedMassIntentions(
   // Create mass intentions data
   const massIntentionsToCreate = []
 
-  // 1. Create 5 mass intentions linked to existing masses
-  for (let i = 0; i < Math.min(5, massIds.length); i++) {
+  // 1. Create 5 mass intentions linked to existing calendar events
+  for (let i = 0; i < Math.min(5, calendarEventIds.length); i++) {
     const person = people[i]
     const requester = people[(i + 5) % people.length]
     massIntentionsToCreate.push({
       parish_id: parishId,
-      master_event_id: massIds[i],
+      calendar_event_id: calendarEventIds[i],
       mass_offered_for: `${INTENTION_TEXTS[i % INTENTION_TEXTS.length]} ${person.first_name} ${person.last_name}`,
       requested_by_id: requester.id,
       date_received: getDate(-7 - i),
@@ -86,14 +97,14 @@ export async function seedMassIntentions(
     })
   }
 
-  // 2. Create 5 standalone mass intentions (not yet assigned to a mass)
+  // 2. Create 5 standalone mass intentions (not yet assigned to a calendar event)
   for (let i = 0; i < 5; i++) {
     const person = people[(i + 3) % people.length]
     const requester = people[(i + 7) % people.length]
     const statusIndex = i % 4
     massIntentionsToCreate.push({
       parish_id: parishId,
-      master_event_id: null, // Standalone - not yet assigned
+      calendar_event_id: null, // Standalone - not yet assigned
       mass_offered_for: `${INTENTION_TEXTS[(i + 3) % INTENTION_TEXTS.length]} ${person.first_name} ${person.last_name}`,
       requested_by_id: requester.id,
       date_received: getDate(-14 + i),
@@ -110,7 +121,7 @@ export async function seedMassIntentions(
     const requester = people[(i + 2) % people.length]
     massIntentionsToCreate.push({
       parish_id: parishId,
-      master_event_id: null,
+      calendar_event_id: null,
       mass_offered_for: `${INTENTION_TEXTS[(i + 5) % INTENTION_TEXTS.length]} ${person.first_name} ${person.last_name}`,
       requested_by_id: requester.id,
       date_received: getDate(-30 - i * 7),
@@ -125,17 +136,17 @@ export async function seedMassIntentions(
   const { data: insertedIntentions, error } = await supabase
     .from('mass_intentions')
     .insert(massIntentionsToCreate)
-    .select('id, status, master_event_id')
+    .select('id, status, calendar_event_id')
 
   if (error) {
     logWarning(`Error creating mass intentions: ${error.message}`)
     return { success: false }
   }
 
-  const linkedCount = insertedIntentions?.filter(i => i.master_event_id !== null).length || 0
-  const standaloneCount = insertedIntentions?.filter(i => i.master_event_id === null).length || 0
+  const linkedCount = insertedIntentions?.filter(i => i.calendar_event_id !== null).length || 0
+  const standaloneCount = insertedIntentions?.filter(i => i.calendar_event_id === null).length || 0
 
-  logSuccess(`Created ${insertedIntentions?.length || 0} mass intentions (${linkedCount} linked to masses, ${standaloneCount} standalone)`)
+  logSuccess(`Created ${insertedIntentions?.length || 0} mass intentions (${linkedCount} linked to calendar events, ${standaloneCount} standalone)`)
 
   return { success: true, count: insertedIntentions?.length || 0 }
 }

@@ -23,8 +23,7 @@ import {
   seedEvents,
   seedFamilies,
   seedReadings,
-  seedWeddingsAndFunerals,
-  seedMassRoleAssignments
+  seedWeddingsAndFunerals
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
@@ -213,7 +212,6 @@ async function seedDevData() {
   // 5. Delete other parish data
   await supabase.from('petition_templates').delete().eq('parish_id', parishId)
   await supabase.from('group_roles').delete().eq('parish_id', parishId)
-  await supabase.from('mass_roles').delete().eq('parish_id', parishId)
   // 6. Delete tag_assignments before category_tags
   await supabase.from('tag_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   await supabase.from('category_tags').delete().eq('parish_id', parishId)
@@ -229,7 +227,6 @@ async function seedDevData() {
     const result = await seedParishData(supabase, parishId)
     logSuccess(`Petition templates: ${result.petitionTemplates.length}`)
     logSuccess(`Group roles: ${result.groupRoles.length}`)
-    logSuccess(`Mass roles: ${result.massRoles.length}`)
     logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
     logSuccess(`General event types: ${result.generalEventTypesCount}`)
     logSuccess(`Mass event types: ${result.massEventTypesCount}`)
@@ -289,13 +286,6 @@ async function seedDevData() {
   // =====================================================
   if (groups && people) {
     await seedGroupMemberships(ctx, groups, people)
-  }
-
-  // =====================================================
-  // Seed Mass Role Memberships
-  // =====================================================
-  if (people) {
-    await seedMassRoleAssignments(ctx, people)
   }
 
   // =====================================================

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Mail, Phone, Sparkles, Loader2 } from 'lucide-react'
 import { PronunciationToggle } from '@/components/pronunciation-toggle'
 import { getPeoplePaginated, createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl, getPersonAvatarSignedUrls } from '@/lib/actions/people'
+import { getPeopleByGroupIds } from '@/lib/actions/groups'
 import { generatePronunciation } from '@/lib/actions/generate-pronunciation'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
@@ -36,7 +37,7 @@ interface PeoplePickerProps {
   editMode?: boolean // Open directly to edit form
   personToEdit?: Person | null // Person being edited
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
-  filterByMassRole?: string // Filter people by mass role membership
+  suggestedGroupIds?: string[] // Group IDs to filter suggested people
 }
 
 // Default additional visible fields - defined outside component to prevent re-creation
@@ -61,9 +62,10 @@ export function PeoplePicker({
   editMode = false,
   personToEdit = null,
   autoSetSex,
-  filterByMassRole,
+  suggestedGroupIds,
 }: PeoplePickerProps) {
   const [people, setPeople] = useState<Person[]>([])
+  const [suggestedPeople, setSuggestedPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -147,13 +149,38 @@ export function PeoplePicker({
     [requiredFields]
   )
 
-  // Load people when dialog opens or when page/search changes
+  // Memoize loadSuggestedPeople to prevent re-creation
+  const loadSuggestedPeople = useCallback(async () => {
+    if (!suggestedGroupIds || suggestedGroupIds.length === 0) {
+      setSuggestedPeople([])
+      return
+    }
+
+    try {
+      const suggested = await getPeopleByGroupIds(suggestedGroupIds)
+      setSuggestedPeople(suggested as Person[])
+    } catch (error) {
+      console.error('Error loading suggested people:', error)
+      // Don't show error toast - this is optional functionality
+      setSuggestedPeople([])
+    }
+  }, [suggestedGroupIds])
+
+  // Load suggested people from groups when dialog opens
+  useEffect(() => {
+    if (open && suggestedGroupIds && suggestedGroupIds.length > 0) {
+      loadSuggestedPeople()
+    } else {
+      setSuggestedPeople([])
+    }
+  }, [open, suggestedGroupIds, loadSuggestedPeople])
+
+  // Load all people when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
       loadPeople(currentPage, debouncedSearchQuery)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, currentPage, debouncedSearchQuery]) // loadPeople is stable
+  }, [open, currentPage, debouncedSearchQuery])
 
   const loadPeople = async (page: number, search: string) => {
     try {
@@ -163,7 +190,6 @@ export function PeoplePicker({
         offset,
         limit: PAGE_SIZE,
         search,
-        massRoleId: filterByMassRole,
       })
       setPeople(result.items)
       setTotalCount(result.totalCount)
@@ -612,9 +638,15 @@ export function PeoplePicker({
     return updatedPerson
   }
 
+  // Check if a person is in the suggested list
+  const isSuggestedPerson = (person: Person) => {
+    return suggestedPeople.some(sp => sp.id === person.id)
+  }
+
   // Custom render for person list items
   const renderPersonItem = (person: Person) => {
     const isSelected = selectedPersonId === person.id
+    const isSuggested = isSuggestedPerson(person)
 
     return (
       <div className="flex items-center gap-3">
@@ -633,6 +665,11 @@ export function PeoplePicker({
             {isSelected && (
               <Badge variant="secondary" className="text-xs">
                 Selected
+              </Badge>
+            )}
+            {isSuggested && !isSelected && (
+              <Badge variant="default" className="text-xs">
+                Suggested
               </Badge>
             )}
           </div>
@@ -656,11 +693,28 @@ export function PeoplePicker({
     )
   }
 
+  // Combine and sort people to show suggested first
+  const sortedPeople = useMemo(() => {
+    if (!suggestedPeople.length) {
+      return people
+    }
+
+    // Create a Set of suggested IDs for quick lookup
+    const suggestedIds = new Set(suggestedPeople.map(p => p.id))
+
+    // Separate people into suggested and not suggested
+    const suggested = people.filter(p => suggestedIds.has(p.id))
+    const notSuggested = people.filter(p => !suggestedIds.has(p.id))
+
+    // Return suggested first, then the rest
+    return [...suggested, ...notSuggested]
+  }, [people, suggestedPeople])
+
   return (
     <CorePicker<Person>
       open={open}
       onOpenChange={onOpenChange}
-      items={people}
+      items={sortedPeople}
       selectedItem={selectedPerson}
       onSelect={onSelect}
       title="Select Person"

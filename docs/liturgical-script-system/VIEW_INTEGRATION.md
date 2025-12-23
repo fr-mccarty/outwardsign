@@ -357,7 +357,7 @@ When adding liturgical scripts to a new module:
 - Funeral module: `src/app/(main)/funerals/[id]/funeral-view-client.tsx`
 - Baptism module: `src/app/(main)/baptisms/[id]/baptism-view-client.tsx`
 - Presentation module: `src/app/(main)/presentations/[id]/presentation-view-client.tsx`
-- Mass module: `src/app/(main)/masses/[id]/mass-view-client.tsx`
+- Mass module: `src/app/(main)/mass-liturgies/[id]/mass-view-client.tsx`
 
 ---
 

@@ -135,7 +135,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
 
       const nextEvents = await getAllMasterEvents({
         search: filters.getFilterValue('search'),
-        systemType: 'event',
+        systemType: 'parish-event',
         status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
         eventTypeId,
         sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],

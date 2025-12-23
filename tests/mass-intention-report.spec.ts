@@ -8,8 +8,8 @@ test.describe('Mass Intention Report', () => {
    */
   async function createMassWithDate(page: any, date: string): Promise<string> {
     // Navigate to mass creation page
-    await page.goto('/masses/create');
-    await expect(page).toHaveURL('/masses/create');
+    await page.goto('/mass-liturgies/create');
+    await expect(page).toHaveURL('/mass-liturgies/create');
 
     // Click "Select Event" button to open EventPicker
     await page.getByRole('button', { name: /Select Event/i }).click();
@@ -52,7 +52,7 @@ test.describe('Mass Intention Report', () => {
     await submitButton.click();
 
     // Wait for redirect (mass form redirects to edit page after creation)
-    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-liturgies\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the mass ID from URL (remove '/edit' from the end)
     const massUrl = page.url();

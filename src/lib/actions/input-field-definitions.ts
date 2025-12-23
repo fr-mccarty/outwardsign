@@ -149,6 +149,7 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
         list_id: data.list_id ?? null,
         is_key_person: data.is_key_person ?? false,
         is_primary: data.is_primary ?? false,
+        input_filter_tags: data.input_filter_tags ?? [],
         order: newOrder
       }
     ])

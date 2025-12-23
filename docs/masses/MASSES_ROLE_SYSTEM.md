@@ -1,6 +1,15 @@
 # Mass Module - Role System Architecture
 
-> **Purpose:** Role definitions, templates, membership, and availability tracking for Mass ministry assignments.
+> **⚠️ DEPRECATED:** This document describes the legacy `mass_roles` system that was removed in December 2024. The Mass Liturgies module now uses the unified event data model with three-concern separation:
+> 1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+> 2. **Role Capability** - Managed through groups + group_members (who CAN serve)
+> 3. **Role Assignments** - Stored in people_event_assignments (who IS serving)
+>
+> For current implementation, see [MASSES_OVERVIEW.md](./MASSES_OVERVIEW.md)
+
+---
+
+> **Legacy Purpose:** Role definitions, templates, membership, and availability tracking for Mass ministry assignments.
 
 ## Table of Contents
 
@@ -141,7 +150,7 @@ mass_role_instances (Actual Assignments)
 
 **Step 4:** Create Mass with template (recurring)
 - Mass created with `mass_roles_template_id` reference
-- File reference: `src/lib/actions/masses.ts:createMass()`
+- File reference: `src/lib/actions/mass-liturgies.ts:createMass()`
 
 **Step 5:** Generate role instances (automatic)
 - System creates `mass_role_instances` based on template items

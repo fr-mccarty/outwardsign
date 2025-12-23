@@ -37,7 +37,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
   const allEventTypes = await getActiveEventTypes()
 
   // Filter to only show 'event' system type event types for the dropdown
-  const eventTypes = allEventTypes.filter(et => et.system_type === 'event')
+  const eventTypes = allEventTypes.filter(et => et.system_type === 'parish-event')
 
   // Look up event type ID from slug if event_type filter is provided
   const eventTypeId = params.event_type
@@ -48,7 +48,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
   // Per LIST_VIEW_PATTERN.md: Apply defaults on server BEFORE calling server actions
   const filters: MasterEventFilterParams = {
     search: params.search,
-    systemType: 'event', // Filter only master_events with system_type = 'event'
+    systemType: 'parish-event', // Filter only master_events with system_type = 'parish-event'
     status: (params.status as MasterEventFilterParams['status']) || 'ACTIVE', // Default applied
     eventTypeId,
     startDate: params.start_date,

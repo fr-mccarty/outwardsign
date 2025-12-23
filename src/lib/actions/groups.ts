@@ -570,3 +570,59 @@ export async function getPersonGroupMemberships(personId: string): Promise<Perso
 
   return memberships
 }
+
+/**
+ * Get people who are members of specified groups
+ * Used for group-based PersonPicker filtering
+ */
+export interface PersonBasic {
+  id: string
+  first_name: string
+  last_name: string
+  full_name: string
+  email?: string | null
+  phone_number?: string | null
+  avatar_url?: string | null
+}
+
+export async function getPeopleByGroupIds(groupIds: string[]): Promise<PersonBasic[]> {
+  const { supabase } = await createAuthenticatedClient()
+
+  if (!groupIds || groupIds.length === 0) {
+    return []
+  }
+
+  // Fetch people who are members of ANY of the specified groups
+  const { data, error } = await supabase
+    .from('group_members')
+    .select(`
+      person_id,
+      person:person_id (
+        id,
+        first_name,
+        last_name,
+        full_name,
+        email,
+        phone_number,
+        avatar_url
+      )
+    `)
+    .in('group_id', groupIds)
+
+  if (error) handleSupabaseError(error, 'fetching', 'people by group IDs')
+
+  // Deduplicate people (in case they're in multiple groups)
+  const peopleMap = new Map<string, PersonBasic>()
+
+  for (const membership of (data || [])) {
+    const personData = Array.isArray(membership.person) ? membership.person[0] : membership.person
+    if (personData && !peopleMap.has(personData.id)) {
+      peopleMap.set(personData.id, personData as PersonBasic)
+    }
+  }
+
+  // Return sorted by full_name
+  return Array.from(peopleMap.values()).sort((a, b) =>
+    (a.full_name || '').localeCompare(b.full_name || '')
+  )
+}

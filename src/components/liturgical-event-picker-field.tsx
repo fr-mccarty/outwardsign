@@ -1,16 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { GlobalLiturgicalEventPicker } from '@/components/global-liturgical-event-picker'
+import { LiturgicalCalendarEventPicker } from '@/components/liturgical-calendar-picker'
 import { PickerField } from '@/components/picker-field'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 import { Calendar } from 'lucide-react'
-import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
 interface LiturgicalEventPickerFieldProps {
   label: string
-  value: GlobalLiturgicalEvent | null
-  onValueChange: (event: GlobalLiturgicalEvent | null) => void
+  value: LiturgicalCalendarEvent | null
+  onValueChange: (event: LiturgicalCalendarEvent | null) => void
   showPicker: boolean
   onShowPickerChange: (show: boolean) => void
   description?: string
@@ -60,7 +60,7 @@ export function LiturgicalEventPickerField({
           </>
         )}
       >
-        <GlobalLiturgicalEventPicker
+        <LiturgicalCalendarEventPicker
           open={showPicker}
           onOpenChange={onShowPickerChange}
           onSelect={onValueChange}

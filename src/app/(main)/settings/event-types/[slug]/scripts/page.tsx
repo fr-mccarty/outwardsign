@@ -30,14 +30,14 @@ export default async function ScriptsPage({ params }: PageProps) {
 
   // Determine parent settings page based on system_type
   const parentPath =
-    eventType.system_type === 'mass'
-      ? '/settings/masses'
+    eventType.system_type === 'mass-liturgy'
+      ? '/settings/mass-liturgies'
       : eventType.system_type === 'special-liturgy'
         ? '/settings/special-liturgies'
         : '/settings/events'
 
   const parentLabel =
-    eventType.system_type === 'mass'
+    eventType.system_type === 'mass-liturgy'
       ? t('nav.masses')
       : eventType.system_type === 'special-liturgy'
         ? t('nav.specialLiturgies')

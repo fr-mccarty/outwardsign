@@ -112,8 +112,8 @@ export const GET = createTextRoute({
 ## Files Using This Pattern
 
 - `src/app/(main)/groups/[id]/group-view-client.tsx`
-- `src/app/(main)/masses/[id]/mass-view-client.tsx`
+- `src/app/(main)/mass-liturgies/[id]/mass-view-client.tsx`
 - `src/app/(main)/people/[id]/person-view-client.tsx`
 - `src/app/(main)/weekend-summary/view/weekend-summary-view-client.tsx`
 - `src/app/(main)/events/[event_type_id]/[id]/scripts/[script_id]/script-view-client.tsx`
-- `src/app/(main)/masses/[id]/scripts/[script_id]/mass-script-view-client.tsx`
+- `src/app/(main)/mass-liturgies/[id]/scripts/[script_id]/mass-script-view-client.tsx`

@@ -442,7 +442,7 @@ R: La mayoría de parroquias generan 3-6 meses a la vez. Algunas van más lejos 
 
 ## Características Relacionadas
 
-- [Gestión de Misas](./masses) - Trabaja con celebraciones individuales de Misa
+- [Gestión de Misas](./mass-liturgies) - Trabaja con celebraciones individuales de Misa
 - [Intenciones de Misa](./mass-intentions) - Rastrea solicitudes de intenciones de Misa
 - [Calendario](../user-guides/events) - Ve todos los eventos parroquiales incluyendo Misas
 - [Gestión de Personas](../user-guides/people) - Directorio parroquial

@@ -3,7 +3,7 @@
 import { MassPicker } from '@/components/mass-picker'
 import { PickerField } from '@/components/picker-field'
 import { Calendar } from 'lucide-react'
-import type { MassWithNames } from '@/lib/schemas/masses'
+import type { MassWithNames } from '@/lib/schemas/mass-liturgies'
 
 interface MassPickerFieldProps {
   label: string

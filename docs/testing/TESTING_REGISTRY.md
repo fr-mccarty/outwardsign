@@ -224,9 +224,9 @@ This document provides a complete reference of all test files and individual tes
 
 ### Masses
 
-#### `tests/masses.spec.ts` (6 tests)
+#### `tests/masses.spec.ts` (7 tests)
 
-**Module:** Masses Module
+**Module:** Masses Module (Legacy)
 
 | Test | Description |
 |------|-------------|
@@ -235,7 +235,42 @@ This document provides a complete reference of all test files and individual tes
 | should create mass with minimal data | Confirms mass creation succeeds with only required fields |
 | should navigate through breadcrumbs | Verifies breadcrumb navigation works correctly across mass pages |
 | should display action buttons on mass view page | Validates Edit, Copy Info, Print, PDF, and Word buttons appear on view page |
-| should create mass with new event and new location via nested pickers | Validates creating mass with inline event and location creation using nested picker modals |
+| should create mass with new event via picker | Validates creating mass with inline event creation using event picker |
+| should update mass and verify persistence after page refresh | Verifies mass updates persist correctly across page reloads |
+
+### Mass Liturgies (Unified Event Data Model)
+
+#### `tests/mass-liturgies.spec.ts` (5 tests)
+
+**Module:** Mass Liturgies Module (system_type = 'mass-liturgy')
+
+| Test | Description |
+|------|-------------|
+| should create, view, and edit a mass liturgy | End-to-end test covering full CRUD workflow for mass liturgies |
+| should show empty state when no mass liturgies exist | Validates empty state message displays when mass liturgy list is empty |
+| should create mass liturgy with minimal data | Confirms mass liturgy creation succeeds with only required fields |
+| should navigate through breadcrumbs | Verifies breadcrumb navigation works correctly across mass liturgy pages |
+| should display action buttons on mass liturgy view page | Validates Edit, Print, PDF, and Word buttons appear on view page |
+
+#### `tests/mass-liturgy-roles.spec.ts` (3 tests)
+
+**Module:** Mass Liturgy Role Assignments (people_event_assignments)
+
+| Test | Description |
+|------|-------------|
+| should assign person to role on mass liturgy | Verifies people can be assigned to roles on calendar events for mass liturgies |
+| should view role assignments on mass liturgy | Validates role assignments display correctly on mass liturgy view page |
+| should create mass liturgy with event via picker | Confirms mass liturgy creation with event picker and event auto-selection |
+
+#### `tests/mass-liturgy-roster.spec.ts` (3 tests)
+
+**Module:** Mass Liturgy Roster Export
+
+| Test | Description |
+|------|-------------|
+| should render print view for mass liturgy roster | Verifies roster print view renders correctly at /print/mass-liturgies/[id]/roster |
+| should export mass liturgy roster to PDF | Validates PDF export endpoint returns valid PDF content type |
+| should export mass liturgy roster to Word | Confirms Word export endpoint returns valid Word document content type |
 
 ### Mass Intentions
 
@@ -364,9 +399,9 @@ This document provides a complete reference of all test files and individual tes
 
 | Test | Description |
 |------|-------------|
-| should filter event_types by system_type (mass) | Verifies filtering event types by mass system type |
-| should filter event_types by system_type (sacrament) | Validates filtering event types by sacrament system type |
-| should show all system types in sidebar navigation | Confirms sidebar displays all four system type navigation sections |
+| should filter event_types by system_type (mass-liturgy) | Verifies filtering event types by mass-liturgy system type |
+| should filter event_types by system_type (parish-event) | Validates filtering event types by parish-event system type |
+| should show all system types in sidebar navigation | Confirms sidebar displays all three system type navigation sections |
 | should validate CHECK constraint on system_type enum | Verifies database CHECK constraint enforces valid system type values |
 | should display event types grouped by system_type | Validates event types are organized and displayed by system type |
 
@@ -758,12 +793,12 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 32 (excluding templates and backups)
+**Total Test Files:** 35 (excluding templates and backups)
 
 **Total Tests by Category:**
 - **Authentication:** 10 tests (Signup: 3, Login: 7)
 - **Sacrament Modules:** 30 tests (5 modules × 5-6 tests each)
-- **Liturgical Modules:** 22 tests (Masses: 6, Mass Intentions: 9, Templates: 7)
+- **Liturgical Modules:** 33 tests (Masses: 7, Mass Liturgies: 11, Mass Intentions: 9, Templates: 7)
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
 - **Unified Event Data Model:** 20 tests (Master Events: 5, Calendar Events: 5, Roles: 5, System Types: 5)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
@@ -771,7 +806,7 @@ This document provides a complete reference of all test files and individual tes
 - **Parishioner Portal:** 88 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13, Security: 44)
 - **Security:** 44 tests (CSRF: 8, Rate Limiting: 21, Cron Cleanup: 15)
 
-**Total Active Tests:** ~259 tests (some skipped in groups-membership)
+**Total Active Tests:** ~270 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 

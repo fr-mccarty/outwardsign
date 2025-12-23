@@ -717,7 +717,7 @@ const { t } = useTranslation()
 
 ### Test Coverage
 - [ ] Add tests for Masses module
-- [ ] Add tests for new picker components (MassPicker, RolePicker, GlobalLiturgicalEventPicker)
+- [ ] Add tests for new picker components (MassPicker, RolePicker, LiturgicalCalendarEventPicker)
 - [ ] Increase test coverage to >80%
 - [ ] Add integration tests for critical workflows
 - [ ] Add visual regression tests

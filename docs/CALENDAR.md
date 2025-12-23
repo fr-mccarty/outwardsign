@@ -36,13 +36,13 @@ https://litcal.johnromanodorazio.com/api/dev/calendar?locale={locale}&year={year
 
 ### Global Liturgical Events Table
 
-**Table:** `global_liturgical_events`
+**Table:** `liturgical_calendar`
 
 This table stores liturgical calendar events fetched from the API. It is **global data shared across all parishes** (not scoped to individual parishes).
 
 **Schema:**
 ```sql
-CREATE TABLE global_liturgical_events (
+CREATE TABLE liturgical_calendar (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Extracted fields for efficient querying
@@ -64,17 +64,17 @@ CREATE TABLE global_liturgical_events (
 ```
 
 **Indexes:**
-- `idx_global_liturgical_events_date` - Date range searches (primary query pattern)
-- `idx_global_liturgical_events_year_locale` - Year and locale filtering
-- `idx_global_liturgical_events_event_key` - Event key lookups
-- `idx_global_liturgical_events_event_data` - GIN index for JSONB queries
+- `idx_liturgical_calendar_date` - Date range searches (primary query pattern)
+- `idx_liturgical_calendar_year_locale` - Year and locale filtering
+- `idx_liturgical_calendar_event_key` - Event key lookups
+- `idx_liturgical_calendar_event_data` - GIN index for JSONB queries
 
 **RLS Policies:**
 - ✅ All authenticated users can SELECT (read-only)
 - ✅ Anonymous users can SELECT (frontend uses anon role)
 - ❌ Only service_role can INSERT/UPDATE/DELETE (backend operations only)
 
-**Migration File:** `supabase/migrations/20251109000001_create_global_liturgical_events_table.sql`
+**Migration File:** `supabase/migrations/20251109000001_create_liturgical_calendar_table.sql`
 
 ## Event Data Structure
 
@@ -198,7 +198,7 @@ tsx scripts/generate-global-liturgical-migration.ts 2026 es
 **How it works:**
 1. Fetches events from the API
 2. Generates INSERT statements with ON CONFLICT DO NOTHING
-3. Creates migration file: `supabase/migrations/YYYYMMDD000002_seed_global_liturgical_events_YEAR_LOCALE.sql`
+3. Creates migration file: `supabase/migrations/YYYYMMDD000002_seed_liturgical_calendar_YEAR_LOCALE.sql`
 
 **Output:**
 ```
@@ -210,7 +210,7 @@ Locale: en
 📅 Fetching liturgical calendar for year 2025 (locale: en)...
 ✅ Fetched 365 events
 
-✅ Migration file created: supabase/migrations/20251109000002_seed_global_liturgical_events_2025_en.sql
+✅ Migration file created: supabase/migrations/20251109000002_seed_liturgical_calendar_2025_en.sql
 📝 Total events: 365
 
 📋 Next steps:
@@ -220,12 +220,12 @@ Locale: en
 
 **Migration File Format:**
 ```sql
--- Seed global_liturgical_events table for year 2025 (locale: en)
+-- Seed liturgical_calendar table for year 2025 (locale: en)
 -- Generated from https://litcal.johnromanodorazio.com/api/dev/calendar
 -- Total events: 365
 -- Generated on: 2024-11-09T12:00:00.000Z
 
-INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
+INSERT INTO liturgical_calendar (event_key, date, year, locale, event_data)
 VALUES ('Advent1', '2025-11-30', 2025, 'en', '{...}'::jsonb)
 ON CONFLICT (event_key, date, locale) DO NOTHING;
 
@@ -331,7 +331,7 @@ import { createClient } from '@/lib/supabase/server'
 // Fetch liturgical events for a specific date range
 const supabase = await createClient()
 const { data: events } = await supabase
-  .from('global_liturgical_events')
+  .from('liturgical_calendar')
   .select('*')
   .gte('date', '2025-01-01')
   .lte('date', '2025-12-31')

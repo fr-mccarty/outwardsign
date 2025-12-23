@@ -87,7 +87,6 @@ export interface PaginatedParams {
   offset?: number
   limit?: number
   search?: string
-  massRoleId?: string // Filter by mass role membership
 }
 
 export async function getPeople(filters?: PersonFilterParams): Promise<Person[]> {
@@ -140,26 +139,11 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
   const offset = params?.offset || 0
   const limit = params?.limit || 10
   const search = params?.search || ''
-  const massRoleId = params?.massRoleId
 
-  // Build base query - if filtering by mass role, join with mass_role_members
-  let query
-  if (massRoleId) {
-    query = supabase
-      .from('people')
-      .select(`
-        *,
-        mass_role_members!inner(mass_role_id, active)
-      `, { count: 'exact' })
-      .eq('parish_id', parishId)
-      .eq('mass_role_members.mass_role_id', massRoleId)
-      .eq('mass_role_members.active', true)
-  } else {
-    query = supabase
-      .from('people')
-      .select('*', { count: 'exact' })
-      .eq('parish_id', parishId)
-  }
+  let query = supabase
+    .from('people')
+    .select('*', { count: 'exact' })
+    .eq('parish_id', parishId)
 
   if (search) {
     const searchConditions = buildPeopleSearchConditions(search)

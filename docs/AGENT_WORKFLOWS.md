@@ -105,8 +105,8 @@ USER REQUEST
     │   └─ devils-advocate-agent → requirements-agent
     │
     ├─ "Fix bug in [feature]"
-    │   ├─ Bug is clear/simple → developer-agent → test-runner-debugger → code-review-agent
-    │   └─ Bug is complex/unclear → explorer-agent → developer-agent → test-runner-debugger → code-review-agent
+    │   ├─ Bug is clear/simple → developer-agent → test-writer (regression test) → test-runner-debugger → code-review-agent
+    │   └─ Bug is complex/unclear → explorer-agent → developer-agent → test-writer (regression test) → test-runner-debugger → code-review-agent
     │
     ├─ "How does [feature] work?"
     │   └─ explorer-agent
@@ -130,13 +130,13 @@ USER REQUEST
     │   └─ qa-specialist → code-review-agent → release-agent
     │
     ├─ "Performance/accessibility issues"
-    │   └─ qa-specialist → developer-agent (fix) → code-review-agent
+    │   └─ qa-specialist → developer-agent (fix) → test-runner-debugger → code-review-agent
     │
     ├─ "UI looks inconsistent/styling issues"
-    │   └─ ui-agent → developer-agent (fix) → code-review-agent
+    │   └─ ui-agent → developer-agent (fix) → test-runner-debugger → code-review-agent
     │
     ├─ "Labels/navigation/descriptions unclear"
-    │   └─ ux-agent → developer-agent (fix) → code-review-agent
+    │   └─ ux-agent → developer-agent (fix) → test-runner-debugger → code-review-agent
     │
     ├─ "I'm stuck/overwhelmed/need perspective"
     │   └─ wisdom-agent (conversational support, no code changes)

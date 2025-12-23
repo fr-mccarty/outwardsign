@@ -20,7 +20,7 @@ import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
-import type { MassWithNames } from "@/lib/schemas/masses"
+import type { MassWithNames } from "@/lib/schemas/mass-liturgies"
 import { useTranslations } from 'next-intl'
 
 interface MassIntentionFormProps {
@@ -50,7 +50,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
       stipend_in_cents: intention?.stipend_in_cents || null,
       note: intention?.note || null,
       requested_by_id: intention?.requested_by_id || null,
-      master_event_id: intention?.master_event_id || null,
+      calendar_event_id: intention?.calendar_event_id || null,
       mass_intention_template_id: (intention?.mass_intention_template_id as MassIntentionTemplate) || MASS_INTENTION_DEFAULT_TEMPLATE,
     },
   })
@@ -77,7 +77,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   useEffect(() => {
     if (intention) {
       if (intention.requested_by) requestedBy.setValue(intention.requested_by)
-      if (intention.master_event) assignedMass.setValue(intention.master_event as any)
+      if (intention.calendar_event) assignedMass.setValue(intention.calendar_event as any)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intention])
@@ -88,7 +88,10 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   }, [requestedBy.value, setValue])
 
   useEffect(() => {
-    setValue("master_event_id", assignedMass.value?.id || null)
+    // Mass picker returns a MasterEvent with primary_calendar_event
+    // We need to extract the calendar_event_id from the primary_calendar_event
+    const calendarEventId = (assignedMass.value as any)?.primary_calendar_event?.id || assignedMass.value?.id || null
+    setValue("calendar_event_id", calendarEventId)
   }, [assignedMass.value, setValue])
 
   const onSubmit = async (data: CreateMassIntentionData) => {

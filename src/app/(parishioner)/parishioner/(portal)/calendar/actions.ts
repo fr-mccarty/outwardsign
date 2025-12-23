@@ -56,7 +56,7 @@ export async function getCalendarEvents(
 
     // 3. Get liturgical events
     const { data: liturgicalEvents } = await supabase
-      .from('global_liturgical_events')
+      .from('liturgical_calendar')
       .select('*')
       .gte('date', startDate)
       .lte('date', endDate)

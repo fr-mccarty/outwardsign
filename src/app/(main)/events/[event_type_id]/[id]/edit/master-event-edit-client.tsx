@@ -39,7 +39,7 @@ export function DynamicEventEditClient({
           type: 'action',
           label: 'Configure Input Fields',
           icon: <Settings className="h-4 w-4" />,
-          href: `/settings/events/${eventType.id}`
+          href: `/settings/event-types/${eventType.slug}/fields`
         }
       ]}
     >

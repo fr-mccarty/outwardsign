@@ -54,11 +54,11 @@ All sacraments and parish events are managed through the Events module with dyna
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/masses` | ƒ | Mass list |
-| `/masses/create` | ƒ | Create mass |
-| `/masses/schedule` | ƒ | Mass scheduling wizard |
-| `/masses/[id]` | ƒ | View mass |
-| `/masses/[id]/edit` | ƒ | Edit mass |
+| `/mass-liturgies` | ƒ | Mass list |
+| `/mass-liturgies/create` | ƒ | Create mass |
+| `/mass-liturgies/schedule` | ƒ | Mass scheduling wizard |
+| `/mass-liturgies/[id]` | ƒ | View mass |
+| `/mass-liturgies/[id]/edit` | ƒ | Edit mass |
 
 ### Mass Intentions
 
@@ -70,33 +70,11 @@ All sacraments and parish events are managed through the Events module with dyna
 | `/mass-intentions/[id]/edit` | ƒ | Edit mass intention |
 | `/mass-intentions/report` | ƒ | Mass intentions report |
 
-### Mass Roles
+### Mass Rosters
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/mass-roles` | ƒ | Mass role list |
-
-### Mass Role Members
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/mass-role-members` | ƒ | Mass role members directory |
-
-### Mass Role Templates
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/mass-role-templates` | ƒ | Mass role template list |
-| `/mass-role-templates/create` | ƒ | Create mass role template |
-| `/mass-role-templates/[id]/edit` | ƒ | Edit mass role template |
-
-### Mass Times Templates
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/mass-times-templates` | ƒ | Mass times template list |
-| `/mass-times-templates/create` | ƒ | Create mass times template |
-| `/mass-times-templates/[id]/edit` | ƒ | Edit mass times template |
+| `/print/mass-liturgies/[id]/roster` | ƒ | Print mass roster |
 
 ---
 
@@ -248,7 +226,7 @@ All sacraments and parish events are managed through the Events module with dyna
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/print/masses/[id]` | ƒ | Print mass |
+| `/print/mass-liturgies/[id]` | ƒ | Print mass |
 | `/print/events/[type]/[id]` | ƒ | Print event |
 | `/print/weekend-summary` | ƒ | Print weekend summary |
 
@@ -273,7 +251,7 @@ All sacraments and parish events are managed through the Events module with dyna
 | Authentication | 2 |
 | Dashboard & Calendar | 4 |
 | Events (unified system) | 4 |
-| Mass Management | 17 |
+| Mass Management | 8 |
 | People & Families | 8 |
 | Groups | 2 |
 | Locations | 4 |
@@ -283,4 +261,4 @@ All sacraments and parish events are managed through the Events module with dyna
 | Onboarding | 6 |
 | Print Views | 3 |
 | Support & Testing | 5 |
-| **Total Viewable Routes** | **~86** |
+| **Total Viewable Routes** | **~77** |

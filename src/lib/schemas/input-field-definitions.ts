@@ -84,7 +84,7 @@ export const updateInputFieldDefinitionSchema = z.object({
   type: inputFieldTypeSchema.optional(),
   required: z.boolean().optional(),
   list_id: z.string().uuid().nullable().optional(),
-  tags: z.array(z.string()).nullable().optional(),
+  input_filter_tags: z.array(z.string()).nullable().optional(),
   is_key_person: z.boolean().optional(),
   is_primary: z.boolean().optional(),
 })

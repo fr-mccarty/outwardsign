@@ -9,8 +9,8 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 // import { getFunerals, FuneralWithRelations } from './funerals'
 // import { getPresentations, PresentationWithRelations } from './presentations'
 // import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
-import { getMasses, getMassRoles } from './masses'
-import type { MassWithNames, MasterEventRoleWithRelations } from '@/lib/schemas/masses'
+import { getMasses, getMassRoles } from './mass-liturgies'
+import type { MassWithNames, MasterEventRoleWithRelations } from '@/lib/schemas/mass-liturgies'
 import { toLocalDateString } from '@/lib/utils/formatters'
 
 export interface WeekendSummaryParams {

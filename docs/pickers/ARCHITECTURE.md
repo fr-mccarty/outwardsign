@@ -237,7 +237,7 @@ A generic field wrapper that displays the selected value and manages picker moda
 | **EventPicker** | Event | ✅ Yes | Nested LocationPicker, timezone selection |
 | **LocationPicker** | Location | ✅ Yes | Address fields (street, city, state) |
 | **MassPicker** | Mass | ❌ No | Read-only selection |
-| **GlobalLiturgicalEventPicker** | GlobalLiturgicalEvent | ❌ No | Year/locale filters |
+| **LiturgicalCalendarEventPicker** | LiturgicalCalendarEvent | ❌ No | Year/locale filters |
 | **ReadingPickerModal** | Reading | ❌ No | Category/language filters, preview modal |
 | **RolePicker** | Role | ✅ Yes | Description and note fields |
 

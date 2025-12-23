@@ -13,7 +13,7 @@
 
 **Standard workflow for creating a single Mass:**
 
-1. Navigate to `/masses` → Click "Create New Mass"
+1. Navigate to `/mass-liturgies` → Click "Create New Mass"
 2. Fill Mass Form:
    - Select/create Event (date, time, location)
    - Select presider and homilist (People Picker)
@@ -24,9 +24,9 @@
 4. (Future) Assign ministers to roles via role assignment UI
 
 **File References:**
-- Form: `src/app/(main)/masses/mass-form.tsx`
-- Create page: `src/app/(main)/masses/create/page.tsx`
-- Server action: `src/lib/actions/masses.ts:createMass()`
+- Form: `src/app/(main)/mass-liturgies/mass-liturgy-form.tsx`
+- Create page: `src/app/(main)/mass-liturgies/create/page.tsx`
+- Server action: `src/lib/actions/mass-liturgies.ts:createMass()`
 
 ---
 
@@ -34,7 +34,7 @@
 
 **For scheduling multiple Masses over a period:**
 
-Use the Mass Scheduling Wizard at `/masses/schedule`. This provides:
+Use the Mass Scheduling Wizard at `/mass-liturgies/schedule`. This provides:
 - Date range selection
 - Recurring schedule pattern (days/times)
 - Template-based role requirements
@@ -49,7 +49,7 @@ Use the Mass Scheduling Wizard at `/masses/schedule`. This provides:
 - Testing guidelines
 
 **File References:**
-- Wizard: `src/app/(main)/masses/schedule/schedule-masses-client.tsx`
+- Wizard: `src/app/(main)/mass-liturgies/schedule/schedule-masses-client.tsx`
 - Server action: `src/lib/actions/mass-scheduling.ts:scheduleMasses()`
 - Assignment grid: `src/components/mass-schedule-assignment-grid.tsx`
 

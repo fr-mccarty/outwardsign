@@ -210,7 +210,7 @@ The Mass Role Template system allows parishes to:
 ### Component Files
 - Templates: `src/app/(main)/mass-role-templates/`
 - Template Items: `src/components/mass-role-template-*`
-- Mass Form: `src/app/(main)/masses/mass-form.tsx`
+- Mass Form: `src/app/(main)/mass-liturgies/mass-liturgy-form.tsx`
 
 ### Server Actions
 - Templates: `src/lib/actions/mass-role-templates.ts`

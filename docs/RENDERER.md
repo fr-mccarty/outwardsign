@@ -814,3 +814,4 @@ In practice, this should **never happen** for valid element types since all elem
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)** - Overview of content builders and liturgy document structure
 - **[LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md)** - Complete style reference and examples
 - **[MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md)** - View client patterns (where renderers are used)
+- **[SCRIPT_EXPORT_STYLING.md](./SCRIPT_EXPORT_STYLING.md)** - How markdown transforms to HTML/PDF/Word (format-specific conversions)

@@ -260,8 +260,8 @@ export function MassIntentionsReportClient() {
                                 <TableCell>
                                   <div className="flex flex-col gap-1">
                                     <span className="font-medium">
-                                      {intention.master_event?.calendar_events?.[0]?.start_datetime
-                                        ? formatDatePretty(intention.master_event.calendar_events[0].start_datetime)
+                                      {intention.calendar_event?.start_datetime
+                                        ? formatDatePretty(intention.calendar_event.start_datetime)
                                         : 'N/A'}
                                     </span>
                                     <Badge variant={getStatusVariant(intention.status || 'REQUESTED')} className="w-fit">

@@ -16,7 +16,7 @@ Disallow: /quinceaneras
 Disallow: /calendar
 Disallow: /people
 Disallow: /groups
-Disallow: /masses
+Disallow: /mass-liturgies
 Disallow: /settings
 Disallow: /print
 Disallow: /api

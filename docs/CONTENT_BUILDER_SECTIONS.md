@@ -2,6 +2,8 @@
 
 > **Purpose:** Navigation hub for the content builder section system documentation. This system defines the standardized section types used in liturgical content builders.
 
+> **Note on Script Template System:** This documentation covers **code-based content builders** (TypeScript builders in the codebase). For **database-driven script templates** (admin-configurable via UI), see [EVENT_TYPE_CONFIGURATION.md](./EVENT_TYPE_CONFIGURATION.md). The two systems work together: code-based builders auto-generate scripts for masses/events, while database templates provide full customization for special liturgies.
+
 ## Quick Start
 
 **New to content builders?** Start here:

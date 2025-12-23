@@ -63,14 +63,14 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
 
   // Group event types by system_type
   const groupedEventTypes = {
-    mass: eventTypes.filter(et => et.system_type === 'mass'),
+    mass: eventTypes.filter(et => et.system_type === 'mass-liturgy'),
     'special-liturgy': eventTypes.filter(et => et.system_type === 'special-liturgy'),
-    event: eventTypes.filter(et => et.system_type === 'event'),
+    event: eventTypes.filter(et => et.system_type === 'parish-event'),
   }
 
   // Get system type icons
-  const MassIcon = getLucideIcon(SYSTEM_TYPE_METADATA.mass.icon)
-  const EventIcon = getLucideIcon(SYSTEM_TYPE_METADATA.event.icon)
+  const MassIcon = getLucideIcon(SYSTEM_TYPE_METADATA['mass-liturgy'].icon)
+  const EventIcon = getLucideIcon(SYSTEM_TYPE_METADATA['parish-event'].icon)
 
   return (
     <Sidebar>
@@ -114,17 +114,17 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <CollapsibleNavSection
-                name={SYSTEM_TYPE_METADATA.mass.name_en}
+                name={SYSTEM_TYPE_METADATA['mass-liturgy'].name_en}
                 icon={MassIcon}
                 items={[
                   {
                     title: t('nav.ourMasses'),
-                    url: "/masses",
+                    url: "/mass-liturgies",
                     icon: MassIcon,
                   },
                   {
                     title: t('nav.createMass'),
-                    url: "/masses/create",
+                    url: "/mass-liturgies/create",
                     icon: Plus,
                   },
                 ]}
