@@ -37,7 +37,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 
 ## Agent Inventory
 
-### Complete Agent List (15 agents)
+### Complete Agent List (16 agents)
 
 | Agent | Folder | Role | Phase |
 |-------|--------|------|-------|
@@ -57,6 +57,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **ui-agent** | N/A (read-only) | Visual styling audits | As-needed |
 | **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
 | **wisdom-agent** | N/A (read-only) | Perspective and encouragement | As-needed |
+| **supervisor-agent** | `/supervisor/` | Codebase health audits | As-needed |
 
 ---
 
@@ -73,6 +74,7 @@ Each agent "owns" a specific folder where it creates and manages files:
 | `/docs/` | project-documentation-writer | Developer/agent docs | Permanent |
 | `/releases/` | release-agent | Deployment logs | Permanent (audit trail) |
 | `/src/app/documentation/content/` | user-documentation-writer | End-user guides | Permanent |
+| `/supervisor/` | supervisor-agent | Codebase health reports | Permanent (audit trail) |
 
 **Read-only agents** (no folder ownership):
 - test-runner-debugger (runs tests)
@@ -136,8 +138,11 @@ USER REQUEST
     ├─ "Labels/navigation/descriptions unclear"
     │   └─ ux-agent → developer-agent (fix) → code-review-agent
     │
-    └─ "I'm stuck/overwhelmed/need perspective"
-        └─ wisdom-agent (conversational support, no code changes)
+    ├─ "I'm stuck/overwhelmed/need perspective"
+    │   └─ wisdom-agent (conversational support, no code changes)
+    │
+    └─ "Run a health check/audit the codebase"
+        └─ supervisor-agent → produces report → DONE (user decides next steps)
 ```
 
 ---

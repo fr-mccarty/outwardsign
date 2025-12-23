@@ -102,7 +102,7 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
       {
         script_id: scriptId,
         name: data.name,
-        section_type: data.section_type ?? 'text',
+        section_type: data.section_type ?? null,
         content: sanitizedContent,
         page_break_after: data.page_break_after ?? false,
         order: newOrder

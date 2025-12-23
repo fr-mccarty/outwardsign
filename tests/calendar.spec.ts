@@ -183,7 +183,7 @@ test.describe('Calendar Module', () => {
       await eventOnCalendar.click();
 
       // Should navigate to the event detail page
-      await page.waitForURL(/\/(events|weddings|funerals|baptisms|presentations|quinceaneras|masses)\/[a-f0-9-]+/, {
+      await page.waitForURL(/\/(events|masses|special-liturgies)\/[a-f0-9-]+/, {
         timeout: TEST_TIMEOUTS.NAVIGATION
       });
 

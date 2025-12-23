@@ -240,8 +240,45 @@ export async function updateInputFieldDefinition(id: string, data: UpdateInputFi
 }
 
 /**
+ * Count how many events use a specific custom field
+ * Returns the count of events that have a value set for this field
+ */
+export async function countFieldUsage(fieldId: string): Promise<number> {
+  const { supabase } = await createAuthenticatedClient()
+
+  // Get field definition to find event_type_id and property_name
+  const { data: fieldDef } = await supabase
+    .from('input_field_definitions')
+    .select('event_type_id, property_name')
+    .eq('id', fieldId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!fieldDef) {
+    return 0
+  }
+
+  // Count events that have this property_name key in field_values
+  // Using raw SQL for JSONB key existence check
+  const { count, error } = await supabase
+    .from('master_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_type_id', fieldDef.event_type_id)
+    .is('deleted_at', null)
+    .not('field_values', 'is', null)
+    .filter(`field_values->>${fieldDef.property_name}`, 'not.is', null)
+
+  if (error) {
+    logError('Error counting field usage: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    return 0 // Fail gracefully
+  }
+
+  return count ?? 0
+}
+
+/**
  * Delete an input field definition
- * Checks if field is used in events and warns user
+ * Prevents deletion if field is used in any events
  */
 export async function deleteInputFieldDefinition(id: string): Promise<void> {
   const { supabase, parishId } = await createAuthenticatedClient()
@@ -266,10 +303,16 @@ export async function deleteInputFieldDefinition(id: string): Promise<void> {
   }
 
   // Check for events using this field
-  // Note: This is a basic check. In a production system, you might want to scan the field_values JSONB
-  // For now, we'll allow deletion and data will remain in JSON but won't render
+  const usageCount = await countFieldUsage(id)
 
-  // Hard delete (data remains in field_values JSON but won't render)
+  if (usageCount > 0) {
+    throw new Error(
+      `Cannot delete field "${fieldDef.name}". It is used in ${usageCount} event${usageCount === 1 ? '' : 's'}. ` +
+      `Please remove this field from all events before deleting the definition.`
+    )
+  }
+
+  // Safe to delete - no events are using this field
   const { error } = await supabase
     .from('input_field_definitions')
     .delete()

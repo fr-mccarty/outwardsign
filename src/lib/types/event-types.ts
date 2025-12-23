@@ -153,6 +153,7 @@ export interface Section {
   id: string
   script_id: string
   name: string                    // Section heading
+  section_type?: string | null    // Optional categorization hint (not enforced)
   content: string                 // Markdown with custom syntax
   page_break_after: boolean       // Insert page break after this section
   order: number                   // Display order in script
@@ -317,6 +318,7 @@ export interface UpdateScriptData {
 
 export interface CreateSectionData {
   name: string
+  section_type?: string | null
   content: string
   page_break_after?: boolean
   // order calculated automatically
@@ -324,6 +326,7 @@ export interface CreateSectionData {
 
 export interface UpdateSectionData {
   name?: string
+  section_type?: string | null
   content?: string
   page_break_after?: boolean
 }

@@ -354,7 +354,7 @@ export interface ProcessedSection {
 interface ScriptSection {
   id: string
   name: string
-  section_type?: 'text' | 'petition'
+  section_type?: string | null  // Optional categorization hint (not enforced)
   content: string
   page_break_after: boolean
   order: number

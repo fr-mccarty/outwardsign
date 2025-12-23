@@ -1,8 +1,8 @@
 # Event Types Detail Page
 
 **Created:** 2025-12-23
-**Status:** Vision (awaiting technical requirements)
-**Agent:** brainstorming-agent
+**Status:** Ready for Development
+**Agents:** brainstorming-agent → devils-advocate-agent → requirements-agent
 
 ## Feature Overview
 
@@ -413,6 +413,852 @@ Requirements-agent should:
 
 ---
 
+## TECHNICAL REQUIREMENTS
+(Added by requirements-agent on 2025-12-23)
+
+### Database Infrastructure - Already Exists
+
+**VERIFIED: All necessary database tables and columns already exist. No new migrations needed except for one constraint expansion.**
+
+**Existing Tables:**
+1. **`event_types`** - Stores event type metadata
+   - Columns: `id`, `parish_id`, `name`, `description`, `icon`, `order`, `slug`, `system_type`, timestamps
+   - Constraint: `system_type IN ('mass', 'special-liturgy', 'event')`
+   - Migration: `20251031000002_create_event_types_table.sql`
+
+2. **`input_field_definitions`** - Stores custom field definitions
+   - Columns: `id`, `event_type_id`, `name`, `property_name`, `type`, `required`, `list_id`, `is_key_person`, `is_primary`, `is_per_calendar_event`, `order`, `input_filter_tags`, timestamps
+   - Constraint: `type IN ('person', 'group', 'location', 'list_item', 'document', 'text', 'rich_text', 'content', 'petition', 'calendar_event', 'date', 'time', 'datetime', 'number', 'yes_no', 'mass-intention', 'spacer')`
+   - Migration: `20251210000004_create_input_field_definitions_table.sql`
+
+3. **`scripts`** - Stores script templates for special liturgies
+   - Columns: `id`, `event_type_id`, `name`, `description`, `order`, timestamps
+   - Migration: `20251210000005_create_scripts_table.sql`
+
+4. **`sections`** - Stores script sections
+   - Columns: `id`, `script_id`, `name`, `section_type`, `content`, `page_break_after`, `order`, timestamps
+   - **CONSTRAINT ISSUE:** Currently only allows `section_type IN ('text', 'petition')`
+   - Migration: `20251210000006_create_sections_table.sql`
+
+5. **`master_events`** - Stores individual events with custom field values
+   - Columns: `id`, `parish_id`, `event_type_id`, `field_values` (JSONB), `status`, timestamps
+   - Migration: `20251210000007_create_master_events_table.sql`
+
+**Required Database Migration:**
+
+**Migration: Expand `sections.section_type` constraint**
+```sql
+-- Migration file: 2025MMDD_expand_sections_section_type_constraint.sql
+-- Purpose: Support all section types for script templates
+
+ALTER TABLE sections DROP CONSTRAINT check_section_type_valid;
+
+ALTER TABLE sections ADD CONSTRAINT check_section_type_valid
+  CHECK (section_type IN (
+    'text',
+    'petition',
+    'cover_page',
+    'reading',
+    'psalm',
+    'ceremony',
+    'petitions',
+    'announcements',
+    'custom_text'
+  ));
+```
+
+### Server Actions - Verification
+
+**VERIFIED: All necessary CRUD operations already exist. No new server actions needed.**
+
+**Existing Server Actions:**
+
+1. **Event Types** (`/src/lib/actions/event-types.ts`)
+   - ✅ `getEventTypes(filters?)` - List all event types with filtering
+   - ✅ `getEventType(id)` - Get single event type by ID
+   - ✅ `getEventTypeBySlug(slug)` - Get single event type by slug
+   - ✅ `getEventTypeWithRelations(id)` - Get event type with input fields and scripts
+   - ✅ `getEventTypeWithRelationsBySlug(slug)` - Get event type with relations by slug
+   - ✅ `createEventType(data)` - Create new event type
+   - ✅ `updateEventType(id, data)` - Update event type
+   - ✅ `deleteEventType(id)` - Delete event type
+   - ✅ `reorderEventTypes(orderedIds)` - Reorder event types
+
+2. **Input Field Definitions** (`/src/lib/actions/input-field-definitions.ts`)
+   - ✅ `getInputFieldDefinitions(eventTypeId)` - List fields for event type
+   - ✅ `getInputFieldDefinitionWithRelations(id)` - Get single field with custom list
+   - ✅ `createInputFieldDefinition(data)` - Create new field
+   - ✅ `updateInputFieldDefinition(id, data)` - Update field
+   - ✅ `deleteInputFieldDefinition(id)` - Delete field (needs usage check enhancement)
+   - ✅ `reorderInputFieldDefinitions(eventTypeId, orderedIds)` - Reorder fields
+
+3. **Scripts** (`/src/lib/actions/scripts.ts`)
+   - ✅ `getScripts(eventTypeId)` - List scripts for event type
+   - ✅ `getScript(id)` - Get single script
+   - ✅ `getScriptWithSections(id)` - Get script with all sections
+   - ✅ `createScript(data)` - Create new script
+   - ✅ `updateScript(id, data)` - Update script
+   - ✅ `deleteScript(id)` - Delete script (cascades to sections)
+   - ✅ `reorderScripts(eventTypeId, orderedIds)` - Reorder scripts
+
+4. **Sections** (`/src/lib/actions/sections.ts`)
+   - ✅ `getSections(scriptId)` - List sections for script
+   - ✅ `getSection(id)` - Get single section
+   - ✅ `createSection(scriptId, data)` - Create new section
+   - ✅ `updateSection(id, data)` - Update section
+   - ✅ `deleteSection(id)` - Delete section
+   - ✅ `reorderSections(scriptId, orderedIds)` - Reorder sections
+
+**Required Server Action Enhancements:**
+
+1. **`deleteInputFieldDefinition` - Add usage validation**
+   - CURRENT: Deletes field without checking usage (data remains orphaned in `field_values` JSONB)
+   - REQUIRED: Count events using this field before allowing deletion
+   - PSEUDO-CODE:
+   ```
+   FUNCTION deleteInputFieldDefinition(id)
+     1. Get field definition (event_type_id, property_name)
+     2. Query master_events table for events with this event_type_id
+     3. FOR EACH event:
+          Check if field_values JSONB contains property_name key
+          IF found THEN increment usage_count
+     4. IF usage_count > 0 THEN
+          Throw error: "Cannot delete field '{name}'. It is used in {usage_count} event(s). Remove the field from all events before deleting the definition."
+     5. ELSE
+          Delete field definition
+   END FUNCTION
+   ```
+
+2. **NEW: `countFieldUsage` helper (optional)**
+   - Purpose: Count how many events use a specific custom field
+   - Returns: Number of events where `field_values->>property_name IS NOT NULL`
+   - Used by deletion validation
+
+### UI Component Structure
+
+**Three-Page Architecture (Mobile-Friendly, No Tabs)**
+
+```
+/settings/event-types/{slug}/              → Hub Page (overview + navigation)
+/settings/event-types/{slug}/fields/       → Custom Fields Page
+/settings/event-types/{slug}/scripts/      → Scripts Page
+```
+
+#### Page 1: Hub Page (`/settings/event-types/{slug}/page.tsx`)
+
+**Purpose:** Overview and navigation hub for event type configuration
+
+**Server Component:**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/page.tsx
+
+FUNCTION HubPage({ params })
+  1. Await params.slug
+  2. Fetch event type using getEventTypeBySlug(slug)
+  3. If not found → return notFound()
+  4. Check admin permissions using checkSettingsAccess()
+  5. Build breadcrumbs array
+  6. Render PageContainer with:
+     - Event type name, icon, description
+     - Two navigation cards (Manage Custom Fields, Manage Scripts)
+     - Back button to parent settings page
+  7. Conditionally hide "Manage Scripts" card if system_type is 'mass' or 'event'
+END FUNCTION
+
+LAYOUT:
+- PageContainer with event type name as title
+- Description text
+- Two large navigation cards (ContentCard components):
+  1. "Manage Custom Fields" → /settings/event-types/{slug}/fields
+  2. "Manage Scripts" → /settings/event-types/{slug}/scripts (only shown for special-liturgy)
+- Back button to parent settings page (/settings/masses, /settings/events, or /settings/special-liturgies)
+```
+
+**Conditional Navigation Logic:**
+```
+IF event_type.system_type === 'special-liturgy' THEN
+  Show both "Manage Custom Fields" and "Manage Scripts" cards
+ELSE IF event_type.system_type IN ('mass', 'event') THEN
+  Show only "Manage Custom Fields" card (Scripts card hidden)
+```
+
+#### Page 2: Custom Fields Page (`/settings/event-types/{slug}/fields/page.tsx`)
+
+**Purpose:** Manage custom field definitions for this event type
+
+**Server Component Structure:**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/fields/page.tsx
+
+FUNCTION FieldsPage({ params })
+  1. Await params.slug
+  2. Fetch event type with relations using getEventTypeWithRelationsBySlug(slug)
+  3. If not found → return notFound()
+  4. Check admin permissions
+  5. Extract input_field_definitions array
+  6. Build breadcrumbs
+  7. Render PageContainer with:
+     - Title: "{Event Type Name} - Custom Fields"
+     - Primary action: "Add Custom Field" button
+     - FieldsListClient component (client component for drag-and-drop)
+END FUNCTION
+```
+
+**Client Component:**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/fields/fields-list-client.tsx
+
+COMPONENT FieldsListClient({ eventType, initialFields })
+  STATE: items (field definitions array)
+  STATE: dialogOpen (add/edit dialog visibility)
+  STATE: fieldToEdit (selected field for editing)
+  STATE: deleteDialogOpen
+  STATE: fieldToDelete
+
+  RENDER:
+    1. Explanatory Alert: "Custom fields define what data to collect for {event type name}"
+    2. DndContext (drag-and-drop wrapper using @dnd-kit)
+    3. SortableContext with verticalListSortingStrategy
+    4. FOR EACH field in items:
+         SortableFieldItem component with:
+           - Drag handle (GripVertical icon)
+           - Field name and type
+           - Edit button → opens dialog with field form
+           - Delete button → opens confirmation dialog
+    5. Empty state if no fields: "No custom fields defined. Click Add Custom Field to get started."
+    6. Add/Edit Field Dialog (FieldFormDialog component)
+    7. Delete Confirmation Dialog
+
+  HANDLERS:
+    - handleDragEnd: Reorder fields optimistically, call reorderInputFieldDefinitions
+    - handleSave: Call createInputFieldDefinition or updateInputFieldDefinition
+    - handleDelete: Call deleteInputFieldDefinition (may throw error if field is used)
+END COMPONENT
+```
+
+**Field Form Dialog:**
+```
+COMPONENT FieldFormDialog({ field, eventType, open, onOpenChange, onSave })
+  FORM FIELDS:
+    1. Field Label (text input) - e.g., "Bride", "Groom", "Deceased"
+    2. Field Type (select dropdown) - 16 options
+    3. Required toggle (Switch)
+    4. Type-specific config (conditional rendering):
+       - IF type === 'list_item' THEN show ListPicker for list_id
+       - IF type IN ('content', 'petition') THEN show tag input for input_filter_tags
+       - IF type === 'person' THEN show "Key Person" checkbox (is_key_person)
+       - IF type === 'calendar_event' THEN show "Primary Event" checkbox (is_primary)
+    5. Property Name (auto-generated from label, shown as read-only or editable)
+
+  VALIDATION:
+    - Label is required
+    - Property name must be unique within event type
+    - Property name must match format: lowercase, starts with letter, allows underscores
+    - IF is_primary AND type !== 'calendar_event' THEN error
+    - IF is_key_person AND type !== 'person' THEN error
+
+  ON SAVE:
+    1. Generate property_name slug from label if creating new field
+    2. Call onSave callback with field data
+    3. Close dialog
+END COMPONENT
+```
+
+**Property Name Slug Generation:**
+```
+FUNCTION generatePropertyName(label)
+  1. Convert label to lowercase
+  2. Replace spaces with underscores
+  3. Remove special characters except underscores
+  4. Ensure starts with a letter
+  5. Return slug (e.g., "Bride and Groom" → "bride_and_groom")
+END FUNCTION
+```
+
+#### Page 3: Scripts Page (`/settings/event-types/{slug}/scripts/page.tsx`)
+
+**Purpose:** Manage script templates (special liturgies only)
+
+**Server Component Structure:**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/scripts/page.tsx
+
+FUNCTION ScriptsPage({ params })
+  1. Await params.slug
+  2. Fetch event type with relations using getEventTypeWithRelationsBySlug(slug)
+  3. If not found → return notFound()
+  4. Check admin permissions
+  5. Build breadcrumbs
+  6. IF event_type.system_type === 'special-liturgy' THEN
+       Render ScriptsListClient (full script builder)
+     ELSE
+       Render simple message: "Scripts for {event type name} are auto-generated from custom fields"
+END FUNCTION
+```
+
+**Scripts List Client (Special Liturgies Only):**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/scripts/scripts-list-client.tsx
+
+COMPONENT ScriptsListClient({ eventType, initialScripts })
+  STATE: scripts (array of script templates)
+  STATE: editingScriptId (selected script for editing)
+
+  RENDER:
+    1. Explanatory Alert: "Script templates define the structure of printable ceremony scripts"
+    2. List of script templates (drag-and-drop reordering)
+    3. FOR EACH script:
+         - Script name
+         - Description
+         - "Edit" button → navigate to /settings/event-types/{slug}/scripts/{script_id}
+         - "Delete" button → confirmation dialog
+    4. Empty state: "No script templates. Click Add Script Template to create one."
+    5. "Add Script Template" button → creates new script, navigates to edit page
+
+  HANDLERS:
+    - handleReorder: Call reorderScripts
+    - handleDelete: Call deleteScript
+    - handleCreate: Call createScript, navigate to edit page
+END COMPONENT
+```
+
+**Script Builder Page (Special Liturgies Only):**
+```
+FILE: /src/app/(main)/settings/event-types/[slug]/scripts/[script_id]/page.tsx
+
+SERVER COMPONENT ScriptBuilderPage({ params })
+  1. Await params
+  2. Fetch event type by slug
+  3. Fetch script with sections using getScriptWithSections(script_id)
+  4. Fetch all input field definitions for event type
+  5. Render ScriptBuilderClient
+END SERVER COMPONENT
+
+CLIENT COMPONENT ScriptBuilderClient({ script, eventType, inputFields })
+  STATE: sections (array of script sections)
+  STATE: editingSectionId
+  STATE: sectionDialogOpen
+
+  RENDER:
+    1. Script name and description (editable inline)
+    2. Section builder area:
+       - DndContext for drag-and-drop sections
+       - SortableContext for sections
+       - FOR EACH section:
+           SortableSectionItem with:
+             - Drag handle
+             - Section name and type
+             - Content preview (first 100 chars)
+             - Edit button → opens section dialog
+             - Delete button → confirmation
+       - "Add Section" button → opens section dialog
+    3. Section Form Dialog
+    4. Placeholder Reference Panel (shows available {{placeholders}} from input fields)
+
+  SECTION TYPES:
+    - 'cover_page' - Title page with event details
+    - 'reading' - Scripture reading from content library
+    - 'psalm' - Responsorial psalm
+    - 'ceremony' - Custom ceremony text (vows, blessings, rituals)
+    - 'petitions' - Prayers of the faithful
+    - 'announcements' - Parish announcements
+    - 'custom_text' - Free-form text section
+
+  HANDLERS:
+    - handleReorderSections: Call reorderSections
+    - handleSaveSection: Call createSection or updateSection
+    - handleDeleteSection: Call deleteSection
+END CLIENT COMPONENT
+```
+
+**Section Form Dialog:**
+```
+COMPONENT SectionFormDialog({ section, inputFields, open, onOpenChange, onSave })
+  FORM FIELDS:
+    1. Section Name (text input)
+    2. Section Type (select dropdown) - 7 options
+    3. Content (rich text editor with markdown support)
+       - Toolbar with placeholder insertion button
+       - Dropdown showing available placeholders from inputFields
+       - Click placeholder → inserts {{property_name}} into content
+    4. Page Break After (checkbox)
+
+  PLACEHOLDER PANEL:
+    - Show all input fields from event type
+    - FOR EACH field:
+        Display: field.name (field.type)
+        Placeholder: {{field.property_name}}
+        Click to copy: Copy "{{field.property_name}}" to clipboard
+    - Standard placeholders also available:
+        {{event_date}}, {{event_time}}, {{event_location}}
+
+  ON SAVE:
+    1. Validate section name is not empty
+    2. Validate content is not empty (unless section_type is 'spacer')
+    3. Call onSave callback with section data
+    4. Close dialog
+END COMPONENT
+```
+
+### Code-Based Content Builder (Masses & Parish Events)
+
+**Purpose:** Generate printable scripts for masses and parish events without using database script templates
+
+**Location:** `/src/lib/content-builders/simple-event-script/`
+
+**Implementation:**
+```
+FILE: /src/lib/content-builders/simple-event-script/index.ts
+
+FUNCTION buildSimpleEventScript(event: MasterEventWithRelations, eventType: EventTypeWithRelations)
+  1. Validate inputs (event must have field_values, eventType must have input_field_definitions)
+  2. Create script sections array
+  3. Add cover page section:
+       - Event type name as title
+       - Event date and time (from primary calendar_event field)
+       - Event location (from primary calendar_event field)
+  4. Add custom fields section:
+       - FOR EACH field in eventType.input_field_definitions (ordered by field.order):
+           IF field.type !== 'spacer' AND field_values[field.property_name] exists THEN
+             Format field value based on type:
+               - 'person' → resolved person.full_name
+               - 'location' → resolved location.name
+               - 'content' → resolved content title
+               - 'date' → formatDatePretty(value)
+               - 'time' → formatTimePretty(value)
+               - 'text', 'rich_text' → value as-is
+               - 'yes_no' → "Yes" or "No"
+             Add to section content: "**{field.name}:** {formatted_value}"
+           IF field.type === 'spacer' THEN
+             Add visual separator
+  5. Return script object:
+       name: "{Event Type Name} Script"
+       sections: [cover_page_section, custom_fields_section]
+END FUNCTION
+```
+
+**Integration Point:**
+```
+FILE: /src/app/(main)/events/[event_type_id]/[id]/page.tsx (or masses equivalent)
+
+When user clicks "Print" or "View Script":
+  IF event_type.system_type === 'special-liturgy' THEN
+    Show script template selector (user picks from database scripts)
+    Use DynamicScriptViewer component
+  ELSE IF event_type.system_type IN ('mass', 'event') THEN
+    Call buildSimpleEventScript(event, eventType)
+    Render script using generic ScriptRenderer component
+```
+
+**Example Output (Masses/Events):**
+```
+================================
+Wedding Script
+================================
+Date: Saturday, June 15, 2025
+Time: 2:00 PM
+Location: St. Mary's Church
+
+--------------------------------
+
+**Bride:** Maria Garcia
+**Groom:** José Rodriguez
+**Wedding Date:** June 15, 2025
+**Rehearsal Date:** June 14, 2025 at 6:00 PM
+**Officiant:** Fr. John Smith
+**Best Man:** Carlos Rodriguez
+**Maid of Honor:** Ana Garcia
+**First Reading:** 1 Corinthians 13:1-13
+**Gospel:** John 15:9-12
+**Special Music:** Ave Maria by Schubert
+```
+
+### Validation Rules
+
+**1. Property Name Slug Generation:**
+```
+RULES:
+  - Auto-generated from field label on creation
+  - Lowercase only
+  - Replace spaces with underscores
+  - Remove special characters (except underscores)
+  - Must start with a letter (prepend 'field_' if starts with number)
+  - Must be unique within event type (enforced by database constraint)
+  - Format regex: ^[a-z][a-z0-9_]*$
+
+EXAMPLES:
+  "Bride" → "bride"
+  "Groom's Father" → "grooms_father"
+  "Rehearsal Date" → "rehearsal_date"
+  "1st Reading" → "field_1st_reading"
+```
+
+**2. Custom Field Deletion Validation:**
+```
+FUNCTION deleteInputFieldDefinition(id)
+  STEP 1: Get field definition
+    - Retrieve field.event_type_id, field.property_name, field.name
+
+  STEP 2: Count usage in events
+    - Query master_events table WHERE event_type_id = field.event_type_id
+    - FOR EACH event:
+        Check if field_values JSONB contains property_name key
+        Use PostgreSQL: field_values ? 'property_name'
+    - Count total events using this field
+
+  STEP 3: Validation
+    - IF usage_count > 0 THEN
+        Throw error: "Cannot delete field '{field.name}'. It is used in {usage_count} event(s). Please remove this field from all events before deleting the definition."
+    - ELSE
+        Proceed with deletion (hard delete from database)
+
+  STEP 4: Revalidate paths
+    - revalidatePath('/settings/event-types/{slug}/fields')
+    - revalidatePath('/settings/event-types/{slug}')
+END FUNCTION
+```
+
+**3. Primary Calendar Event Validation:**
+```
+RULE: Only ONE calendar_event field can be marked as is_primary per event type
+
+ENFORCEMENT:
+  - Database: Unique constraint idx_input_field_definitions_primary_calendar_event
+  - Server action: createInputFieldDefinition checks for existing primary before insert
+  - Server action: updateInputFieldDefinition checks before setting is_primary = true
+  - UI: Field form shows warning if trying to mark as primary when one already exists
+```
+
+**4. Section Type Validation (Special Liturgies):**
+```
+ALLOWED VALUES:
+  - 'text' - Free-form markdown text
+  - 'petition' - Reference to petition set
+  - 'cover_page' - Event title page
+  - 'reading' - Scripture reading reference
+  - 'psalm' - Responsorial psalm reference
+  - 'ceremony' - Ceremony instructions and text
+  - 'petitions' - Prayers of the faithful
+  - 'announcements' - Parish announcements
+  - 'custom_text' - Custom freeform content
+
+ENFORCEMENT:
+  - Database: CHECK constraint on sections.section_type column
+  - UI: Dropdown limited to these options
+```
+
+### Custom Fields Integration with Event Forms
+
+**How Custom Fields Dynamically Appear on Event Forms:**
+
+**Existing Implementation (Verified):**
+```
+FILE: /src/app/(main)/events/[event_type_id]/master-event-form.tsx (already exists)
+
+COMPONENT MasterEventForm({ event, eventType })
+  1. Extract input_field_definitions from eventType
+  2. Initialize field_values state from event.field_values JSONB or empty
+  3. FOR EACH field in input_field_definitions (ordered by field.order):
+       Render field based on field.type:
+         - 'person' → PersonPickerField
+         - 'group' → GroupPickerField
+         - 'location' → LocationPickerField
+         - 'list_item' → ListItemPickerField (requires field.list_id)
+         - 'document' → DocumentPickerField
+         - 'text' → FormInput
+         - 'rich_text' → Textarea
+         - 'content' → ContentPickerField (uses field.input_filter_tags)
+         - 'petition' → PetitionPickerField (uses field.input_filter_tags)
+         - 'calendar_event' → CalendarEventFieldView (composite field)
+         - 'date' → DatePickerField
+         - 'time' → TimePickerField
+         - 'datetime' → DateTimePickerField
+         - 'number' → Input type="number"
+         - 'yes_no' → Switch
+         - 'mass-intention' → MassIntentionField
+         - 'spacer' → Visual separator (no input)
+  4. Store field values in state keyed by field.property_name
+  5. On form submit:
+       - Collect all field_values as JSONB object
+       - Call createEvent or updateEvent with field_values
+END COMPONENT
+```
+
+**No New Implementation Needed:** Event forms already dynamically render custom fields based on `input_field_definitions` array. This existing pattern works perfectly for the feature.
+
+### Script Rendering with Placeholder Expansion
+
+**Existing Implementation (Verified):**
+```
+FILE: /src/components/dynamic-script-viewer.tsx (already exists)
+FILE: /src/lib/utils/markdown-processor.ts (referenced)
+
+COMPONENT DynamicScriptViewer({ script, event })
+  1. Call processScriptForRendering(script, event)
+  2. FOR EACH section in script.sections:
+       - Replace {{property_name}} placeholders with values from event.field_values
+       - Replace {{person_field.full_name}} with resolved person data
+       - Replace {{location_field.name}} with resolved location data
+       - Replace standard placeholders: {{event_date}}, {{event_time}}, {{event_location}}
+       - Convert markdown to HTML
+       - Apply liturgical styling (e.g., {red}text{/red})
+  3. Render processed sections with HTML content
+END COMPONENT
+```
+
+**No New Implementation Needed:** Placeholder expansion already works via `DynamicScriptViewer` component.
+
+### Testing Requirements
+
+**User Consultation Needed:** Discuss with user whether tests should be created for this feature.
+
+**If tests are approved, suggested test scenarios:**
+
+**Unit Tests:**
+- Property name slug generation (various inputs)
+- Field deletion validation (with/without usage)
+- Primary calendar event uniqueness
+- Placeholder expansion logic
+
+**E2E Tests:**
+- Create event type → add custom fields → create event → verify fields appear on form
+- Create script template → add sections → view script with placeholders replaced
+- Delete field that's in use → verify error message
+- Reorder custom fields → verify order persists
+
+### Project Documentation Updates
+
+**Files to Update:**
+
+1. **MODULE_REGISTRY.md**
+   - Add entry for event-types detail pages:
+     ```
+     /settings/event-types/{slug}/ - Event Type Configuration Hub
+     /settings/event-types/{slug}/fields/ - Custom Field Definitions
+     /settings/event-types/{slug}/scripts/ - Script Templates (Special Liturgies)
+     ```
+
+2. **COMPONENT_REGISTRY.md**
+   - Add new components:
+     - FieldsListClient (custom fields drag-and-drop list)
+     - FieldFormDialog (add/edit field dialog)
+     - ScriptsListClient (script templates list)
+     - ScriptBuilderClient (script section builder)
+     - SectionFormDialog (add/edit section dialog)
+     - PlaceholderReferencePanel (shows available placeholders)
+
+3. **CONTENT_BUILDER_SECTIONS.md**
+   - Document new section types: cover_page, ceremony, custom_text
+   - Add section type reference table
+
+4. **FORMATTERS.md**
+   - Document generatePropertyName() helper function
+
+5. **Create new file: EVENT_TYPE_CONFIGURATION.md**
+   - Comprehensive guide to event type configuration system
+   - Three-page architecture overview
+   - Custom fields system (16 field types)
+   - Script templates system (special liturgies only)
+   - Code-based content builder (masses/events)
+   - Placeholder syntax reference
+   - Examples and best practices
+
+### User Documentation Updates
+
+**Needed:** Yes
+
+**Pages to add/update in `/src/app/documentation/content/`:**
+
+1. **en/admin/event-types-overview.md** (new)
+   - What are event types?
+   - Three system types (mass, special-liturgy, event)
+   - How to configure event types
+   - When to use custom fields vs script templates
+
+2. **en/admin/custom-fields-guide.md** (new)
+   - How to add custom fields
+   - 16 field types explained with examples
+   - Field ordering and required fields
+   - Property names and slugs
+
+3. **en/admin/script-templates-guide.md** (new)
+   - How to create script templates (special liturgies only)
+   - Section types explained
+   - Using placeholders in scripts
+   - Page breaks and formatting
+
+4. **es/admin/tipos-de-eventos-resumen.md** (new)
+   - Spanish translation of event-types-overview.md
+
+5. **es/admin/campos-personalizados-guia.md** (new)
+   - Spanish translation of custom-fields-guide.md
+
+6. **es/admin/plantillas-de-guion-guia.md** (new)
+   - Spanish translation of script-templates-guide.md
+
+**Bilingual Content Required:** All 6 files (3 English + 3 Spanish)
+
+### Home Page Impact
+
+**Needed:** No
+
+**Reason:** This is a settings/admin feature. No dashboard widgets or home page elements needed. Event type configuration is accessed via Settings navigation.
+
+### README Updates
+
+**Needed:** No
+
+**Reason:** This is not a major architectural change or new module. It's a UI layer for existing database infrastructure. No README changes needed.
+
+### Security Considerations
+
+**Authentication & Authorization:**
+- All event type configuration pages require admin role (enforced via `checkSettingsAccess()`)
+- RLS policies on all tables ensure parish isolation
+- Server actions check `requireManageParishSettings(user.id, parishId)` before mutations
+
+**Data Validation:**
+- Property name format validation (regex: ^[a-z][a-z0-9_]*$)
+- Uniqueness validation for property names within event type
+- Type-specific flag validation (is_key_person only for person type, is_primary only for calendar_event)
+- Field deletion usage validation prevents orphaned data
+
+**Content Security:**
+- Section content sanitized via `sanitizeSectionContent()` (strips HTML tags, preserves markdown)
+- Placeholder expansion uses safe string replacement (no code execution)
+- JSONB field_values validated on server side
+
+### Database Changes
+
+**Migration Required:** Yes (1 migration)
+
+**Migration Details:**
+```
+FILE: supabase/migrations/2025MMDD_expand_sections_section_type_constraint.sql
+
+PURPOSE: Expand sections.section_type CHECK constraint to support all section types
+
+CONTENT:
+  1. DROP existing constraint check_section_type_valid
+  2. ADD new constraint allowing: 'text', 'petition', 'cover_page', 'reading', 'psalm', 'ceremony', 'petitions', 'announcements', 'custom_text'
+
+ROLLBACK: Revert to original constraint (only 'text', 'petition')
+
+TESTING: Verify section creation with new types succeeds
+```
+
+### Implementation Complexity
+
+**Complexity Rating:** Medium
+
+**Reason:**
+- Database infrastructure already exists (minimal changes needed)
+- Server actions already exist (only 1 enhancement needed for deletion validation)
+- Most complexity is in UI layer (3 new pages, drag-and-drop, dialogs)
+- Existing patterns to follow (masses settings pages, drag-and-drop in event types lists)
+- Script builder for special liturgies is most complex component (section editor with placeholder insertion)
+- Code-based content builder for masses/events is straightforward (read fields in order, format values)
+
+**What Makes It Medium (Not Low):**
+- Three separate pages with different UIs (hub, fields, scripts)
+- Conditional rendering logic (scripts page shows different UI based on system_type)
+- Drag-and-drop section builder with rich text editing
+- Placeholder reference panel with copy functionality
+- Field deletion validation requires JSONB querying
+- Bilingual user documentation (6 pages)
+
+**What Keeps It Medium (Not High):**
+- No new database schema (except 1 constraint change)
+- No new server actions (except 1 validation enhancement)
+- Event form integration already works
+- Script rendering already works
+- Can reuse existing components (ContentCard, ConfirmationDialog, FormField, @dnd-kit patterns)
+- Clear reference implementation (masses settings pages, event types lists)
+
+### Dependencies and Blockers
+
+**Dependencies:**
+1. **Database Migration** - Must expand sections.section_type constraint before script builder can use new section types
+2. **Admin Permission Check** - All pages depend on checkSettingsAccess() function
+3. **Existing Components** - Depends on ContentCard, ConfirmationDialog, FormField, drag-and-drop patterns from @dnd-kit
+4. **Translations** - Requires i18n translations for all UI text (English and Spanish)
+
+**Blockers:**
+- None identified - all infrastructure exists, only UI layer needs to be built
+
+### Documentation Inconsistencies Found
+
+**1. Section Type Constraint Mismatch**
+- **Location:** `supabase/migrations/20251210000006_create_sections_table.sql` line 17
+- **Inconsistency:** Database constraint only allows `section_type IN ('text', 'petition')` but vision document references 7 section types (cover_page, reading, psalm, ceremony, petitions, announcements, custom_text)
+- **Impact:** Cannot create sections with new types until constraint is expanded
+- **Suggested Fix:** Migration to expand constraint (documented above)
+
+**2. Event Form Component Location**
+- **Location:** `/src/app/(main)/events/[event_type_id]/master-event-form.tsx`
+- **Inconsistency:** File is located in events directory but also used by masses and special-liturgies (assumed based on pattern)
+- **Impact:** Minor - component works correctly but location may cause confusion
+- **Suggested Fix:** Consider moving to shared location like `/src/components/master-event-form.tsx` or documenting in COMPONENT_REGISTRY.md that this component is shared across modules
+
+**3. Property Name Terminology**
+- **Location:** `input_field_definitions` table uses `property_name`, vision document uses "slug"
+- **Inconsistency:** Mixing "property_name" (database) and "slug" (vision doc) for same concept
+- **Impact:** Minor - just terminology, functionality is clear
+- **Suggested Fix:** Standardize on "property_name" in technical docs, "slug" in user-facing docs
+
+### Next Steps
+
+**Status Updated:** Ready for Development
+
+**Hand off to developer-agent for implementation.**
+
+**Developer-agent should implement in this order:**
+
+1. **Phase 1: Database Migration**
+   - Create migration to expand sections.section_type constraint
+   - Run migration locally
+   - Verify section creation with new types works
+
+2. **Phase 2: Server Action Enhancement**
+   - Update deleteInputFieldDefinition to add usage validation
+   - Test deletion of used vs unused fields
+
+3. **Phase 3: Hub Page**
+   - Create /settings/event-types/[slug]/page.tsx
+   - Implement conditional navigation (hide Scripts for masses/events)
+   - Test navigation to fields and scripts pages
+
+4. **Phase 4: Custom Fields Page**
+   - Create /settings/event-types/[slug]/fields/page.tsx (server)
+   - Create fields-list-client.tsx (client with drag-and-drop)
+   - Create field-form-dialog.tsx (add/edit dialog)
+   - Test field CRUD operations and reordering
+
+5. **Phase 5: Scripts Page (Special Liturgies)**
+   - Create /settings/event-types/[slug]/scripts/page.tsx (server)
+   - Create scripts-list-client.tsx (client with script list)
+   - Create /settings/event-types/[slug]/scripts/[script_id]/page.tsx (script builder)
+   - Create script-builder-client.tsx (section editor)
+   - Create section-form-dialog.tsx (add/edit sections)
+   - Create placeholder-reference-panel.tsx (shows available placeholders)
+   - Test script and section CRUD operations
+
+6. **Phase 6: Code-Based Content Builder (Masses/Events)**
+   - Create /src/lib/content-builders/simple-event-script/index.ts
+   - Integrate with event view pages
+   - Test script generation from custom fields
+
+7. **Phase 7: Testing**
+   - Consult user on test requirements
+   - Create tests if approved (unit + E2E)
+
+8. **Phase 8: Documentation**
+   - Update MODULE_REGISTRY.md, COMPONENT_REGISTRY.md
+   - Create EVENT_TYPE_CONFIGURATION.md
+   - Hand off to user-documentation-writer for bilingual user guides
+
+---
+
 ## Review Notes
 (Added by devils-advocate-agent on 2025-12-23)
 
@@ -625,6 +1471,105 @@ The clarified vision is:
 - **Simple output:** Masses and parish events just print fields in order
 
 This significantly reduces scope while still meeting real user needs.
+
+---
+
+## Architectural Simplification
+(Added by wisdom-agent on 2025-12-23 - Final Session)
+
+### The Key Insight: Script → Sections → Content
+
+After further discussion, the architecture was simplified to:
+
+```
+Script
+  └── Sections (ordered list)
+        └── Each section holds a reference to Content Library item
+```
+
+**What this means:**
+- **Scripts** are just ordered collections of sections (like a "playlist")
+- **Sections** reference content from the Content Library (readings, prayers, ceremony texts)
+- **Custom fields** (bride name, groom name, etc.) are NOT stored in sections - they're stored on the event itself and merged at render time via placeholder expansion
+
+**Why this is simpler:**
+1. **No section_type complexity** - Sections don't need type-specific behavior; they're just containers for content
+2. **Content Library is the source of truth** - All readings, prayers, ceremony texts live in one place
+3. **Clean separation** - Content (what to print) vs. Data (event-specific values) are kept separate
+4. **Placeholder expansion at render time** - The renderer merges `{{bride.first_name}}` with event data when printing
+
+### How It Works
+
+1. **Admin creates script template:**
+   - Adds sections in order (drag-and-drop)
+   - Each section points to a Content Library item (e.g., "Wedding Vows - Traditional")
+   - Content can include placeholders like `{{bride.first_name}}`
+
+2. **Staff creates event:**
+   - Fills in custom fields (bride, groom, etc.)
+   - Selects script template for printing
+
+3. **Renderer produces output:**
+   - Loads script sections in order
+   - Fetches content from Content Library for each section
+   - Expands placeholders with event field values
+   - Outputs HTML/PDF/Word
+
+### Updated Database Understanding
+
+**Existing tables:**
+- `scripts` - Script templates (name, description, order)
+- `sections` - Ordered sections within a script
+- `content_library` - Readings, prayers, ceremony texts
+- `input_field_definitions` - Custom field definitions per event type
+- `master_events.field_values` - Event-specific custom field values (JSONB)
+
+**Section structure (simplified):**
+```sql
+sections (
+  id UUID,
+  script_id UUID,      -- which script this belongs to
+  name VARCHAR,        -- display name for admin
+  content_id UUID,     -- reference to content_library item (NEW understanding)
+  content TEXT,        -- OR inline markdown with placeholders
+  page_break_after BOOLEAN,
+  order INTEGER
+)
+```
+
+**Note:** Some sections reference Content Library items; others have inline content. Both support `{{placeholder}}` syntax.
+
+### Custom Fields and Placeholder Expansion
+
+Custom fields live on the event type (`input_field_definitions`), and their values live on the event (`master_events.field_values`).
+
+At render time, the renderer:
+1. Loads section content (from content_id or inline content)
+2. Finds all `{{placeholder}}` patterns
+3. Looks up placeholder in `field_values` JSONB
+4. Replaces placeholder with actual value
+5. Handles nested properties: `{{bride.first_name}}` → looks up `bride` field → gets person record → extracts `first_name`
+
+**This existing pattern is correct and doesn't need to change.**
+
+### What This Means for Implementation
+
+**For the Scripts Page (Special Liturgies):**
+- Section builder shows Content Library items to choose from
+- Admin can also add inline text sections with placeholders
+- Drag-and-drop reordering of sections
+
+**For Masses & Parish Events:**
+- No script builder needed
+- Code-based content builder reads custom fields in order
+- Auto-generates a simple printable output
+
+**The section_type field is optional metadata:**
+- All sections are just containers for content
+- Rendering behavior is driven by the content itself (markdown formatting, special liturgical markers)
+- The renderer treats all sections the same way: expand placeholders, convert markdown, apply styling
+- **Decision:** Keep the column in the database but remove the CHECK constraint. The column is now nullable and can be any value or null. It provides optional categorization hints but is not required for functionality
+- **Migration updated:** Removed `NOT NULL DEFAULT 'text'` and `CHECK` constraint from `sections.section_type`
 
 ---
 

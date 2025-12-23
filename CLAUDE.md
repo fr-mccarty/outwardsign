@@ -66,6 +66,7 @@ This project uses specialized AI agents for different development tasks. Using t
 | **ui-agent** | N/A (read-only) | UI visual quality audits | Visual consistency, styling patterns, layout review |
 | **ux-agent** | N/A (read-only) | UX understanding audits | Language clarity, labels, descriptions, navigation, ordering |
 | **wisdom-agent** | N/A (read-only) | Perspective and encouragement | Feeling stuck, overwhelmed, need advice or grounding |
+| **supervisor-agent** | `/supervisor/` | Codebase health audits | Comprehensive audits, pre-release checks, cleanup scanning |
 
 ### Quick Decision Guide
 
@@ -81,6 +82,7 @@ This project uses specialized AI agents for different development tasks. Using t
 - **UI review?** → ui-agent (visual styling, spacing, colors, layout patterns)
 - **UX review?** → ux-agent (language clarity, labels, descriptions, navigation, ordering)
 - **Stuck or overwhelmed?** → wisdom-agent (step back, get perspective, find clarity)
+- **Health check/audit?** → supervisor-agent (comprehensive codebase audit, cleanup scanning, security checks)
 
 **Rule of Thumb:** Use the most specialized agent for each task. See [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md) for detailed workflows and hand-off patterns.
 
@@ -95,6 +97,7 @@ Each agent owns a specific folder where it creates and manages files:
 - **`/docs/`** - project-documentation-writer maintains technical documentation for developers/AI agents
 - **`/src/app/documentation/content/`** - user-documentation-writer creates bilingual end-user guides
 - **`/releases/`** - release-agent creates deployment logs and release notes (audit trail)
+- **`/supervisor/`** - supervisor-agent writes codebase health reports
 
 **Read-only agents** (no folder ownership): test-runner-debugger, code-review-agent, explorer-agent, refactor-agent, qa-specialist, ui-agent, ux-agent, wisdom-agent
 
@@ -148,6 +151,7 @@ This matches the required pattern shown in the documentation.
 | **Create end-user guides** | 🔴 [USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md) - User guide system | user-documentation-writer |
 | **Deploy to production** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration safety | release-agent |
 | **Quality assurance testing** | 🔴 [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md)<br>🔴 [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | qa-specialist |
+| **Codebase health check/audit** | 🔴 [CLAUDE.md](./CLAUDE.md) - Project patterns<br>🔴 [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md) - Agent inventory | supervisor-agent |
 | **Implement or modify permission checks** | 🔴 [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) - Role-based access control and permission enforcement | developer-agent |
 
 ### How to Use This Table
