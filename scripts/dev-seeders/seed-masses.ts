@@ -5,8 +5,9 @@
  * Uses master_events + calendar_events tables (NOT the legacy masses table).
  * Mass event types are created by the onboarding seeder.
  *
- * Note: Role assignments will use people_event_assignments table once implemented
- * (per unified-event-assignments requirements).
+ * Also assigns ministers to each Mass using people_event_assignments:
+ * - Template-level: presider, homilist (calendar_event_id = NULL)
+ * - Occurrence-level: lector, emhc, altar_server, cantor, usher (calendar_event_id populated)
  */
 
 import type { DevSeederContext } from './types'
@@ -18,6 +19,16 @@ const COLORS = LITURGICAL_COLOR_VALUES.reduce((acc, color) => {
   acc[color] = color
   return acc
 }, {} as Record<LiturgicalColor, LiturgicalColor>)
+
+// Type for input field definitions
+interface InputFieldDef {
+  id: string
+  type: string
+  property_name: string
+  is_primary: boolean
+  is_per_calendar_event: boolean
+  deleted_at: string | null
+}
 
 export async function seedMasses(
   ctx: DevSeederContext,
@@ -55,13 +66,6 @@ export async function seedMasses(
   logInfo('')
   logInfo('Creating 20 sample Masses...')
 
-  // Helper to get future date
-  const getMassDate = (daysFromNow: number) => {
-    const date = new Date()
-    date.setDate(date.getDate() + daysFromNow)
-    return date.toISOString().split('T')[0]
-  }
-
   // Get Sunday dates
   const getSundayDate = (weeksFromNow: number) => {
     const date = new Date()
@@ -74,10 +78,22 @@ export async function seedMasses(
   // Helper to find the primary calendar_event field for an event type
   const getPrimaryCalendarEventField = (eventType: typeof sundayMassEventType) => {
     if (!eventType?.input_field_definitions) return null
-    return eventType.input_field_definitions.find(
-      (field: { type: string; is_primary: boolean; deleted_at: string | null }) =>
-        field.type === 'calendar_event' && field.is_primary && !field.deleted_at
+    return (eventType.input_field_definitions as InputFieldDef[]).find(
+      (field) => field.type === 'calendar_event' && field.is_primary && !field.deleted_at
     )
+  }
+
+  // Helper to get person-type field definitions for an event type
+  const getPersonFields = (eventType: typeof sundayMassEventType) => {
+    if (!eventType?.input_field_definitions) return []
+    return (eventType.input_field_definitions as InputFieldDef[]).filter(
+      (field) => field.type === 'person' && !field.deleted_at
+    )
+  }
+
+  // Helper to randomly pick a person from the list
+  const getRandomPerson = (index: number, offset = 0) => {
+    return people![(index + offset) % people!.length]
   }
 
   const massesToCreate: Array<{
@@ -146,15 +162,6 @@ export async function seedMasses(
     }
   }
 
-  // Fetch liturgical events to link some Masses
-  const { data: liturgicalEvents } = await supabase
-    .from('liturgical_calendar')
-    .select('id, date, event_data')
-    .gte('date', getMassDate(0))
-    .lte('date', getMassDate(60))
-    .order('date')
-    .limit(20)
-
   // Insert Masses using unified event model
   let massesCreatedCount = 0
   for (const massData of massesToCreate) {
@@ -166,10 +173,7 @@ export async function seedMasses(
       continue
     }
 
-    const matchingLiturgicalEvent = liturgicalEvents?.find(le => le.date === massData.date)
-
     // Create master_event
-    // Note: presider_id removed - will use people_event_assignments when implemented
     const { data: newMasterEvent, error: masterEventError } = await supabase
       .from('master_events')
       .insert({
@@ -189,7 +193,7 @@ export async function seedMasses(
 
     // Create calendar_event linked to the master_event
     const startDatetime = new Date(`${massData.date}T${massData.time}`).toISOString()
-    const { error: calendarEventError } = await supabase
+    const { data: newCalendarEvent, error: calendarEventError } = await supabase
       .from('calendar_events')
       .insert({
         parish_id: parishId,
@@ -200,9 +204,11 @@ export async function seedMasses(
         show_on_calendar: true,
         is_cancelled: false
       })
+      .select()
+      .single()
 
-    if (calendarEventError) {
-      logError(`Error creating calendar_event for ${massData.date}: ${calendarEventError.message}`)
+    if (calendarEventError || !newCalendarEvent) {
+      logError(`Error creating calendar_event for ${massData.date}: ${calendarEventError?.message}`)
       // Clean up the orphaned master_event
       await supabase.from('master_events').delete().eq('id', newMasterEvent.id)
       continue
@@ -210,13 +216,42 @@ export async function seedMasses(
 
     massesCreatedCount++
 
-    // TODO: Assign ministers using people_event_assignments when implemented
-    // (per unified-event-assignments requirements)
+    // Assign ministers using people_event_assignments
+    const personFields = getPersonFields(massData.eventType)
+    const assignments: Array<{
+      master_event_id: string
+      calendar_event_id: string | null
+      field_definition_id: string
+      person_id: string
+    }> = []
+
+    for (let fieldIndex = 0; fieldIndex < personFields.length; fieldIndex++) {
+      const field = personFields[fieldIndex]
+      const person = getRandomPerson(massesCreatedCount, fieldIndex)
+
+      assignments.push({
+        master_event_id: newMasterEvent.id,
+        // Template-level (presider, homilist) = NULL, Occurrence-level = calendar_event_id
+        calendar_event_id: field.is_per_calendar_event ? newCalendarEvent.id : null,
+        field_definition_id: field.id,
+        person_id: person.id
+      })
+    }
+
+    if (assignments.length > 0) {
+      const { error: assignmentError } = await supabase
+        .from('people_event_assignments')
+        .insert(assignments)
+
+      if (assignmentError) {
+        logWarning(`Error creating assignments for Mass ${massData.date}: ${assignmentError.message}`)
+      }
+    }
   }
 
   const sundayCount = massesToCreate.filter(m => m.eventType?.slug === 'sunday-mass').length
   const dailyCount = massesToCreate.filter(m => m.eventType?.slug === 'daily-mass').length
-  logSuccess(`Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily)`)
+  logSuccess(`Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily) with minister assignments`)
 
   return { success: true }
 }

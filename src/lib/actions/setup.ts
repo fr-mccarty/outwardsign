@@ -10,6 +10,8 @@ import { logWarning, logError } from '@/lib/utils/console'
 /**
  * Populates initial data for a newly created parish.
  * Called after parish creation during onboarding.
+ * Uses admin client to bypass RLS since the parish_users record
+ * may not be visible yet in the same session.
  * See docs/ONBOARDING.md for documentation.
  */
 export async function populateInitialParishData(parishId: string) {
@@ -20,7 +22,11 @@ export async function populateInitialParishData(parishId: string) {
     redirect('/login')
   }
 
-  return seedParishData(supabase, parishId)
+  // Use admin client to bypass RLS for seeding operations
+  // This is necessary because the parish_users record created during
+  // createParishWithSuperAdmin may not be visible yet to RLS policies
+  const adminClient = createAdminClient()
+  return seedParishData(adminClient, parishId)
 }
 
 export async function createTestParish() {

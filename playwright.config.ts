@@ -10,6 +10,8 @@ dotenv.config({ path: path.join(__dirname, '.env.local') });
  */
 export default defineConfig({
   testDir: './tests',
+  /* Only match .spec.ts files (unit tests use .test.ts and are run by Vitest) */
+  testMatch: '**/*.spec.ts',
   /* Ignore unit tests - those are run by Vitest, not Playwright */
   testIgnore: ['**/unit/**'],
   /* Run tests in files in parallel */

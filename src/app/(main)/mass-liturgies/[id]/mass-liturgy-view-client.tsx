@@ -4,10 +4,12 @@ import { useState } from 'react'
 import type { MasterEventWithRelations } from '@/lib/types'
 import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
 import { deleteEvent } from '@/lib/actions/master-events'
+import { deleteCalendarEvent } from '@/lib/actions/calendar-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/content-card'
-import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
 import Link from 'next/link'
@@ -46,6 +48,28 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
   // Handle assignment change - refresh the page data
   const handleAssignmentChange = () => {
     router.refresh()
+  }
+
+  // Handle delete mass time
+  const handleDeleteMassTime = async (e: React.MouseEvent, calendarEventId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!confirm('Are you sure you want to delete this mass time?')) {
+      return
+    }
+
+    try {
+      await deleteCalendarEvent(calendarEventId)
+      toast.success('Mass time deleted')
+      router.refresh()
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('last calendar event')) {
+        toast.error('Cannot delete the only mass time')
+      } else {
+        toast.error('Failed to delete mass time')
+      }
+    }
   }
 
   // Handle script card click
@@ -277,6 +301,15 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
                           {eventAssignments.length} assigned
                         </span>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => handleDeleteMassTime(e, calendarEvent.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete mass time</span>
+                      </Button>
                     </div>
                   </div>
                 </Link>

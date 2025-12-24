@@ -184,6 +184,7 @@ export default function OnboardingPage() {
                 label="State"
                 value={state}
                 onChange={setState}
+                required
                 placeholder="e.g., Massachusetts"
               />
               <FormInput
