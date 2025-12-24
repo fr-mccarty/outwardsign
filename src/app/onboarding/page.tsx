@@ -133,7 +133,7 @@ export default function OnboardingPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
               <div className="text-sm text-muted-foreground">
-                Seeding parish readings...
+                Getting your parish setup...
               </div>
             </div>
           </CardContent>
@@ -169,6 +169,7 @@ export default function OnboardingPage() {
                 value={parishName}
                 onChange={setParishName}
                 required
+                autoFocus
                 placeholder="e.g., St. Mary's Catholic Church"
               />
               <FormInput
