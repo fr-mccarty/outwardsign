@@ -40,6 +40,7 @@ import {
 import { getActiveGroups, type Group } from '@/lib/actions/groups'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface FieldFormDialogProps {
   eventType: EventTypeWithRelations
@@ -250,7 +251,7 @@ export function FieldFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
             {/* Field Name */}
             <FormField
               control={form.control}

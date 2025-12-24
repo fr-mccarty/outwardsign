@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface PetitionTemplateViewClientProps {
   template: PetitionContextTemplate
@@ -31,7 +32,7 @@ export function PetitionTemplateViewClient({ template }: PetitionTemplateViewCli
   }
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Actions Card */}
       <Card>
         <CardHeader>

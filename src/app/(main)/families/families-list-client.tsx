@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Family, FamilyStats, FamilyFilters } from '@/lib/actions/families'
 import { deleteFamily, getFamilies } from '@/lib/actions/families'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
@@ -192,7 +193,7 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search and Filters */}
       <SearchCard title="Search Families">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { FORM_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { FormInput } from '@/components/form-input'
 import { FormSectionCard } from '@/components/form-section-card'
 import { PersonPickerField } from '@/components/person-picker-field'
@@ -437,7 +438,7 @@ export function MasterEventForm({
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmitForm)} className={FORM_SECTIONS_SPACING}>
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"

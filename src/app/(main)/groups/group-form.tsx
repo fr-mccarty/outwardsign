@@ -18,6 +18,7 @@ import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { ListCard, CardListItem } from "@/components/list-card"
 import { Badge } from "@/components/ui/badge"
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 // Zod validation schema
 const groupSchema = z.object({
@@ -190,7 +191,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
   return (
     <>
-      <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
         {/* Group Information */}
         <FormSectionCard
           title={t('groups.groupInformation')}

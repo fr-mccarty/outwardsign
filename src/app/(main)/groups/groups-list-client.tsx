@@ -7,6 +7,7 @@ import type { Group } from '@/lib/actions/groups'
 import type { GroupStats } from '@/lib/actions/groups'
 import { deleteGroup, getGroups, type GroupFilters } from '@/lib/actions/groups'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
@@ -185,7 +186,7 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search and Filters */}
       <SearchCard title={t('groups.searchGroups')}>
         {/* Main Search and Status Row - Inline */}

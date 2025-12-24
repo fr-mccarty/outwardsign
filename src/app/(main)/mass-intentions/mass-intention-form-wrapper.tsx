@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { MassIntentionForm } from './mass-intention-form'
-import { PageContainer } from '@/components/page-container'
-import { SaveButton } from '@/components/save-button'
 import type { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 
 interface MassIntentionFormWrapperProps {
@@ -17,28 +15,21 @@ export function MassIntentionFormWrapper({
   title,
   description
 }: MassIntentionFormWrapperProps) {
-  const formId = 'mass-intention-form'
-  const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!intention
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={title}
       description={description}
-      primaryAction={<SaveButton moduleName="Mass Intention" isLoading={isLoading} isEditing={isEditing} form={formId} />}
-      additionalActions={isEditing ? [
-        {
-          type: 'action',
-          label: 'View Mass Intention',
-          href: `/mass-intentions/${intention.id}`
-        }
-      ] : undefined}
+      moduleName="Mass Intention"
+      viewPath="/mass-intentions"
+      entity={intention}
     >
-      <MassIntentionForm
-        intention={intention}
-        formId={formId}
-        onLoadingChange={setIsLoading}
-      />
-    </PageContainer>
+      {({ formId, onLoadingChange }) => (
+        <MassIntentionForm
+          intention={intention}
+          formId={formId}
+          onLoadingChange={onLoadingChange}
+        />
+      )}
+    </ModuleFormWrapper>
   )
 }

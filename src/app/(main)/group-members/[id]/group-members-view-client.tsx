@@ -9,6 +9,7 @@ import { Users, Calendar } from 'lucide-react'
 import { formatDatePretty } from '@/lib/utils/formatters'
 import type { Person } from '@/lib/types'
 import type { PersonGroupMembership } from '@/lib/actions/groups'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface GroupMembersViewClientProps {
   person: Person
@@ -85,7 +86,7 @@ export function GroupMembersViewClient({
       actionButtons={actionButtons}
       details={details}
     >
-      <div className="space-y-6">
+      <div className={PAGE_SECTIONS_SPACING}>
         {/* Active Group Memberships */}
         <Card>
           <CardHeader>

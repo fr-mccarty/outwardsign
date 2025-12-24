@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Mail } from 'lucide-react'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface MagicLinkLoginFormProps {
   parishId: string
@@ -35,7 +36,7 @@ export function MagicLinkLoginForm({ parishId }: MagicLinkLoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={FORM_SECTIONS_SPACING}>
       <div className="space-y-2">
         <Label htmlFor="email">Email Address</Label>
         <div className="relative">

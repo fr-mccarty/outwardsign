@@ -11,6 +11,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { deleteContent } from '@/lib/actions/contents'
 import type { ContentWithTags } from '@/lib/types'
 import { toast } from 'sonner'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface ContentViewClientProps {
   content: ContentWithTags
@@ -52,7 +53,7 @@ export function ContentViewClient({ content }: ContentViewClientProps) {
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className={PAGE_SECTIONS_SPACING}>
         {/* Details */}
         <ContentCard>
           <div className="space-y-4">

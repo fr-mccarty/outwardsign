@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
 import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -301,7 +302,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search and Filters */}
       <SearchCard title={t('title')}>
         <div className="space-y-4">

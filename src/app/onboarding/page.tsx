@@ -13,6 +13,7 @@ import { APP_NAME } from '@/lib/constants'
 import { createParishWithSuperAdmin } from '@/lib/auth/parish'
 import { populateInitialParishData } from '@/lib/actions/setup'
 import { toast } from 'sonner'
+import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
 export default function OnboardingPage() {
   const [parishName, setParishName] = useState('')
@@ -161,7 +162,7 @@ export default function OnboardingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className={FORM_FIELDS_SPACING}>
               <FormInput
                 id="parishName"
                 label="Parish Name"

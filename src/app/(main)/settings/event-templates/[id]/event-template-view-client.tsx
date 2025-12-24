@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { formatDatePretty } from '@/lib/utils/formatters'
 import { useTranslations } from 'next-intl'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface EventTemplateViewClientProps {
   template: MasterEventTemplateWithRelations
@@ -76,7 +77,7 @@ export function EventTemplateViewClient({ template }: EventTemplateViewClientPro
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <div className="space-y-6">
+      <div className={PAGE_SECTIONS_SPACING}>
         {/* Details */}
         <ContentCard>
           <div className="space-y-4">

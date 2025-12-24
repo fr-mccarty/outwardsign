@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 import { FormInput } from "@/components/form-input"
 import { DatePickerField } from "@/components/date-picker-field"
 import { toLocalDateString } from "@/lib/utils/formatters"
@@ -112,7 +113,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
       {/* Basic Information */}
       <FormSectionCard
         title={t('intentionDetails')}

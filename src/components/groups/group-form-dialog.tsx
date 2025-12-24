@@ -12,6 +12,7 @@ import { Save, X } from "lucide-react"
 import { createGroup, updateGroup, type Group } from '@/lib/actions/groups'
 import { createGroupSchema, type CreateGroupData, type UpdateGroupData } from '@/lib/schemas/groups'
 import { toast } from 'sonner'
+import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
 interface GroupFormDialogProps {
   open: boolean
@@ -94,7 +95,7 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className={FORM_FIELDS_SPACING}>
           <FormInput
             id="name"
             label="Group Name"

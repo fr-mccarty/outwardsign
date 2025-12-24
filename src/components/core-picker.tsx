@@ -16,6 +16,7 @@ import { capitalizeFirstLetter } from '@/lib/utils/formatters'
 import { FormInput } from '@/components/form-input'
 import { SaveButton } from '@/components/save-button'
 import { CancelButton } from '@/components/cancel-button'
+import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
 /**
  * STABLE DEFAULTS
@@ -475,7 +476,7 @@ export function CorePicker<T>({
         <div className="flex-1 overflow-y-auto px-1">
           {showCreateForm ? (
             /* Inline creation form */
-            <form onSubmit={handleFormSubmit} className="space-y-4 py-1">
+            <form onSubmit={handleFormSubmit} className={`${FORM_FIELDS_SPACING} py-1`}>
               {CustomFormComponent ? (
                 <CustomFormComponent
                   form={form}

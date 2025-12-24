@@ -5,16 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
+import { FormInput } from '@/components/form-input'
 import { FormBottomActions } from '@/components/form-bottom-actions'
 import {
   createFamily,
@@ -23,6 +14,7 @@ import {
 } from '@/lib/actions/families'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 // Form schema factory - creates schema with translations
 const createFamilyFormSchema = (t: any) => z.object({
@@ -78,54 +70,33 @@ export function FamilyForm({ family }: FamilyFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="family_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('families.familyName')}</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder={t('families.familyNamePlaceholder')}
-                  autoFocus
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
+      <FormInput
+        id="family_name"
+        label={t('families.familyName')}
+        value={form.watch('family_name')}
+        onChange={(v) => form.setValue('family_name', v)}
+        placeholder={t('families.familyNamePlaceholder')}
+        required
+        autoFocus
+        error={form.formState.errors.family_name?.message}
+      />
 
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">{t('common.active')}</FormLabel>
-                <div className="text-sm text-muted-foreground">
-                  Inactive families will be hidden from scheduling and pickers
-                </div>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+      <FormInput
+        id="active"
+        inputType="checkbox"
+        label={t('common.active')}
+        description="Inactive families will be hidden from scheduling and pickers"
+        value={form.watch('active')}
+        onChange={(v: boolean) => form.setValue('active', v)}
+      />
 
-        <FormBottomActions
-          isEditing={isEditing}
-          isLoading={isSubmitting}
-          cancelHref={isEditing && family ? `/families/${family.id}` : '/families'}
-          moduleName={t('families.title')}
-        />
-      </form>
-    </Form>
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isSubmitting}
+        cancelHref={isEditing && family ? `/families/${family.id}` : '/families'}
+        moduleName={t('families.title')}
+      />
+    </form>
   )
 }

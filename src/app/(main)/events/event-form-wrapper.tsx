@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { EventForm } from './event-form'
-import { PageContainer } from '@/components/page-container'
-import { SaveButton } from '@/components/save-button'
 import type { MasterEventWithRelations } from '@/lib/types'
 import type { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
@@ -20,29 +18,22 @@ export function EventFormWrapper({
   description,
   initialLiturgicalEvent
 }: EventFormWrapperProps) {
-  const formId = 'event-form'
-  const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!event
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={title}
       description={description}
-      primaryAction={<SaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />}
-      additionalActions={isEditing ? [
-        {
-          type: 'action',
-          label: 'View Event',
-          href: `/events/${event.id}`
-        }
-      ] : undefined}
+      moduleName="Event"
+      viewPath="/events"
+      entity={event}
     >
-      <EventForm
-        event={event}
-        formId={formId}
-        onLoadingChange={setIsLoading}
-        initialLiturgicalEvent={initialLiturgicalEvent}
-      />
-    </PageContainer>
+      {({ formId, onLoadingChange }) => (
+        <EventForm
+          event={event}
+          formId={formId}
+          onLoadingChange={onLoadingChange}
+          initialLiturgicalEvent={initialLiturgicalEvent}
+        />
+      )}
+    </ModuleFormWrapper>
   )
 }

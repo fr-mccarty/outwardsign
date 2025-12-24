@@ -32,6 +32,7 @@ import {
 } from '@/lib/actions/families'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface FamilyViewClientProps {
   family: FamilyWithMembers
@@ -192,7 +193,7 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
   return (
     <div className="flex flex-col md:flex-row gap-6">
       {/* Main content */}
-      <div className="flex-1 order-2 md:order-1 space-y-6">
+      <div className={`flex-1 order-2 md:order-1 ${PAGE_SECTIONS_SPACING}`}>
         {/* Family Members Card */}
         <Card className="bg-card text-card-foreground border">
           <CardHeader className="flex flex-row items-center justify-between">

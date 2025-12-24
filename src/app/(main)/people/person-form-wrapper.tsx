@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { PersonForm } from './person-form'
-import { PageContainer } from '@/components/page-container'
-import { SaveButton } from '@/components/save-button'
 import type { Person } from '@/lib/types'
 
 interface PersonFormWrapperProps {
@@ -17,28 +15,21 @@ export function PersonFormWrapper({
   title,
   description
 }: PersonFormWrapperProps) {
-  const formId = 'person-form'
-  const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!person
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={title}
       description={description}
-      primaryAction={<SaveButton moduleName="Person" isLoading={isLoading} isEditing={isEditing} form={formId} />}
-      additionalActions={isEditing ? [
-        {
-          type: 'action',
-          label: 'View Person',
-          href: `/people/${person.id}`
-        }
-      ] : undefined}
+      moduleName="Person"
+      viewPath="/people"
+      entity={person}
     >
-      <PersonForm
-        person={person}
-        formId={formId}
-        onLoadingChange={setIsLoading}
-      />
-    </PageContainer>
+      {({ formId, onLoadingChange }) => (
+        <PersonForm
+          person={person}
+          formId={formId}
+          onLoadingChange={onLoadingChange}
+        />
+      )}
+    </ModuleFormWrapper>
   )
 }

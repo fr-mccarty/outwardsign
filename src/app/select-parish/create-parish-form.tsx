@@ -10,6 +10,7 @@ import { FormInput } from '@/components/form-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { toast } from 'sonner'
 import { createParishSchema, type CreateParishData } from '@/lib/schemas/parishes'
+import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
 interface CreateParishFormProps {
   onCancel: () => void
@@ -73,7 +74,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className={FORM_FIELDS_SPACING}>
           <FormInput
             id="name"
             label="Parish Name"

@@ -31,6 +31,7 @@ import { toast } from 'sonner'
 import { useListFilters } from '@/hooks/use-list-filters'
 import { useDebounce } from '@/hooks/use-debounce'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import type { Person } from '@/lib/types'
 import type { GroupRole } from '@/lib/actions/group-roles'
 import type { Group } from '@/lib/actions/groups'
@@ -268,7 +269,7 @@ export function GroupMembersListClient({
       description="View and manage people serving in groups"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <div className="space-y-6">
+      <div className={PAGE_SECTIONS_SPACING}>
         {/* Search and Add Button */}
         <SearchCard title="Search Group Members">
           <div className="space-y-4">

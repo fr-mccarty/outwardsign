@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { useTranslations } from 'next-intl'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface LocationFormProps {
   location?: Location
@@ -85,7 +86,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} id={formId} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} id={formId} className={FORM_SECTIONS_SPACING}>
       {/* Basic Information */}
       <FormSectionCard
         title={t('basicInformation')}

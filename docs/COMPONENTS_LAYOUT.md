@@ -15,18 +15,34 @@ This document covers layout components, navigation components, and context provi
 
 ## Layout Components
 
-### PageContainer
-**Path:** `src/components/page-container.tsx`
+### ModuleFormWrapper
+**Path:** `src/components/module-form-wrapper.tsx`
 
-**Purpose:** Standard page wrapper with consistent padding and max-width.
+**Purpose:** Unified wrapper for module create/edit forms. Wraps PageContainer with loading state and save button management.
+
+**Modes:**
+- `buttonPlacement="header"` (default) - SaveButton in header, form uses `formId`
+- `buttonPlacement="inline"` - Buttons inside form, receives `isLoading`/`setIsLoading`
 
 **Usage:**
 ```tsx
-<PageContainer>
-  <h1>Page Title</h1>
-  {/* Page content */}
-</PageContainer>
+// Header buttons (module forms)
+<ModuleFormWrapper title="Create Event" description="..." moduleName="Event" viewPath="/events" entity={event}>
+  {({ formId, onLoadingChange }) => <EventForm formId={formId} onLoadingChange={onLoadingChange} />}
+</ModuleFormWrapper>
+
+// Inline buttons (settings forms)
+<ModuleFormWrapper title="Create Tag" description="..." moduleName="Tag" viewPath="/settings/tags" buttonPlacement="inline">
+  {({ isLoading, setIsLoading }) => <form>...</form>}
+</ModuleFormWrapper>
 ```
+
+---
+
+### PageContainer
+**Path:** `src/components/page-container.tsx`
+
+**Purpose:** Standard page wrapper. Use `ModuleFormWrapper` for forms instead.
 
 ---
 

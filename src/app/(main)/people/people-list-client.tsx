@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Person } from '@/lib/types'
 import { deletePerson, getPeople, type PersonFilterParams } from '@/lib/actions/people'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -218,7 +219,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search */}
       <SearchCard title={t('people.title')}>
         <ClearableSearchInput

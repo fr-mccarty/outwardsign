@@ -18,6 +18,7 @@ import { createPersonSchema, type CreatePersonData } from "@/lib/schemas/people"
 import { Button } from "@/components/ui/button"
 import { Sparkles, Loader2 } from "lucide-react"
 import { useTranslations } from 'next-intl'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface PersonFormProps {
   person?: Person
@@ -232,7 +233,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
       {/* Photo Upload Section */}
       <FormSectionCard
         title={t('people.profilePhoto')}

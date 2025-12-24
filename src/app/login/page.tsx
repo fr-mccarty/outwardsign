@@ -11,6 +11,7 @@ import { Logo } from '@/components/logo'
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import {APP_NAME} from "@/lib/constants";
+import { FORM_FIELDS_SPACING } from "@/lib/constants/form-spacing"
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -133,7 +134,7 @@ function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className={FORM_FIELDS_SPACING}>
             <FormInput
               id="email"
               label="Email"

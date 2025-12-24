@@ -12,6 +12,7 @@ import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { useRouter } from 'next/navigation'
 import { getDefaultPetitions, updateDefaultPetitions } from '@/lib/actions/parish-settings'
 import { DEFAULT_PETITIONS } from '@/lib/constants'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 export default function DefaultPetitionsPage() {
   const { setBreadcrumbs } = useBreadcrumbs()
@@ -88,7 +89,7 @@ export default function DefaultPetitionsPage() {
       title="Default Petitions"
       description="Set default petitions that will be used when no template-specific petitions are defined"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className={FORM_SECTIONS_SPACING}>
         <Card>
           <CardHeader>
             <CardTitle>Default Petition Text</CardTitle>

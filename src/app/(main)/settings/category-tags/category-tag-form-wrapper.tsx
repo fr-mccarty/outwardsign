@@ -1,20 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Loader2 } from 'lucide-react'
-import { PageContainer } from '@/components/page-container'
-import { ContentCard } from '@/components/content-card'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
+import { FormInput } from '@/components/form-input'
+import { FormBottomActions } from '@/components/form-bottom-actions'
+import { FormSectionCard } from '@/components/form-section-card'
 import { createCategoryTag, updateCategoryTag } from '@/lib/actions/category-tags'
 import type { CategoryTag, CreateCategoryTagData, UpdateCategoryTagData } from '@/lib/types'
 import { toast } from 'sonner'
-import { useBreadcrumbs } from '@/components/breadcrumb-context'
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 const tagSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -29,18 +26,7 @@ interface CategoryTagFormWrapperProps {
 
 export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
   const router = useRouter()
-  const { setBreadcrumbs } = useBreadcrumbs()
-  const [saving, setSaving] = useState(false)
   const isEditing = !!tag
-
-  useEffect(() => {
-    setBreadcrumbs([
-      { label: 'Dashboard', href: '/dashboard' },
-      { label: 'Settings', href: '/settings' },
-      { label: 'Category Tags', href: '/settings/category-tags' },
-      { label: isEditing ? 'Edit' : 'Create' }
-    ])
-  }, [setBreadcrumbs, isEditing])
 
   const form = useForm<TagFormData>({
     resolver: zodResolver(tagSchema),
@@ -50,102 +36,67 @@ export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
     },
   })
 
-  const handleSubmit = async (data: TagFormData) => {
-    try {
-      setSaving(true)
-      if (isEditing) {
-        await updateCategoryTag(tag.id, data as UpdateCategoryTagData)
-        toast.success('Tag updated successfully')
-      } else {
-        await createCategoryTag(data as CreateCategoryTagData)
-        toast.success('Tag created successfully')
-      }
-      router.push('/settings/category-tags')
-    } catch (error: any) {
-      console.error('Error saving tag:', error)
-      toast.error(error.message || 'Failed to save tag')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleCancel = () => {
-    router.push('/settings/category-tags')
-  }
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={isEditing ? 'Edit Tag' : 'Create Tag'}
       description={isEditing ? 'Update category tag' : 'Add new tag for categorizing content'}
+      moduleName="Category Tag"
+      viewPath="/settings/category-tags"
+      entity={tag}
+      buttonPlacement="inline"
     >
-      <ContentCard>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Name */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Name <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Wedding, First Reading, Hope" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Display name for the tag
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      {({ isLoading, setIsLoading }) => {
+        const handleSubmit = async (data: TagFormData) => {
+          try {
+            setIsLoading(true)
+            if (isEditing) {
+              await updateCategoryTag(tag.id, data as UpdateCategoryTagData)
+              toast.success('Tag updated successfully')
+            } else {
+              await createCategoryTag(data as CreateCategoryTagData)
+              toast.success('Tag created successfully')
+            }
+            router.push('/settings/category-tags')
+          } catch (error: any) {
+            console.error('Error saving tag:', error)
+            toast.error(error.message || 'Failed to save tag')
+            setIsLoading(false)
+          }
+        }
 
-            {/* Slug (optional) */}
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug (optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., wedding, first-reading, hope"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    URL-safe identifier. Auto-generated from name if not provided.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        return (
+          <form onSubmit={form.handleSubmit(handleSubmit)} className={FORM_SECTIONS_SPACING}>
+            <FormSectionCard title="Tag Information">
+              <FormInput
+                id="name"
+                label="Name"
+                value={form.watch('name')}
+                onChange={(v) => form.setValue('name', v)}
+                placeholder="e.g., Wedding, First Reading, Hope"
+                description="Display name for the tag"
+                required
+                error={form.formState.errors.name?.message}
+              />
+              <FormInput
+                id="slug"
+                label="Slug (optional)"
+                value={form.watch('slug') || ''}
+                onChange={(v) => form.setValue('slug', v)}
+                placeholder="e.g., wedding, first-reading, hope"
+                description="URL-safe identifier. Auto-generated from name if not provided."
+                error={form.formState.errors.slug?.message}
+              />
+            </FormSectionCard>
 
-            {/* Action buttons */}
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>{isEditing ? 'Update' : 'Create'} Tag</>
-                )}
-              </Button>
-            </div>
+            <FormBottomActions
+              isEditing={isEditing}
+              isLoading={isLoading}
+              cancelHref="/settings/category-tags"
+              moduleName="Tag"
+            />
           </form>
-        </Form>
-      </ContentCard>
-    </PageContainer>
+        )
+      }}
+    </ModuleFormWrapper>
   )
 }

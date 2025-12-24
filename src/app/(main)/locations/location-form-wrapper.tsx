@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { LocationForm } from './location-form'
-import { PageContainer } from '@/components/page-container'
-import { SaveButton } from '@/components/save-button'
 import type { Location } from '@/lib/types'
 
 interface LocationFormWrapperProps {
@@ -17,28 +15,21 @@ export function LocationFormWrapper({
   title,
   description
 }: LocationFormWrapperProps) {
-  const formId = 'location-form'
-  const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!location
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={title}
       description={description}
-      primaryAction={<SaveButton moduleName="Location" isLoading={isLoading} isEditing={isEditing} form={formId} />}
-      additionalActions={isEditing ? [
-        {
-          type: 'action',
-          label: 'View Location',
-          href: `/locations/${location.id}`
-        }
-      ] : undefined}
+      moduleName="Location"
+      viewPath="/locations"
+      entity={location}
     >
-      <LocationForm
-        location={location}
-        formId={formId}
-        onLoadingChange={setIsLoading}
-      />
-    </PageContainer>
+      {({ formId, onLoadingChange }) => (
+        <LocationForm
+          location={location}
+          formId={formId}
+          onLoadingChange={onLoadingChange}
+        />
+      )}
+    </ModuleFormWrapper>
   )
 }

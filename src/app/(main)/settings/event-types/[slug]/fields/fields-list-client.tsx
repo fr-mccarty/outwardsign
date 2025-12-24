@@ -10,6 +10,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import {
   arrayMove,
   SortableContext,
@@ -221,7 +222,7 @@ export function FieldsListClient({ eventType, initialFields }: FieldsListClientP
   }
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Back button */}
       <div>
         <Button variant="outline" asChild>

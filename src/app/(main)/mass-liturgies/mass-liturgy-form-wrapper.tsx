@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { MassLiturgyForm } from './mass-liturgy-form'
-import { PageContainer } from '@/components/page-container'
-import { SaveButton } from '@/components/save-button'
 import type { MassWithRelations } from '@/lib/schemas/mass-liturgies'
 import type { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
@@ -20,29 +18,22 @@ export function MassLiturgyFormWrapper({
   description,
   initialLiturgicalEvent
 }: MassLiturgyFormWrapperProps) {
-  const formId = 'mass-form'
-  const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!mass
-
   return (
-    <PageContainer
+    <ModuleFormWrapper
       title={title}
       description={description}
-      primaryAction={<SaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />}
-      additionalActions={isEditing ? [
-        {
-          type: 'action',
-          label: 'View Mass',
-          href: `/mass-liturgies/${mass.id}`
-        }
-      ] : undefined}
+      moduleName="Mass"
+      viewPath="/mass-liturgies"
+      entity={mass}
     >
-      <MassLiturgyForm
-        mass={mass}
-        formId={formId}
-        onLoadingChange={setIsLoading}
-        initialLiturgicalEvent={initialLiturgicalEvent}
-      />
-    </PageContainer>
+      {({ formId, onLoadingChange }) => (
+        <MassLiturgyForm
+          mass={mass}
+          formId={formId}
+          onLoadingChange={onLoadingChange}
+          initialLiturgicalEvent={initialLiturgicalEvent}
+        />
+      )}
+    </ModuleFormWrapper>
   )
 }
