@@ -7,9 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { EventsListClient } from '@/app/(main)/events/[event_type_id]/events-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
-import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
-import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,14 +73,14 @@ export default async function SpecialLiturgiesPage({ params, searchParams }: Pag
       title={`Our ${eventType.name}s`}
       description={`Manage ${eventType.name.toLowerCase()} special liturgies.`}
       primaryAction={<ModuleCreateButton moduleName={eventType.name} href={`/special-liturgies/${event_type_slug}/create`} />}
-      secondaryActions={
-        <Button variant="outline" asChild>
-          <Link href={`/settings/event-types/${event_type_slug}`}>
-            <Settings className="h-4 w-4 mr-2" />
-            Configure {eventType.name}
-          </Link>
-        </Button>
-      }
+      additionalActions={[
+        {
+          type: 'action',
+          label: `Configure ${eventType.name}`,
+          icon: <Settings className="h-4 w-4" />,
+          href: `/settings/event-types/${event_type_slug}`
+        }
+      ]}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventsListClient
