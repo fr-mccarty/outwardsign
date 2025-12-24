@@ -23,8 +23,15 @@ CREATE INDEX idx_contents_language ON contents(parish_id, language);
 CREATE INDEX idx_contents_title_search ON contents USING gin(to_tsvector('english', title));
 CREATE INDEX idx_contents_body_search ON contents USING gin(to_tsvector('english', body));
 
--- RLS Policies
+-- Enable RLS
 ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
+
+-- Grant access
+GRANT ALL ON contents TO anon;
+GRANT ALL ON contents TO authenticated;
+GRANT ALL ON contents TO service_role;
+
+-- RLS Policies
 
 -- SELECT: Parish members can read contents for their parish
 CREATE POLICY contents_select_policy ON contents

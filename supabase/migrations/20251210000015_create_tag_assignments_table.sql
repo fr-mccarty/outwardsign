@@ -20,8 +20,15 @@ CREATE INDEX idx_tag_assignments_tag_id ON tag_assignments(tag_id);
 CREATE INDEX idx_tag_assignments_entity ON tag_assignments(entity_type, entity_id);
 CREATE INDEX idx_tag_assignments_composite ON tag_assignments(tag_id, entity_type, entity_id);
 
--- RLS Policies
+-- Enable RLS
 ALTER TABLE tag_assignments ENABLE ROW LEVEL SECURITY;
+
+-- Grant access
+GRANT ALL ON tag_assignments TO anon;
+GRANT ALL ON tag_assignments TO authenticated;
+GRANT ALL ON tag_assignments TO service_role;
+
+-- RLS Policies
 
 -- SELECT: Parish members can read assignments for their parish entities
 CREATE POLICY tag_assignments_select_policy ON tag_assignments

@@ -27,8 +27,15 @@ CREATE INDEX idx_category_tags_parish_id ON category_tags(parish_id);
 CREATE INDEX idx_category_tags_sort_order ON category_tags(parish_id, sort_order);
 CREATE INDEX idx_category_tags_slug ON category_tags(parish_id, slug);
 
--- RLS Policies
+-- Enable RLS
 ALTER TABLE category_tags ENABLE ROW LEVEL SECURITY;
+
+-- Grant access
+GRANT ALL ON category_tags TO anon;
+GRANT ALL ON category_tags TO authenticated;
+GRANT ALL ON category_tags TO service_role;
+
+-- RLS Policies
 
 -- SELECT: Parish members can read tags for their parish
 CREATE POLICY category_tags_select_policy ON category_tags
