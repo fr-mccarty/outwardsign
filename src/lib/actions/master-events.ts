@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import {
   MasterEvent,
   MasterEventWithRelations,
+  MasterEventStatus,
   CreateMasterEventData,
   UpdateMasterEventData,
   EventType,
@@ -60,6 +61,7 @@ export interface MasterEventFilterParams {
 export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
   event_type?: EventType
   primary_calendar_event?: CalendarEvent
+  calendar_events?: CalendarEvent[]  // All calendar events for this master event
 }
 
 /**
@@ -141,23 +143,37 @@ export async function getAllMasterEvents(
     return []
   }
 
-  // Fetch primary calendar events for all events
-  // Note: Using show_on_calendar as proxy for "primary" - the first visible calendar event is considered primary
+  // Fetch ALL calendar events for all events (not just primary)
   const eventIds = events.map(e => e.id)
   const { data: calendarEvents } = await supabase
     .from('calendar_events')
     .select('*, location:locations(*)')
     .in('master_event_id', eventIds)
-    .eq('show_on_calendar', true)
     .is('deleted_at', null)
+    .order('start_datetime', { ascending: true })
 
-  // Create a map of master_event_id to primary calendar event
-  const calendarEventMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce]) || [])
+  // Create maps: one for primary (show_on_calendar=true), one for all calendar events
+  const primaryCalendarEventMap = new Map<string, CalendarEvent>()
+  const allCalendarEventsMap = new Map<string, CalendarEvent[]>()
 
-  // Combine events with their primary calendar events
+  for (const ce of calendarEvents || []) {
+    // Add to all calendar events list
+    if (!allCalendarEventsMap.has(ce.master_event_id)) {
+      allCalendarEventsMap.set(ce.master_event_id, [])
+    }
+    allCalendarEventsMap.get(ce.master_event_id)!.push(ce)
+
+    // Track primary (first one with show_on_calendar=true)
+    if (ce.show_on_calendar && !primaryCalendarEventMap.has(ce.master_event_id)) {
+      primaryCalendarEventMap.set(ce.master_event_id, ce)
+    }
+  }
+
+  // Combine events with their calendar events
   const eventsWithCalendarEvents: MasterEventWithTypeAndCalendarEvent[] = events.map(event => ({
     ...event,
-    primary_calendar_event: calendarEventMap.get(event.id) || undefined
+    primary_calendar_event: primaryCalendarEventMap.get(event.id) || undefined,
+    calendar_events: allCalendarEventsMap.get(event.id) || []
   }))
 
   // Apply date filters if provided (post-fetch since calendar events are separate)
@@ -644,7 +660,8 @@ export async function createEvent(
         parish_id: parishId,
         event_type_id: eventTypeId,
         field_values: sanitizedFieldValues,
-        status: data.status || 'PLANNING'
+        status: data.status || 'PLANNING',
+        liturgical_color: data.liturgical_color || null
       }
     ])
     .select()
@@ -725,6 +742,14 @@ export async function updateEvent(
     )
   }
 
+  if (data.liturgical_color !== undefined) {
+    updateData.liturgical_color = data.liturgical_color
+  }
+
+  if (data.status !== undefined && data.status !== null) {
+    updateData.status = data.status as MasterEventStatus
+  }
+
   // Update event if there are changes
   if (Object.keys(updateData).length > 0) {
     const { data: updatedEvent, error } = await supabase
@@ -802,6 +827,7 @@ export interface CalendarCalendarEventItem {
   // From master_event
   event_title: string
   event_field_values: Record<string, unknown>
+  liturgical_color: string | null  // Liturgical color from master_event
   // From event_type
   event_type_id: string
   event_type_slug: string
@@ -837,6 +863,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
         id,
         field_values,
         parish_id,
+        liturgical_color,
         event_type:event_types(id, slug, name, icon)
       )
     `)
@@ -885,6 +912,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
     const masterEventData = calendarEvent.master_event as unknown as {
       id: string
       field_values: Record<string, unknown>
+      liturgical_color: string | null
       event_type: { id: string; slug: string; name: string; icon: string | null }
     }
 
@@ -906,6 +934,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
       is_cancelled: calendarEvent.is_cancelled,
       event_title: eventTypeName,
       event_field_values: masterEventData.field_values,
+      liturgical_color: masterEventData.liturgical_color,
       event_type_id: masterEventData.event_type.id,
       event_type_slug: masterEventData.event_type.slug,
       event_type_name: eventTypeName,

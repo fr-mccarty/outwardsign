@@ -39,6 +39,13 @@
 import type { DevSeederContext } from './types'
 import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { LITURGICAL_COLOR_VALUES, type LiturgicalColor } from '../../src/lib/constants'
+
+// Create a lookup object for liturgical colors from the constants array
+const COLORS = LITURGICAL_COLOR_VALUES.reduce((acc, color) => {
+  acc[color] = color
+  return acc
+}, {} as Record<LiturgicalColor, LiturgicalColor>)
 
 interface LocationRefs {
   churchLocation: { id: string } | null
@@ -266,6 +273,7 @@ export async function seedWeddingsAndFunerals(
             parish_id: parishId,
             event_type_id: weddingType.id,
             field_values: wedding.field_values,
+            liturgical_color: COLORS.WHITE, // Weddings use white vestments
             status: 'ACTIVE'
           })
           .select()
@@ -353,6 +361,7 @@ export async function seedWeddingsAndFunerals(
             parish_id: parishId,
             event_type_id: funeralType.id,
             field_values: funeral.field_values,
+            liturgical_color: COLORS.WHITE, // Funerals typically use white (or purple)
             status: 'ACTIVE'
           })
           .select()

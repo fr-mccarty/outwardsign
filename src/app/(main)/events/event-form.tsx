@@ -26,11 +26,11 @@ import { DatePickerField } from "@/components/date-picker-field"
 import { TimePickerField } from "@/components/time-picker-field"
 import { CalendarEventField } from "@/components/calendar-event-field"
 import { EventTypeSelectField } from "@/components/event-type-select-field"
-import { FormSpacer } from "@/components/form-spacer"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { toLocalDateString } from "@/lib/utils/formatters"
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
 type EventStatus = typeof MASTER_EVENT_STATUS_VALUES[number]
@@ -563,7 +563,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"
@@ -625,7 +625,6 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
         </FormSectionCard>
       )}
 
-      <FormSpacer label="Actions" />
       <FormBottomActions
         isEditing={isEditing}
         isLoading={isSubmitting}

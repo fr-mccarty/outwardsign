@@ -50,16 +50,25 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   createdEventTypes.push({ id: sundayMassType.id, name: 'Sunday Mass' })
 
   // Create input field definitions for Sunday Mass
+  // Note: Fields with is_per_calendar_event=true are minister roles assigned per Mass time
   const sundayMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
-    { name: 'Announcements', property_name: 'announcements', type: 'rich_text', required: false, order: 2 },
-    { name: 'Entrance Hymn', property_name: 'entrance_hymn', type: 'text', required: false, order: 3 },
-    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 4 },
-    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 5 },
-    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 6 },
-    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 7 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 8 }
+    { name: 'Homilist', property_name: 'homilist', type: 'person', required: false, order: 2 },
+    // Minister roles (is_per_calendar_event=true means assigned per Mass time)
+    { name: 'Lector', property_name: 'lector', type: 'person', required: false, is_per_calendar_event: true, order: 3 },
+    { name: 'EMHC', property_name: 'emhc', type: 'person', required: false, is_per_calendar_event: true, order: 4 },
+    { name: 'Altar Server', property_name: 'altar_server', type: 'person', required: false, is_per_calendar_event: true, order: 5 },
+    { name: 'Cantor', property_name: 'cantor', type: 'person', required: false, is_per_calendar_event: true, order: 6 },
+    { name: 'Usher', property_name: 'usher', type: 'person', required: false, is_per_calendar_event: true, order: 7 },
+    // Other fields
+    { name: 'Announcements', property_name: 'announcements', type: 'rich_text', required: false, order: 8 },
+    { name: 'Entrance Hymn', property_name: 'entrance_hymn', type: 'text', required: false, order: 9 },
+    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 10 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 11 },
+    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 12 },
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 13 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 14 }
   ]
 
   const { error: sundayFieldsError } = await supabase
@@ -68,7 +77,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       sundayMassFields.map(field => ({
         event_type_id: sundayMassType.id,
         ...field,
-        is_primary: field.is_primary ?? false
+        is_primary: field.is_primary ?? false,
+        is_per_calendar_event: field.is_per_calendar_event ?? false
       }))
     )
 
@@ -164,12 +174,18 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   createdEventTypes.push({ id: dailyMassType.id, name: 'Daily Mass' })
 
-  // Create input field definitions for Daily Mass (minimal)
+  // Create input field definitions for Daily Mass (minimal, but with some minister roles)
+  // Note: Fields with is_per_calendar_event=true are minister roles assigned per Mass time
   const dailyMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
-    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 2 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 3 }
+    // Minister roles (is_per_calendar_event=true means assigned per Mass time)
+    { name: 'Lector', property_name: 'lector', type: 'person', required: false, is_per_calendar_event: true, order: 2 },
+    { name: 'EMHC', property_name: 'emhc', type: 'person', required: false, is_per_calendar_event: true, order: 3 },
+    { name: 'Altar Server', property_name: 'altar_server', type: 'person', required: false, is_per_calendar_event: true, order: 4 },
+    // Other fields
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 5 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 6 }
   ]
 
   const { error: dailyFieldsError } = await supabase
@@ -178,7 +194,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       dailyMassFields.map(field => ({
         event_type_id: dailyMassType.id,
         ...field,
-        is_primary: field.is_primary ?? false
+        is_primary: field.is_primary ?? false,
+        is_per_calendar_event: field.is_per_calendar_event ?? false
       }))
     )
 

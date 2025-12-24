@@ -7,15 +7,15 @@ import { deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/content-card'
-import { Edit, Printer, FileText, FileDown, ChevronDown, ChevronRight, Clock, MapPin, Heart } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Script } from '@/lib/types'
 import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
-import { CalendarEventAssignmentSection } from '@/components/calendar-event-assignment-section'
+import { AddMassTimeDialog } from '@/components/add-mass-time-dialog'
+import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 
 interface MassViewClientProps {
   mass: MasterEventWithRelations
@@ -25,20 +25,7 @@ interface MassViewClientProps {
 
 export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent = {} }: MassViewClientProps) {
   const router = useRouter()
-  const [expandedCalendarEvents, setExpandedCalendarEvents] = useState<Set<string>>(new Set())
-
-  // Toggle expanded state for a calendar event
-  const toggleExpanded = (calendarEventId: string) => {
-    setExpandedCalendarEvents(prev => {
-      const next = new Set(prev)
-      if (next.has(calendarEventId)) {
-        next.delete(calendarEventId)
-      } else {
-        next.add(calendarEventId)
-      }
-      return next
-    })
-  }
+  const [showAddMassTimeDialog, setShowAddMassTimeDialog] = useState(false)
 
   // Get primary calendar event for main event display
   const primaryCalendarEvent = mass.calendar_events?.find(ce => ce.show_on_calendar) || mass.calendar_events?.[0]
@@ -51,9 +38,9 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
     a => a.field_definition?.property_name === 'homilist'
   )?.person || null
 
-  // Get occurrence-level person field definitions (for minister assignments)
-  const occurrenceLevelPersonFields = mass.event_type?.input_field_definitions?.filter(
-    field => field.type === 'person' && field.is_per_calendar_event
+  // Get calendar_event type field definitions (for adding new mass times)
+  const calendarEventFieldDefinitions = mass.event_type?.input_field_definitions?.filter(
+    field => field.type === 'calendar_event'
   ) || []
 
   // Handle assignment change - refresh the page data
@@ -76,6 +63,11 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
     </Button>
   )
 
+  // Settings URL for this event type
+  const eventTypeSettingsUrl = mass.event_type?.slug
+    ? `/settings/event-types/${mass.event_type.slug}`
+    : null
+
   // Generate export buttons for roster
   const exportButtons = (
     <>
@@ -97,6 +89,14 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
           Download Word Roster
         </Link>
       </Button>
+      {eventTypeSettingsUrl && (
+        <Button asChild variant="outline" className="w-full">
+          <Link href={eventTypeSettingsUrl}>
+            <Settings className="h-4 w-4 mr-2" />
+            Configure Mass Type
+          </Link>
+        </Button>
+      )}
     </>
   )
 
@@ -107,6 +107,18 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
         <div className="flex items-center gap-2">
           <span className="font-medium">Status:</span>
           <ModuleStatusLabel status={mass.status} statusType="mass" />
+        </div>
+      )}
+
+      {mass.liturgical_color && LITURGICAL_COLOR_LABELS[mass.liturgical_color] && (
+        <div className="flex items-center gap-2 pt-2 border-t">
+          <span className="font-medium">Liturgical Color:</span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-3 h-3 rounded-full bg-liturgy-${mass.liturgical_color.toLowerCase()}`}
+            />
+            <span>{LITURGICAL_COLOR_LABELS[mass.liturgical_color].en}</span>
+          </div>
         </div>
       )}
 
@@ -194,11 +206,23 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
         </div>
       )}
 
-      {/* Mass Times Section - Collapsible cards with intentions */}
+      {/* Mass Times Section - Clickable links to individual masses */}
       {mass.calendar_events && mass.calendar_events.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Mass Times</h3>
-          <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Mass Times</h3>
+            {calendarEventFieldDefinitions.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddMassTimeDialog(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Mass Time
+              </Button>
+            )}
+          </div>
+          <div className="space-y-2">
             {mass.calendar_events.map((calendarEvent) => {
               // Get assignments for this specific calendar event
               const eventAssignments = mass.people_event_assignments?.filter(
@@ -213,118 +237,49 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
               // Get intentions for this calendar event
               const intentions = intentionsByCalendarEvent[calendarEvent.id] || []
 
-              const isExpanded = expandedCalendarEvents.has(calendarEvent.id)
               const timeString = calendarEvent.start_datetime
                 ? formatTime(new Date(calendarEvent.start_datetime).toTimeString().slice(0, 8))
                 : 'Time TBD'
 
               return (
-                <Collapsible
+                <Link
                   key={calendarEvent.id}
-                  open={isExpanded}
-                  onOpenChange={() => toggleExpanded(calendarEvent.id)}
+                  href={`/mass-liturgies/${mass.id}/masses/${calendarEvent.id}`}
+                  className="block border rounded-lg bg-card hover:bg-muted/50 transition-colors"
                 >
-                  <div className="border rounded-lg bg-card">
-                    {/* Header - always visible */}
-                    <CollapsibleTrigger className="w-full">
-                      <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div className="text-left">
-                            <div className="font-medium">
-                              {calendarEventField?.name || 'Mass Time'}
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {timeString}
-                              </span>
-                              {calendarEvent.location && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  {calendarEvent.location.name}
-                                </span>
-                              )}
-                              {intentions.length > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Heart className="h-3 w-3" />
-                                  {intentions.length} intention{intentions.length !== 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {eventAssignments.length > 0 && (
-                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                              {eventAssignments.length} assigned
-                            </span>
-                          )}
-                        </div>
+                  <div className="flex items-center justify-between p-4">
+                    <div>
+                      <div className="font-medium">
+                        {calendarEventField?.name || 'Mass Time'}
                       </div>
-                    </CollapsibleTrigger>
-
-                    {/* Expandable content */}
-                    <CollapsibleContent>
-                      <div className="border-t p-4 space-y-4">
-                        {/* Intentions */}
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {timeString}
+                        </span>
+                        {calendarEvent.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {calendarEvent.location.name}
+                          </span>
+                        )}
                         {intentions.length > 0 && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-2">Mass Intentions</h4>
-                            <div className="space-y-2">
-                              {intentions.map((intention) => (
-                                <div
-                                  key={intention.id}
-                                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded"
-                                >
-                                  <span>{intention.mass_offered_for || 'Unnamed intention'}</span>
-                                  {intention.requested_by && (
-                                    <span className="text-muted-foreground">
-                                      Requested by {intention.requested_by.full_name}
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                            <Link
-                              href={`/mass-intentions?calendar_event=${calendarEvent.id}`}
-                              className="text-sm text-primary hover:underline mt-2 inline-block"
-                            >
-                              Manage intentions →
-                            </Link>
-                          </div>
-                        )}
-
-                        {/* Minister Assignments */}
-                        {occurrenceLevelPersonFields.length > 0 && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-2">Minister Assignments</h4>
-                            <CalendarEventAssignmentSection
-                              masterEventId={mass.id}
-                              calendarEventId={calendarEvent.id}
-                              calendarEventDateTime={calendarEvent.start_datetime}
-                              eventTypeId={mass.event_type_id!}
-                              currentAssignments={eventAssignments}
-                              fieldDefinitions={occurrenceLevelPersonFields}
-                              onAssignmentChange={handleAssignmentChange}
-                            />
-                          </div>
-                        )}
-
-                        {/* Empty state */}
-                        {intentions.length === 0 && occurrenceLevelPersonFields.length === 0 && (
-                          <div className="text-sm text-muted-foreground">
-                            No intentions or minister assignments for this mass time.
-                          </div>
+                          <span className="flex items-center gap-1">
+                            <Heart className="h-3 w-3" />
+                            {intentions.length} intention{intentions.length !== 1 ? 's' : ''}
+                          </span>
                         )}
                       </div>
-                    </CollapsibleContent>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {eventAssignments.length > 0 && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          {eventAssignments.length} assigned
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </Collapsible>
+                </Link>
               )
             })}
           </div>
@@ -344,6 +299,15 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
           ))}
         </div>
       )}
+
+      {/* Add Mass Time Dialog */}
+      <AddMassTimeDialog
+        open={showAddMassTimeDialog}
+        onOpenChange={setShowAddMassTimeDialog}
+        masterEventId={mass.id}
+        calendarEventFieldDefinitions={calendarEventFieldDefinitions}
+        onMassTimeAdded={handleAssignmentChange}
+      />
     </ModuleViewContainer>
   )
 }

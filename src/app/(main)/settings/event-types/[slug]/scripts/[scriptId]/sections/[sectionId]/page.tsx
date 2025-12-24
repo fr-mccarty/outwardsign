@@ -3,39 +3,40 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScriptWithSections } from '@/lib/actions/scripts'
+import { getSection } from '@/lib/actions/sections'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
-import { ScriptBuilderClient } from './script-builder-client'
+import { SectionForm } from '../section-form'
 
 interface PageProps {
   params: Promise<{
     slug: string
     scriptId: string
+    sectionId: string
   }>
 }
 
-export default async function ScriptBuilderPage({ params }: PageProps) {
-  // Check admin permissions (redirects if not authorized)
+export default async function EditSectionPage({ params }: PageProps) {
   await checkSettingsAccess()
 
-  const { slug, scriptId } = await params
+  const { slug, scriptId, sectionId } = await params
   const t = await getTranslations()
 
-  // Fetch event type
   const eventType = await getEventTypeWithRelationsBySlug(slug)
-
   if (!eventType) {
     notFound()
   }
 
-  // Fetch script with sections
   const script = await getScriptWithSections(scriptId)
-
   if (!script) {
     notFound()
   }
 
-  // Determine parent settings page based on system_type
+  const section = await getSection(sectionId)
+  if (!section) {
+    notFound()
+  }
+
   const parentPath =
     eventType.system_type === 'mass-liturgy'
       ? '/settings/mass-liturgies'
@@ -56,18 +57,23 @@ export default async function ScriptBuilderPage({ params }: PageProps) {
     { label: parentLabel, href: parentPath },
     { label: eventType.name, href: `/settings/event-types/${slug}` },
     { label: t('eventType.scripts.title'), href: `/settings/event-types/${slug}/scripts` },
-    { label: script.name },
+    { label: script.name, href: `/settings/event-types/${slug}/scripts/${scriptId}` },
+    { label: section.name },
   ]
+
+  const backUrl = `/settings/event-types/${slug}/scripts/${scriptId}`
 
   return (
     <PageContainer
-      title={script.name}
-      description={script.description || undefined}
+      title={t('eventType.scripts.sections.editSection')}
+      description={section.name}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <ScriptBuilderClient
-        script={script}
-        eventType={eventType}
+      <SectionForm
+        scriptId={scriptId}
+        section={section}
+        inputFields={eventType.input_field_definitions || []}
+        backUrl={backUrl}
       />
     </PageContainer>
   )

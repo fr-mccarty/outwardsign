@@ -32,8 +32,10 @@ export function MassLiturgyScriptViewClient({ mass, script }: MassScriptViewClie
     id: mass.id,
     parish_id: mass.parish_id,
     event_type_id: mass.event_type_id!,
+    liturgical_calendar_id: mass.liturgical_calendar_id || null,
     status: 'ACTIVE',
     field_values: mass.field_values || {},
+    liturgical_color: mass.liturgical_color || null,
     resolved_fields: mass.resolved_fields || {},
     event_type: {
       ...mass.event_type!,

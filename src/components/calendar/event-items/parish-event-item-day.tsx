@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { RELATED_EVENT_TYPE_LABELS } from '@/lib/constants'
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { getModuleIcon, getIconByName } from '@/components/calendar/module-icons'
+import { getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 
 interface ParishEventItemDayProps {
   event: {
@@ -48,7 +49,7 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
         {liturgicalColor && (
           <div
             className="w-3 h-3 rounded-full border border-background shadow-sm flex-shrink-0"
-            style={{ backgroundColor: liturgicalColor }}
+            style={{ backgroundColor: getLiturgicalCssVarValue(liturgicalColor) }}
           />
         )}
         <span className="truncate">{event.title}</span>

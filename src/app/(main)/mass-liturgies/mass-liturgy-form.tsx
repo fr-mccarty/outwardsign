@@ -46,6 +46,7 @@ import { Heart, Plus, X } from "lucide-react"
 import { createMassSchema, type CreateMassData } from "@/lib/schemas/mass-liturgies"
 import { useState } from "react"
 import { toLocalDateString } from "@/lib/utils/formatters"
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface MassLiturgyFormProps {
   mass?: MassWithRelations
@@ -577,7 +578,39 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
   const sortedFields = [...inputFieldDefinitions].sort((a, b) => a.order - b.order)
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
+      {/* Event Settings - Status and Liturgical Color */}
+      <FormSectionCard title="Event Settings">
+        <FormInput
+          id="status"
+          inputType="select"
+          label="Status"
+          description="Current status of this Mass"
+          value={watch('status') || 'ACTIVE'}
+          onChange={(value) => setValue('status', value as MassStatus)}
+          options={MASS_STATUS_VALUES.map((value) => ({
+            value,
+            label: getStatusLabel(value, 'en')
+          }))}
+          error={errors.status?.message}
+        />
+
+        <FormInput
+          id="liturgical_color"
+          inputType="select"
+          label="Liturgical Color"
+          description="The liturgical color for this Mass celebration"
+          value={watch('liturgical_color') || ''}
+          onChange={(value) => setValue('liturgical_color', value ? (value as LiturgicalColor) : undefined)}
+          placeholder="Select liturgical color (optional)"
+          options={LITURGICAL_COLOR_VALUES.map((value) => ({
+            value,
+            label: LITURGICAL_COLOR_LABELS[value].en
+          }))}
+          error={errors.liturgical_color?.message}
+        />
+      </FormSectionCard>
+
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"
@@ -595,35 +628,6 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
             openToNewEvent={!event.value}
           />
 
-          <FormInput
-            id="status"
-            inputType="select"
-            label="Status"
-            description="Current status of this Mass"
-            value={watch('status') || 'ACTIVE'}
-            onChange={(value) => setValue('status', value as MassStatus)}
-            options={MASS_STATUS_VALUES.map((value) => ({
-              value,
-              label: getStatusLabel(value, 'en')
-            }))}
-            error={errors.status?.message}
-          />
-
-          <FormInput
-            id="liturgical_color"
-            inputType="select"
-            label="Liturgical Color"
-            description="The liturgical color for this Mass celebration"
-            value={watch('liturgical_color') || ''}
-            onChange={(value) => setValue('liturgical_color', value ? (value as LiturgicalColor) : undefined)}
-            placeholder="Select liturgical color (optional)"
-            options={LITURGICAL_COLOR_VALUES.map((value) => ({
-              value,
-              label: LITURGICAL_COLOR_LABELS[value].en
-            }))}
-            error={errors.liturgical_color?.message}
-          />
-
           <LiturgicalEventPickerField
             label="Liturgical Event"
             description="Link this Mass to a liturgical event (feast day, solemnity, etc.)"
@@ -631,20 +635,6 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
             onValueChange={liturgicalEvent.setValue}
             showPicker={liturgicalEvent.showPicker}
             onShowPickerChange={liturgicalEvent.setShowPicker}
-          />
-
-          <FormInput
-            id="template"
-            inputType="select"
-            label="Print Template"
-            description="Choose the liturgy template for this Mass"
-            value={watch('mass_template_id') || MASS_DEFAULT_TEMPLATE}
-            onChange={(value) => setValue('mass_template_id', value as MassTemplate)}
-            options={MASS_TEMPLATE_VALUES.map((value) => ({
-              value,
-              label: MASS_TEMPLATE_LABELS[value].en
-            }))}
-            error={errors.mass_template_id?.message}
           />
 
           <EventTypeSelectField

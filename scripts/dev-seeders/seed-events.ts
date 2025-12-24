@@ -38,6 +38,13 @@
 
 import type { DevSeederContext } from './types'
 import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
+import { LITURGICAL_COLOR_VALUES, type LiturgicalColor } from '../../src/lib/constants'
+
+// Create a lookup object for liturgical colors from the constants array
+const COLORS = LITURGICAL_COLOR_VALUES.reduce((acc, color) => {
+  acc[color] = color
+  return acc
+}, {} as Record<LiturgicalColor, LiturgicalColor>)
 
 interface LocationRefs {
   churchLocation: { id: string } | null
@@ -127,7 +134,8 @@ export async function seedEvents(
 
     const eventsData: Array<{
       field_values: Record<string, string | boolean>
-      occasion: { date: string; time: string; location_id: string | null }
+      calendar_event: { date: string; time: string; location_id: string | null }
+      liturgicalColor?: string
     }> = []
 
     // Use property_name values as keys (not display names)
@@ -143,7 +151,8 @@ export async function seedEvents(
             godfather: people[8].id,
             presider: people[0].id
           },
-          occasion: { date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE // Baptisms use white vestments
         })
         eventsData.push({
           field_values: {
@@ -154,7 +163,8 @@ export async function seedEvents(
             godfather: people[16].id,
             presider: people[0].id
           },
-          occasion: { date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE
         })
         break
 
@@ -167,7 +177,8 @@ export async function seedEvents(
             presider: people[0].id,
             reception_location: hallLocation?.id || ''
           },
-          occasion: { date: getFutureDate(60), time: '15:00:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(60), time: '15:00:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE // Quinceaneras typically use white
         })
         eventsData.push({
           field_values: {
@@ -177,7 +188,8 @@ export async function seedEvents(
             presider: people[8].id,
             reception_location: hallLocation?.id || ''
           },
-          occasion: { date: getFutureDate(75), time: '16:00:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(75), time: '16:00:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE
         })
         break
 
@@ -191,7 +203,8 @@ export async function seedEvents(
             godfather: people[2].id,
             presider: people[8].id
           },
-          occasion: { date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE // Presentations use white vestments
         })
         eventsData.push({
           field_values: {
@@ -202,7 +215,8 @@ export async function seedEvents(
             godfather: people[18].id,
             presider: people[0].id
           },
-          occasion: { date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null }
+          calendar_event: { date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null },
+          liturgicalColor: COLORS.WHITE
         })
         break
 
@@ -218,7 +232,7 @@ export async function seedEvents(
             scripture_passage: 'John 1:1-18',
             expected_attendance: '15'
           },
-          occasion: { date: getFutureDate(7), time: '19:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(7), time: '19:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -227,7 +241,7 @@ export async function seedEvents(
             scripture_passage: 'Matthew 5:1-12',
             expected_attendance: '20'
           },
-          occasion: { date: getFutureDate(14), time: '19:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(14), time: '19:00:00', location_id: hallLocation?.id || null }
         })
         break
 
@@ -238,7 +252,7 @@ export async function seedEvents(
             event_description: 'Annual parish picnic and silent auction to support youth ministry programs.',
             fundraising_goal: '5000'
           },
-          occasion: { date: getFutureDate(60), time: '11:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(60), time: '11:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -246,7 +260,7 @@ export async function seedEvents(
             event_description: 'Pancake breakfast fundraiser for the building fund.',
             fundraising_goal: '2000'
           },
-          occasion: { date: getFutureDate(21), time: '08:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(21), time: '08:00:00', location_id: hallLocation?.id || null }
         })
         break
 
@@ -257,7 +271,7 @@ export async function seedEvents(
             grade_level: 'First Communion',
             lesson_topic: 'Sacraments of Initiation - Lesson 5'
           },
-          occasion: { date: getFutureDate(5), time: '10:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(5), time: '10:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -265,7 +279,7 @@ export async function seedEvents(
             grade_level: 'Confirmation',
             lesson_topic: 'The Gifts of the Holy Spirit'
           },
-          occasion: { date: getFutureDate(12), time: '18:30:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(12), time: '18:30:00', location_id: hallLocation?.id || null }
         })
         break
 
@@ -275,14 +289,14 @@ export async function seedEvents(
             meeting_leader: people[0].id,
             agenda: 'Monthly staff meeting to review parish activities and upcoming events. Please bring your department reports.'
           },
-          occasion: { date: getFutureDate(3), time: '09:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(3), time: '09:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
             meeting_leader: people[8].id,
             agenda: 'Liturgy planning meeting for Advent season. Music ministry and lectors should attend.'
           },
-          occasion: { date: getFutureDate(10), time: '14:00:00', location_id: hallLocation?.id || null }
+          calendar_event: { date: getFutureDate(10), time: '14:00:00', location_id: hallLocation?.id || null }
         })
         break
 
@@ -299,6 +313,7 @@ export async function seedEvents(
           parish_id: parishId,
           event_type_id: eventType.id,
           field_values: eventData.field_values,
+          liturgical_color: eventData.liturgicalColor || null,
           status: 'ACTIVE'
         })
         .select()
@@ -310,7 +325,7 @@ export async function seedEvents(
       }
 
       // Create calendar_event with correct schema
-      const startDatetime = new Date(`${eventData.occasion.date}T${eventData.occasion.time}`).toISOString()
+      const startDatetime = new Date(`${eventData.calendar_event.date}T${eventData.calendar_event.time}`).toISOString()
       const { error: calendarEventError } = await supabase
         .from('calendar_events')
         .insert({
@@ -318,7 +333,7 @@ export async function seedEvents(
           master_event_id: newEvent.id,
           input_field_definition_id: primaryCalendarEventField.id,
           start_datetime: startDatetime,
-          location_id: eventData.occasion.location_id,
+          location_id: eventData.calendar_event.location_id,
           show_on_calendar: true,
           is_cancelled: false
         })

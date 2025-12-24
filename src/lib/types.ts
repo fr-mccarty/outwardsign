@@ -624,8 +624,10 @@ export interface MasterEvent {
   id: string
   parish_id: string
   event_type_id: string
+  liturgical_calendar_id: string | null
   field_values: Record<string, any> // JSON object
   status: MasterEventStatus  // Event status
+  liturgical_color: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -659,12 +661,14 @@ export interface MasterEventWithRelations extends MasterEvent {
 export interface CreateMasterEventData {
   field_values: Record<string, any>
   status: string
+  liturgical_color?: string | null
   calendar_events?: CreateCalendarEventData[]
 }
 
 export interface UpdateMasterEventData {
   field_values?: Record<string, any>
   status?: string | null
+  liturgical_color?: string | null
   calendar_events?: (CreateCalendarEventData | UpdateCalendarEventData)[]
 }
 

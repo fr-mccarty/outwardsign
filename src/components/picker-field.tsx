@@ -9,6 +9,15 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import {
+  LABEL_TEXT,
+  LABEL_MARGIN_BOTTOM,
+  DESCRIPTION_TEXT,
+  DESCRIPTION_BEFORE_INPUT,
+  DESCRIPTION_AFTER_INPUT,
+  ERROR_TEXT,
+  ERROR_MARGIN_TOP
+} from '@/lib/constants/form-spacing'
 
 interface BasePickerFieldProps<T> {
   label: string
@@ -108,14 +117,14 @@ export function PickerField<T>({
   }
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={labelId}>
+    <div>
+      <Label htmlFor={labelId} className={cn(LABEL_TEXT, description && descriptionPosition === 'before' ? '' : LABEL_MARGIN_BOTTOM)}>
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
 
       {descriptionPosition === 'before' && description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className={cn(DESCRIPTION_TEXT, DESCRIPTION_BEFORE_INPUT)}>{description}</p>
       )}
 
       {value ? (
@@ -189,11 +198,11 @@ export function PickerField<T>({
       )}
 
       {descriptionPosition === 'after' && description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className={cn(DESCRIPTION_TEXT, DESCRIPTION_AFTER_INPUT)}>{description}</p>
       )}
 
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className={cn(ERROR_TEXT, ERROR_MARGIN_TOP)}>{error}</p>
       )}
 
       {/* Picker Modal - passed as children */}

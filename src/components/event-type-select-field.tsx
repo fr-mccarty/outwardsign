@@ -1,14 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormInput } from '@/components/form-input'
 import { getEventTypes } from '@/lib/actions/event-types'
 import type { EventType } from '@/lib/types/event-types'
 
@@ -55,33 +48,25 @@ export function EventTypeSelectField({
     loadEventTypes()
   }, [])
 
+  // Build options with "No template" as first option
+  const options = [
+    { value: 'none', label: 'No template' },
+    ...eventTypes.map((eventType) => ({
+      value: eventType.id,
+      label: eventType.name
+    }))
+  ]
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor="event_type_id">
-        Event Type Template <span className="text-muted-foreground">(Optional)</span>
-      </Label>
-      <Select
-        value={value || 'none'}
-        onValueChange={(newValue) => onChange(newValue === 'none' ? null : newValue)}
-        disabled={disabled || loading}
-      >
-        <SelectTrigger id="event_type_id">
-          <SelectValue placeholder={loading ? 'Loading...' : 'Select a template'} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="none">
-            <span className="text-muted-foreground">No template</span>
-          </SelectItem>
-          {eventTypes.map((eventType) => (
-            <SelectItem key={eventType.id} value={eventType.id}>
-              {eventType.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <p className="text-sm text-muted-foreground">
-        Select a template to add custom fields and scripts to this Mass
-      </p>
-    </div>
+    <FormInput
+      id="event_type_id"
+      inputType="select"
+      label="Event Type Template (Optional)"
+      description="Select a template to add custom fields and scripts to this Mass"
+      value={value || 'none'}
+      onChange={(newValue) => onChange(newValue === 'none' ? null : newValue)}
+      options={options}
+      disabled={disabled || loading}
+    />
   )
 }

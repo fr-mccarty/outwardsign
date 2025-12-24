@@ -22,7 +22,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Edit, Trash2, GripVertical, Info, ArrowLeft, FileText } from 'lucide-react'
-import type { ScriptWithSections, Section, InputFieldDefinition, EventTypeWithRelations } from '@/lib/types/event-types'
+import type { ScriptWithSections, Section, EventTypeWithRelations } from '@/lib/types/event-types'
 import { updateScript } from '@/lib/actions/scripts'
 import {
   deleteSection,
@@ -45,8 +45,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { SectionFormDialog } from './section-form-dialog'
-import { PlaceholderReferencePanel } from './placeholder-reference-panel'
+import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
 // Schema for script metadata form
 const scriptMetadataSchema = z.object({
@@ -59,17 +58,16 @@ type ScriptMetadataFormValues = z.infer<typeof scriptMetadataSchema>
 interface ScriptBuilderClientProps {
   script: ScriptWithSections
   eventType: EventTypeWithRelations
-  inputFields: InputFieldDefinition[]
 }
 
 // Sortable section item component
 function SortableSectionItem({
   section,
-  onEdit,
+  editUrl,
   onDelete,
 }: {
   section: Section
-  onEdit: (section: Section) => void
+  editUrl: string
   onDelete: (section: Section) => void
 }) {
   const {
@@ -125,13 +123,11 @@ function SortableSectionItem({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onEdit(section)
-          }}
+          asChild
         >
-          <Edit className="h-4 w-4" />
+          <Link href={editUrl}>
+            <Edit className="h-4 w-4" />
+          </Link>
         </Button>
         <Button
           variant="ghost"
@@ -150,15 +146,16 @@ function SortableSectionItem({
   )
 }
 
-export function ScriptBuilderClient({ script, eventType, inputFields }: ScriptBuilderClientProps) {
+export function ScriptBuilderClient({ script, eventType }: ScriptBuilderClientProps) {
   const t = useTranslations()
   const router = useRouter()
   const [sections, setSections] = useState<Section[]>(script.sections || [])
-  const [sectionDialogOpen, setSectionDialogOpen] = useState(false)
-  const [editingSection, setEditingSection] = useState<Section | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [sectionToDelete, setSectionToDelete] = useState<Section | null>(null)
   const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+
+  // Base URL for section pages
+  const sectionBaseUrl = `/settings/event-types/${eventType.slug}/scripts/${script.id}/sections`
 
   // Script metadata form
   const form = useForm<ScriptMetadataFormValues>({
@@ -230,24 +227,6 @@ export function ScriptBuilderClient({ script, eventType, inputFields }: ScriptBu
     setDeleteDialogOpen(true)
   }
 
-  const handleEditSection = (section: Section) => {
-    setEditingSection(section)
-    setSectionDialogOpen(true)
-  }
-
-  const handleSectionSaved = (section: Section) => {
-    if (editingSection) {
-      // Update existing section
-      setSections(sections.map((item) => (item.id === section.id ? section : item)))
-    } else {
-      // Add new section
-      setSections([...sections, section])
-    }
-    setSectionDialogOpen(false)
-    setEditingSection(null)
-    router.refresh()
-  }
-
   const handleSaveScriptMetadata = async (data: ScriptMetadataFormValues) => {
     try {
       await updateScript(script.id, {
@@ -277,7 +256,7 @@ export function ScriptBuilderClient({ script, eventType, inputFields }: ScriptBu
 
       {/* Script Name and Description */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSaveScriptMetadata)} className="border rounded-md p-4 space-y-4">
+        <form onSubmit={form.handleSubmit(handleSaveScriptMetadata)} className={`border rounded-md p-4 ${FORM_FIELDS_SPACING}`}>
           <FormField
             control={form.control}
             name="name"
@@ -335,74 +314,56 @@ export function ScriptBuilderClient({ script, eventType, inputFields }: ScriptBu
         </AlertDescription>
       </Alert>
 
-      {/* Sections Container - Two Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Sections List (2/3 width) */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Add Section Button */}
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">{t('eventType.scripts.sections.title')}</h3>
-            <Button onClick={() => setSectionDialogOpen(true)}>
+      {/* Sections Container */}
+      <div className="space-y-4">
+        {/* Add Section Button */}
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">{t('eventType.scripts.sections.title')}</h3>
+          <Button asChild>
+            <Link href={`${sectionBaseUrl}/create`}>
               <Plus className="h-4 w-4 mr-2" />
               {t('eventType.scripts.sections.addSection')}
-            </Button>
-          </div>
+            </Link>
+          </Button>
+        </div>
 
-          {/* Sections List */}
-          {sections.length === 0 ? (
-            <div className="text-center py-12 border rounded-md bg-muted/30">
-              <p className="text-muted-foreground mb-4">
-                {t('eventType.scripts.sections.noSections')}
-              </p>
-              <Button onClick={() => setSectionDialogOpen(true)}>
+        {/* Sections List */}
+        {sections.length === 0 ? (
+          <div className="text-center py-12 border rounded-md bg-muted/30">
+            <p className="text-muted-foreground mb-4">
+              {t('eventType.scripts.sections.noSections')}
+            </p>
+            <Button asChild>
+              <Link href={`${sectionBaseUrl}/create`}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('eventType.scripts.sections.addSection')}
-              </Button>
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sections.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <SortableContext
-                items={sections.map((item) => item.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2">
-                  {sections.map((section) => (
-                    <SortableSectionItem
-                      key={section.id}
-                      section={section}
-                      onEdit={handleEditSection}
-                      onDelete={handleDeleteClick}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
-
-        {/* Right Column: Placeholder Reference Panel (1/3 width) */}
-        <div className="lg:col-span-1">
-          <PlaceholderReferencePanel inputFields={inputFields} />
-        </div>
+              <div className="space-y-2">
+                {sections.map((section) => (
+                  <SortableSectionItem
+                    key={section.id}
+                    section={section}
+                    editUrl={`${sectionBaseUrl}/${section.id}`}
+                    onDelete={handleDeleteClick}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
-
-      {/* Section Form Dialog */}
-      <SectionFormDialog
-        scriptId={script.id}
-        section={editingSection}
-        inputFields={inputFields}
-        open={sectionDialogOpen}
-        onOpenChange={setSectionDialogOpen}
-        onClose={() => {
-          setSectionDialogOpen(false)
-          setEditingSection(null)
-        }}
-        onSaved={handleSectionSaved}
-      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog

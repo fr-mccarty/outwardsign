@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { FormSectionCard } from "@/components/form-section-card"
+import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 import { FormInput } from "@/components/form-input"
 import { DatePickerField } from "@/components/date-picker-field"
 import { TimePickerField } from "@/components/time-picker-field"
@@ -23,6 +24,7 @@ import { FormBottomActions } from "@/components/form-bottom-actions"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { LITURGICAL_COLOR_VALUES, LITURGICAL_COLOR_LABELS, type LiturgicalColor, MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, type ModuleStatus } from "@/lib/constants"
 
 interface MasterEventFormProps {
   event?: MasterEventWithRelations
@@ -127,6 +129,16 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
 
   // State for picker visibility
   const [pickerOpen, setPickerOpen] = useState<Record<string, boolean>>({})
+
+  // State for liturgical color (only shown for special-liturgy and mass event types)
+  const [liturgicalColor, setLiturgicalColor] = useState<LiturgicalColor | ''>(
+    (event?.liturgical_color as LiturgicalColor) || ''
+  )
+
+  // State for status
+  const [status, setStatus] = useState<ModuleStatus>(
+    (event?.status as ModuleStatus) || 'PLANNING'
+  )
 
   // State for field validation errors
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -261,7 +273,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         const newEvent = await createEvent(eventType.id, {
           field_values: fieldValues,
           calendar_events,
-          status: 'PLANNING'
+          status,
+          liturgical_color: liturgicalColor || null
         })
         toast.success(`${eventType.name} created successfully`)
         router.push(`/events/${eventType.slug}/${newEvent.id}`)
@@ -274,7 +287,9 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
       try {
         await updateEvent(event.id, {
           field_values: fieldValues,
-          calendar_events
+          calendar_events,
+          status,
+          liturgical_color: liturgicalColor || null
         })
         toast.success(`${eventType.name} updated successfully`)
         router.refresh()
@@ -532,8 +547,44 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
   // Sort fields by order
   const sortedFields = [...(eventType.input_field_definitions || [])].sort((a, b) => a.order - b.order)
 
+  // Determine if liturgical color should be shown
+  // Show for special-liturgy event types (mass-liturgies have their own form)
+  const showLiturgicalColor = eventType.system_type === 'special-liturgy'
+
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
+      {/* Status and Liturgical Color */}
+      <FormSectionCard title="Event Settings">
+        <FormInput
+          id="status"
+          inputType="select"
+          label="Status"
+          description="Current status of this event"
+          value={status}
+          onChange={(value) => setStatus(value as ModuleStatus)}
+          options={MODULE_STATUS_VALUES.map((value) => ({
+            value,
+            label: MODULE_STATUS_LABELS[value].en
+          }))}
+        />
+
+        {showLiturgicalColor && (
+          <FormInput
+            id="liturgical_color"
+            inputType="select"
+            label="Liturgical Color"
+            description="The liturgical color for this celebration (optional)"
+            value={liturgicalColor}
+            onChange={(value) => setLiturgicalColor(value as LiturgicalColor | '')}
+            placeholder="Select liturgical color (optional)"
+            options={LITURGICAL_COLOR_VALUES.map((value) => ({
+              value,
+              label: LITURGICAL_COLOR_LABELS[value].en
+            }))}
+          />
+        )}
+      </FormSectionCard>
+
       {/* Dynamic Fields Section */}
       {sortedFields.length > 0 && (
         <FormSectionCard title="Details">

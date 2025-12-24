@@ -5,6 +5,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
+import {
+  LABEL_TEXT,
+  LABEL_MARGIN_BOTTOM,
+  DESCRIPTION_TEXT,
+  DESCRIPTION_BEFORE_INPUT,
+  DESCRIPTION_INLINE,
+  ERROR_TEXT,
+  ERROR_MARGIN_TOP
+} from '@/lib/constants/form-spacing'
 
 interface BaseFormInputProps {
   id: string
@@ -171,15 +180,15 @@ export function FormInput(props: FormInputProps) {
           {renderInput()}
         </div>
         <div className="flex-1">
-          <Label htmlFor={id} className="text-sm font-medium cursor-pointer">
+          <Label htmlFor={id} className={cn(LABEL_TEXT, 'cursor-pointer')}>
             {label}
             {required && <span className="text-destructive ml-1">*</span>}
           </Label>
           {description && (
-            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+            <p className={cn(DESCRIPTION_TEXT, DESCRIPTION_INLINE)}>{description}</p>
           )}
           {error && (
-            <p id={errorId} className="text-sm text-destructive mt-1">
+            <p id={errorId} className={cn(ERROR_TEXT, ERROR_MARGIN_TOP)}>
               {error}
             </p>
           )}
@@ -195,8 +204,8 @@ export function FormInput(props: FormInputProps) {
         <Label
           htmlFor={id}
           className={cn(
-            'text-sm font-medium',
-            description ? '' : 'mb-1',
+            LABEL_TEXT,
+            description ? '' : LABEL_MARGIN_BOTTOM,
             hideLabel && 'sr-only'
           )}
         >
@@ -205,11 +214,11 @@ export function FormInput(props: FormInputProps) {
         </Label>
       )}
       {description && !hideLabel && (
-        <p className="text-xs text-muted-foreground mb-1.5">{description}</p>
+        <p className={cn(DESCRIPTION_TEXT, DESCRIPTION_BEFORE_INPUT)}>{description}</p>
       )}
       {renderInput()}
       {error && (
-        <p id={errorId} className="text-sm text-destructive mt-1">
+        <p id={errorId} className={cn(ERROR_TEXT, ERROR_MARGIN_TOP)}>
           {error}
         </p>
       )}

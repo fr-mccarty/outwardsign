@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/content-card"
 import { ReactNode } from "react"
 import { cn } from "@/lib/utils"
+import { FORM_FIELDS_SPACING } from "@/lib/constants/form-spacing"
 
 interface FormSectionCardProps {
   title: string
@@ -37,7 +38,7 @@ export function FormSectionCard({
         <CardTitle className={!description ? "mb-2" : ""}>{title}</CardTitle>
         {description && <CardDescription className="mb-2">{description}</CardDescription>}
       </CardHeader>
-      <CardContent className={cn("space-y-4", contentClassName)}>
+      <CardContent className={cn(FORM_FIELDS_SPACING, contentClassName)}>
         {children}
       </CardContent>
     </Card>

@@ -35,11 +35,8 @@ CREATE INDEX idx_calendar_events_start_datetime ON calendar_events(start_datetim
 CREATE INDEX idx_calendar_events_location_id ON calendar_events(location_id);
 CREATE INDEX idx_calendar_events_is_all_day ON calendar_events(is_all_day) WHERE deleted_at IS NULL;
 
--- Unique index to ensure only one calendar_event per master_event per field_definition
--- (Prevents duplicate "Rehearsal" entries for same wedding)
-CREATE UNIQUE INDEX idx_calendar_events_unique_per_field
-ON calendar_events(master_event_id, input_field_definition_id)
-WHERE deleted_at IS NULL;
+-- Note: No unique constraint on (master_event_id, input_field_definition_id)
+-- This allows multiple calendar events with the same field definition (e.g., multiple mass times)
 
 -- RLS Policies
 CREATE POLICY calendar_events_select_policy ON calendar_events

@@ -10,6 +10,7 @@ CREATE TABLE master_events (
   liturgical_calendar_id UUID REFERENCES liturgical_calendar(id) ON DELETE SET NULL,
   field_values JSONB NOT NULL DEFAULT '{}'::jsonb,
   status TEXT NOT NULL,
+  liturgical_color TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
@@ -89,3 +90,4 @@ CREATE TRIGGER master_events_updated_at
 COMMENT ON TABLE master_events IS 'Master events (sacrament containers) with JSONB field_values. ON DELETE RESTRICT for event_type_id prevents deletion of event types with existing events.';
 COMMENT ON COLUMN master_events.liturgical_calendar_id IS 'Optional link to liturgical_calendar for events tied to a specific liturgical day (e.g., Christmas Mass, Easter Vigil). ON DELETE SET NULL preserves the event if the calendar entry is removed.';
 COMMENT ON COLUMN master_events.status IS 'Event status (values defined in application constants)';
+COMMENT ON COLUMN master_events.liturgical_color IS 'Optional liturgical color for the event (e.g., white, red, green, violet, rose, black)';

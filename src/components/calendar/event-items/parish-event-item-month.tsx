@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { getModuleIcon, getIconByName } from '@/components/calendar/module-icons'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 import { formatTime } from '@/lib/utils/formatters'
+import { getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 
 interface ParishEventItemMonthProps {
   event: {
@@ -46,7 +47,7 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
         {liturgicalColor && (
           <div
             className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border border-background shadow-sm flex-shrink-0"
-            style={{ backgroundColor: liturgicalColor }}
+            style={{ backgroundColor: getLiturgicalCssVarValue(liturgicalColor) }}
           />
         )}
         <span className="truncate">{event.title}</span>

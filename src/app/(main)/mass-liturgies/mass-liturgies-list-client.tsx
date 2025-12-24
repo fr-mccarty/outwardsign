@@ -4,7 +4,8 @@ import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
 import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
-import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS, LITURGICAL_COLOR_LABELS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -20,7 +21,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import {
@@ -209,26 +210,67 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
   // Define table columns using column builders
   const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
     buildMassWhoColumn(),
-    // When column - date and time from primary calendar event
+    // When column - list all calendar events with date and time
     {
       key: 'when',
       header: 'When',
       cell: (mass) => {
-        if (!mass.primary_calendar_event?.start_datetime) {
-          return <span className="text-sm text-muted-foreground">No date set</span>
+        const calendarEvents = mass.calendar_events || []
+        if (calendarEvents.length === 0) {
+          return <span className="text-sm text-muted-foreground">No dates set</span>
         }
-        const date = new Date(mass.primary_calendar_event.start_datetime)
         return (
-          <div className="flex flex-col">
-            <span className="text-sm">
-              {formatDatePretty(date)}
-            </span>
+          <div className="flex flex-col gap-0.5">
+            {calendarEvents.map((ce) => {
+              if (!ce.start_datetime) return null
+              const date = new Date(ce.start_datetime)
+              const dateStr = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })
+              const timeStr = date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })
+              return (
+                <span key={ce.id} className="text-sm">
+                  {dateStr} at {timeStr}
+                </span>
+              )
+            })}
           </div>
         )
       },
-      className: 'max-w-[180px]',
+      className: 'max-w-[200px]',
       sortable: true,
       accessorFn: (mass) => mass.primary_calendar_event?.start_datetime || ''
+    },
+    // Liturgical Color column
+    {
+      key: 'liturgical_color',
+      header: 'Color',
+      cell: (mass) => {
+        const color = mass.liturgical_color
+        if (!color || !LITURGICAL_COLOR_LABELS[color]) {
+          return <span className="text-sm text-muted-foreground">—</span>
+        }
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`h-4 w-4 rounded-full bg-liturgy-${color.toLowerCase()}`} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{LITURGICAL_COLOR_LABELS[color].en}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )
+      },
+      className: 'max-w-[60px]',
+      sortable: false
     },
     buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
       getLocation: (mass) => mass.primary_calendar_event?.location || null,
@@ -246,7 +288,7 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search and Filters */}
       <SearchCard title={t('title')}>
         <div className="space-y-4">

@@ -11,6 +11,13 @@
 
 import type { DevSeederContext } from './types'
 import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
+import { LITURGICAL_COLOR_VALUES, type LiturgicalColor } from '../../src/lib/constants'
+
+// Create a lookup object for liturgical colors from the constants array
+const COLORS = LITURGICAL_COLOR_VALUES.reduce((acc, color) => {
+  acc[color] = color
+  return acc
+}, {} as Record<LiturgicalColor, LiturgicalColor>)
 
 export async function seedMasses(
   ctx: DevSeederContext,
@@ -78,17 +85,22 @@ export async function seedMasses(
     time: string
     eventType: typeof sundayMassEventType
     fieldValues: Record<string, string>
+    liturgicalColor?: string
   }> = []
 
   // Create 8 Sunday Masses (next 8 weeks)
   // Use property_name values as keys (not display names)
+  // Liturgical colors: green (ordinary time), purple (advent/lent), white (easter/christmas), red (pentecost/martyrs)
   if (sundayMassEventType) {
     for (let week = 0; week < 8; week++) {
       const massDate = getSundayDate(week)
+      // Rotate through colors to show variety (in real usage, this would come from liturgical calendar)
+      const colors = [COLORS.GREEN, COLORS.GREEN, COLORS.GREEN, COLORS.WHITE, COLORS.GREEN, COLORS.GREEN, COLORS.RED, COLORS.GREEN]
       massesToCreate.push({
         date: massDate,
         time: '10:00:00',
         eventType: sundayMassEventType,
+        liturgicalColor: colors[week],
         fieldValues: {
           announcements: week % 2 === 0
             ? `Parish Picnic next Sunday after all Masses. Bring a side dish to share! Sign up in the parish hall.`
@@ -106,6 +118,7 @@ export async function seedMasses(
 
   // Create 12 Daily Masses (next 12 weekdays)
   // Use property_name values as keys (not display names)
+  // Daily Masses typically use green (ordinary time) unless a feast day
   if (dailyMassEventType) {
     let dayCount = 0
     for (let day = 1; day <= 20 && dayCount < 12; day++) {
@@ -117,10 +130,13 @@ export async function seedMasses(
       if (dayOfWeek === 0 || dayOfWeek === 6) continue
 
       const massDate = date.toISOString().split('T')[0]
+      // Mostly green with occasional white/red for feast days
+      const colors = [COLORS.GREEN, COLORS.GREEN, COLORS.WHITE, COLORS.GREEN, COLORS.GREEN, COLORS.RED, COLORS.GREEN, COLORS.GREEN, COLORS.GREEN, COLORS.WHITE, COLORS.GREEN, COLORS.GREEN]
       massesToCreate.push({
         date: massDate,
         time: '08:00:00',
         eventType: dailyMassEventType,
+        liturgicalColor: colors[dayCount],
         fieldValues: {
           mass_intentions: people[dayCount % 10] ? `For ${people[dayCount % 10].first_name} ${people[dayCount % 10].last_name} - Birthday blessings` : 'For vocations to the priesthood',
           special_instructions: ''
@@ -160,6 +176,7 @@ export async function seedMasses(
         parish_id: parishId,
         event_type_id: massData.eventType.id,
         field_values: massData.fieldValues,
+        liturgical_color: massData.liturgicalColor || null,
         status: 'ACTIVE'
       })
       .select()

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { EventType } from '@/lib/types'
 import type { MasterEventWithTypeAndCalendarEvent } from '@/lib/actions/master-events'
 import { getEvents, deleteEvent, type MasterEventFilterParams } from '@/lib/actions/master-events'
-import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS, MODULE_STATUS_COLORS } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS, MODULE_STATUS_COLORS, LITURGICAL_COLOR_LABELS } from '@/lib/constants'
+import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { DataTable } from '@/components/data-table/data-table'
@@ -232,6 +233,31 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
       className: 'max-w-[100px]',
       sortable: false
     },
+    // Liturgical Color column (only show for special-liturgy)
+    ...(eventType.system_type === 'special-liturgy' ? [{
+      key: 'liturgical_color',
+      header: 'Color',
+      cell: (event: MasterEventWithTypeAndCalendarEvent) => {
+        const color = event.liturgical_color
+        if (!color || !LITURGICAL_COLOR_LABELS[color]) {
+          return <span className="text-sm text-muted-foreground">—</span>
+        }
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`h-4 w-4 rounded-full bg-liturgy-${color.toLowerCase()}`} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{LITURGICAL_COLOR_LABELS[color].en}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )
+      },
+      className: 'max-w-[60px]',
+      sortable: false
+    }] : []),
     // Where column (location)
     buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
       getLocation: (event) => event.primary_calendar_event?.location || null,
@@ -250,7 +276,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
   ]
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SECTIONS_SPACING}>
       {/* Search and Filters */}
       <SearchCard title={`Search ${eventType.name}s`}>
         <div className="space-y-4">

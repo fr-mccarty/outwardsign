@@ -64,6 +64,8 @@ function occasionToCalendarItem(occasion: CalendarCalendarEventItem): Liturgical
     moduleType: occasion.module_type,
     start_time: startTime,
     eventTypeIcon: occasion.event_type_icon,
+    // Liturgical color from master event (raw color name, component converts internally)
+    liturgicalColor: occasion.liturgical_color || undefined,
     // Additional fields for navigation
     event_id: occasion.master_event_id ?? undefined,
     event_type_slug: occasion.event_type_slug ?? undefined,

@@ -7,10 +7,9 @@ import {
   isNotFoundError,
 } from './server-action-utils'
 import {
-
   CalendarEvent,
   CreateCalendarEventData,
-  UpdateCalendarEventData
+  UpdateCalendarEventData,
 } from '@/lib/types'
 
 /**
