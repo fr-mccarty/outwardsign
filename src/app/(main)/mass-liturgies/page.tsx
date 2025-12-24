@@ -7,6 +7,9 @@ import { redirect } from 'next/navigation'
 import { MassLiturgiesListClient } from './mass-liturgies-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import { getTranslations } from 'next-intl/server'
+import { Button } from '@/components/ui/button'
+import { Settings } from 'lucide-react'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,6 +63,14 @@ export default async function MassesPage({ searchParams }: PageProps) {
       title="Our Masses"
       description="Celebrate the Eucharist and gather the community in worship."
       primaryAction={<ModuleCreateButton moduleName="Mass" href="/mass-liturgies/create" />}
+      secondaryActions={
+        <Button variant="outline" asChild>
+          <Link href="/settings/mass-liturgies">
+            <Settings className="h-4 w-4 mr-2" />
+            Configure Mass Types
+          </Link>
+        </Button>
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassLiturgiesListClient initialData={masses} stats={stats} />

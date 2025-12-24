@@ -1,5 +1,7 @@
 # Mass Scheduling Module
 
+> **⚠️ WARNING - PARTIALLY OUTDATED:** This document describes the Mass Scheduling workflow which is currently implemented, but references to the old `masses` table schema are outdated. The system now uses the unified event data model (`master_events`, `calendar_events`, `people_event_assignments`). The workflow and UI patterns described here are still accurate, but database references need updating.
+>
 > **Purpose:** Bulk Mass scheduling workflow with automatic minister assignment for recurring Mass schedules over a specified date range.
 >
 > **Type:** Wizard-based workflow (8-step process)

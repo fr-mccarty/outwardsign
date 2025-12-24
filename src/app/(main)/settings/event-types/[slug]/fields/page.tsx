@@ -5,6 +5,9 @@ import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
 import { FieldsListClient } from './fields-list-client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Info } from 'lucide-react'
+import Link from 'next/link'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -53,6 +56,25 @@ export default async function CustomFieldsPage({ params }: PageProps) {
       description={t('eventType.fields.description')}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+
+      {/* Fields to Scripts explanation */}
+      <Alert className="mb-6">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          <p className="font-medium mb-1">{t('eventType.fields.howFieldsWork')}</p>
+          <p className="text-sm">
+            {t('eventType.fields.fieldsToPlaceholders')}
+          </p>
+          {eventType.system_type === 'special-liturgy' && (
+            <p className="mt-2 text-sm">
+              <Link href={`/settings/event-types/${slug}/scripts`} className="text-primary underline">
+                {t('eventType.fields.configureScripts')} →
+              </Link>
+            </p>
+          )}
+        </AlertDescription>
+      </Alert>
+
       <FieldsListClient
         eventType={eventType}
         initialFields={eventType.input_field_definitions || []}

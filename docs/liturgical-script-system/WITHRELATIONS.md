@@ -1,5 +1,7 @@
 # Liturgical Script System - WithRelations Pattern
 
+> **⚠️ EXAMPLES OUTDATED:** This document's patterns and concepts are still valid, but code examples reference the old Wedding schema with `presider_id`, `bride_id`, etc. The system now uses the unified event data model where person assignments are stored in `people_event_assignments` rather than as direct foreign keys.
+
 > **Data Fetching for Content Builders**
 >
 > Content builders require entity types with all relations populated. This document explains the WithRelations pattern for fetching complete entity data.

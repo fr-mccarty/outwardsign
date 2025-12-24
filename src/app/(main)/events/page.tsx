@@ -8,6 +8,9 @@ import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import { getTranslations } from 'next-intl/server'
+import { Button } from '@/components/ui/button'
+import { Settings } from 'lucide-react'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +79,14 @@ export default async function EventsPage({ searchParams }: PageProps) {
       title="Our Events"
       description="Organize parish gatherings, meetings, and special occasions."
       primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
+      secondaryActions={
+        <Button variant="outline" asChild>
+          <Link href="/settings/events">
+            <Settings className="h-4 w-4 mr-2" />
+            Configure Event Types
+          </Link>
+        </Button>
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventsListClient initialData={events} stats={stats} eventTypes={eventTypes} />

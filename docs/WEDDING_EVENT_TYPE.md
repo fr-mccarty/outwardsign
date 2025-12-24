@@ -179,7 +179,7 @@ When displaying event data, the system resolves UUIDs to full objects:
 3. User fills in values (selects people, dates, readings, etc.)
 4. System saves to `master_events.field_values` (JSONB)
 5. System creates `calendar_events` records for date/time fields
-6. System optionally assigns roles via `master_event_roles`
+6. System assigns roles via `people_event_assignments` table
 
 ### Viewing Scripts
 

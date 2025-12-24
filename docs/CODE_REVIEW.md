@@ -109,26 +109,24 @@ This document contains a checklist of items to verify during code review. Use th
   **Example check for Wedding module:**
   ```typescript
   // In src/lib/types.ts
-  interface Wedding {
+  interface MasterEvent {
     id: string
     parish_id: string
-    partner_1_id: string
-    partner_2_id: string
-    wedding_date?: string | null
-    location_id?: string | null
-    presider_id?: string | null
+    event_type_id: string
+    field_values: Record<string, any>
+    status: string
+    liturgical_color?: string | null
     // ... etc
   }
 
-  // In src/lib/actions/weddings.ts - should accept ALL these fields
-  export async function createWedding({
-    partner_1_id,
-    partner_2_id,
-    wedding_date,
-    location_id,
-    presider_id,
+  // In src/lib/actions/master-events.ts - should accept ALL these fields
+  export async function createMasterEvent({
+    event_type_id,
+    field_values,
+    status,
+    liturgical_color,
     // Must include ALL other fields from interface
-  }: Omit<Wedding, 'id' | 'created_at' | 'updated_at'>)
+  }: Omit<MasterEvent, 'id' | 'created_at' | 'updated_at'>)
   ```
 
   See MODULE_DEVELOPMENT.md for server action patterns and ARCHITECTURE.md § Data Flow for server action guidelines.

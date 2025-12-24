@@ -1,5 +1,7 @@
 # Mass Template System - Implementation Guide
 
+> **⚠️ DEPRECATED:** This document describes the legacy Mass Role Template system that was removed in December 2024. The Mass Liturgies module now uses the unified event data model with roles defined via `input_field_definitions` and assignments in `people_event_assignments`. This file is kept for historical reference only.
+
 > **Purpose:** Complete implementation documentation for Mass Role Template components, server actions, and UI behavior patterns.
 
 ## Table of Contents

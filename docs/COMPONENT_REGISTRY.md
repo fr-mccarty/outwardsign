@@ -90,7 +90,7 @@ Components for displaying data including cards, badges, avatars, and status labe
 - `ModuleStatusLabel` - Status badges for modules
 - `ModuleViewPanel` - Side panel for view pages
 - `ModuleViewContainer` - Complete view page container
-- `RoleAssignmentSection` - Role management section for master_event view pages (displays master_event_roles)
+- `RoleAssignmentSection` - Role management section for master_event view pages (displays people_event_assignments)
 
 ---
 

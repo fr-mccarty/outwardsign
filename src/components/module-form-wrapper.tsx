@@ -5,6 +5,14 @@ import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
 import { CancelButton } from '@/components/cancel-button'
 
+interface AdditionalAction {
+  type: 'action'
+  label: string
+  icon?: ReactNode
+  href?: string
+  onClick?: () => void
+}
+
 interface BaseModuleFormWrapperProps {
   /** Page title displayed in header */
   title: string
@@ -18,6 +26,8 @@ interface BaseModuleFormWrapperProps {
   viewPath: string
   /** Content to display before the form (e.g., Alert, explanatory text) */
   beforeContent?: ReactNode
+  /** Additional actions to show in the three-dots menu */
+  additionalActions?: AdditionalAction[]
 }
 
 interface HeaderButtonsProps extends BaseModuleFormWrapperProps {
@@ -106,6 +116,7 @@ export function ModuleFormWrapper(props: ModuleFormWrapperProps) {
     viewPath,
     beforeContent,
     buttonPlacement = 'header',
+    additionalActions: customActions,
     children,
   } = props
 
@@ -114,6 +125,19 @@ export function ModuleFormWrapper(props: ModuleFormWrapperProps) {
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!entity
   const cancelHref = isEditing && entity ? `${viewPath}/${entity.id}` : viewPath
+
+  // Build combined additional actions
+  const buildAdditionalActions = () => {
+    const actions: AdditionalAction[] = [...(customActions || [])]
+    if (isEditing && entity) {
+      actions.push({
+        type: 'action',
+        label: `View ${moduleName}`,
+        href: `${viewPath}/${entity.id}`,
+      })
+    }
+    return actions.length > 0 ? actions : undefined
+  }
 
   // Header buttons mode - SaveButton in PageContainer header
   if (buttonPlacement === 'header') {
@@ -130,17 +154,7 @@ export function ModuleFormWrapper(props: ModuleFormWrapperProps) {
             form={formId}
           />
         }
-        additionalActions={
-          isEditing
-            ? [
-                {
-                  type: 'action',
-                  label: `View ${moduleName}`,
-                  href: `${viewPath}/${entity.id}`,
-                },
-              ]
-            : undefined
-        }
+        additionalActions={buildAdditionalActions()}
       >
         {beforeContent}
         {headerChildren({ formId, onLoadingChange: setIsLoading })}
@@ -154,17 +168,7 @@ export function ModuleFormWrapper(props: ModuleFormWrapperProps) {
     <PageContainer
       title={title}
       description={description}
-      additionalActions={
-        isEditing
-          ? [
-              {
-                type: 'action',
-                label: `View ${moduleName}`,
-                href: `${viewPath}/${entity.id}`,
-              },
-            ]
-          : undefined
-      }
+      additionalActions={buildAdditionalActions()}
     >
       {beforeContent}
       {inlineChildren({

@@ -5,7 +5,7 @@ import { MasterEventForm } from '../master-event-form'
 import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
 import { TemplatePickerDialog } from '@/components/template-picker-dialog'
-import { BookmarkCheck } from 'lucide-react'
+import { BookmarkCheck, Settings } from 'lucide-react'
 import type { EventTypeWithRelations, MasterEventTemplate } from '@/lib/types'
 
 interface DynamicEventCreateClientProps {
@@ -41,6 +41,12 @@ export function DynamicEventCreateClient({
             label: 'Create from Template',
             icon: <BookmarkCheck className="h-4 w-4" />,
             onClick: () => setShowTemplatePicker(true)
+          },
+          {
+            type: 'action',
+            label: 'Edit Event Type',
+            icon: <Settings className="h-4 w-4" />,
+            href: `/settings/event-types/${eventType.slug}`
           }
         ]}
       >

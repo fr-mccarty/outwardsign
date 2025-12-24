@@ -30,9 +30,10 @@ This document serves as a navigation hub for all coding standards and convention
 - Use helpers: `computeMasterEventTitle()`, `computeCalendarEventTitle()`
 
 **Role Definitions:**
-- Stored as JSONB in `event_types.role_definitions`
-- Structure: `{"roles": [{"id": "presider", "name": "Presider", "required": true}, ...]}`
-- Assignments stored in `master_event_roles` table
+- Roles defined via `input_field_definitions` table with `input_type = 'person'`
+- Assignments stored in `people_event_assignments` table
+- Template-level assignments: `calendar_event_id` is NULL (applies to all occurrences)
+- Occurrence-level assignments: `calendar_event_id` populated (specific to one calendar event)
 
 **calendar_event Input Type:**
 - `input_type: "calendar_event"` creates records in `calendar_events` table

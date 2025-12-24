@@ -44,7 +44,7 @@ System type metadata (icons, bilingual labels) is stored in application constant
 **Key Design Decisions:**
 - Every calendar_event MUST have a master_event (NOT NULL FK)
 - Titles are computed (not stored) from master_event + field_name
-- Roles are defined in event_types.role_definitions (JSONB), assignments in people_event_assignments
+- Roles defined in `input_field_definitions` (input_type = 'person'), assignments in `people_event_assignments`
 - Role capability is managed through groups + group_members
 - Scripts are generated from master_events, NOT calendar_events
 
@@ -150,9 +150,9 @@ All core modules use the **unified event data model** with master_events → cal
 - Print/PDF/Word export for rosters
 
 **Three-Concern Separation for Roles:**
-1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+1. **Role Definitions** - Defined in `input_field_definitions` table (with `input_type = 'person'`)
 2. **Role Capability** - Managed through groups + group_members (who CAN serve)
-3. **Role Assignments** - Stored in people_event_assignments (who IS serving at specific Mass times)
+3. **Role Assignments** - Stored in `people_event_assignments` table (who IS serving at specific Mass times)
 
 **Key Files:**
 - `src/app/(main)/mass-liturgies/page.tsx` - List page (server)
@@ -174,7 +174,7 @@ All core modules use the **unified event data model** with master_events → cal
 **Database Tables:**
 - `master_events` (with event_type_id → event_types where system_type = 'special-liturgy')
 - `calendar_events` (scheduled occurrences, often multiple per master_event)
-- `master_event_roles` (role assignments)
+- `people_event_assignments` (role assignments)
 
 **Architecture:**
 - Dynamic routes based on event_type slug

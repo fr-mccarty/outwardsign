@@ -48,9 +48,9 @@
 - ✅ Print/PDF/Word export for rosters
 
 **Three-Concern Separation for Roles:**
-1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+1. **Role Definitions** - Defined in `input_field_definitions` table (with `input_type = 'person'`)
 2. **Role Capability** - Managed through groups + group_members (who CAN serve)
-3. **Role Assignments** - Stored in people_event_assignments (who IS serving)
+3. **Role Assignments** - Stored in `people_event_assignments` table (who IS serving)
 
 ### What's Not Yet Implemented ⏳
 
@@ -67,14 +67,14 @@
 - `master_events` - Liturgical Day (system_type = 'mass-liturgy')
   - Links to `event_types` (e.g., "Sunday Mass", "Daily Mass")
   - Links to `liturgical_calendar` (liturgical calendar)
-  - Contains presider_id, homilist_id, field values (JSONB)
+  - Contains field values in JSONB `field_values` column
 - `calendar_events` - Individual Mass Times for that day
   - Multiple calendar_events per master_event (10am, 12pm, 5pm)
   - Each has location, date/time, title computed from master_event
 - `people_event_assignments` - Role assignments for specific Mass times
-  - Links to calendar_event (specific Mass time)
-  - Links to input_field_definition (role definition)
-  - Links to person (who is assigned)
+  - Links to calendar_event (specific Mass time) - NULL = template-level (all occurrences)
+  - Links to input_field_definition (role definition via `field_definition_id`)
+  - Links to person (who is assigned via `person_id`)
 - `mass_intentions` - Mass intention requests
   - Links to calendar_event (NOT master_event)
 

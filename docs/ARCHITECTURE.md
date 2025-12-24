@@ -54,7 +54,7 @@ Examples:
 - "9am Mass Jan 19" (1 calendar event, no suffix)
 
 **Role Assignments (Three-Concern Separation):**
-1. **Role Definitions** - Defined in `event_types.role_definitions` (via input_field_definitions JSONB)
+1. **Role Definitions** - Defined in `input_field_definitions` table (with `input_type = 'person'`)
 2. **Role Capability** - Managed through `groups` + `group_members` (who CAN serve in roles)
 3. **Role Assignments** - Stored in `people_event_assignments` table (who IS serving at specific calendar_events)
 

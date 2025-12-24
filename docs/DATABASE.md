@@ -12,50 +12,46 @@ As part of the Unified Event Data Model implementation, the database was restruc
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
-| **event_types** | User-defined templates | `system_type` (enum), `role_definitions` (jsonb) |
+| **event_types** | User-defined templates | `system_type` (enum: 'mass-liturgy', 'special-liturgy', 'parish-event') |
 | **master_events** | Specific event instances | `event_type_id` (NOT NULL), `field_values` (jsonb), `status` |
 | **calendar_events** | Date/time/location entries | `master_event_id` (NOT NULL), `input_field_definition_id` (NOT NULL), `start_datetime` |
-| **master_event_roles** | Role assignments | `master_event_id`, `role_id`, `person_id` |
+| **people_event_assignments** | Person-to-event role assignments | `master_event_id`, `calendar_event_id` (nullable), `field_definition_id`, `person_id` |
 
 ### System Types (Enum Field)
 
 **event_types.system_type** is an enum field with CHECK constraint (NOT a foreign key):
-- `'mass'` - Masses
-- `'special-liturgy'` - Special Liturgies
-- `'sacrament'` - Sacraments
-- `'event'` - Events
+- `'mass-liturgy'` - Masses and Mass-related liturgies
+- `'special-liturgy'` - Special liturgies (e.g., Liturgy of the Hours, Adoration)
+- `'parish-event'` - Parish events and sacraments (default)
 
 System type metadata (icons, bilingual labels) is stored in application constants at `src/lib/constants/system-types.ts`.
 
 ### Key Database Changes
 
-**calendar_events table restructure:**
+**calendar_events table:**
 - `start_datetime` (timestamptz, NOT NULL) - Includes timezone
 - `input_field_definition_id` (uuid, NOT NULL) - References the field definition that created this calendar event
 - `master_event_id` (uuid, NOT NULL) - Every calendar_event MUST have a master_event
 - NO title field (computed from master_event + field_name)
+- See migration: `20251210000008_create_calendar_events_table.sql`
 
-**master_event_roles table (new):**
-- Stores role assignments for master_events
-- Links to `event_types.role_definitions` JSONB structure
-- One row per person per role per master_event
+**people_event_assignments table:**
+- Unified storage for all person-to-event assignments (presiders, lectors, musicians, etc.)
+- `calendar_event_id` nullable - NULL = template-level (applies to all occurrences), populated = occurrence-level (specific calendar event)
+- `field_definition_id` references which role/field this assignment is for
+- One row per person per role per event/occurrence
+- See migration: `20251222000001_create_people_event_assignments_table.sql`
 
-**event_types.role_definitions (new JSONB field):**
-- Defines available roles for each event type
-- Structure: `{"roles": [{"id": "presider", "name": "Presider", "required": true}, ...]}`
+**event_types table:**
+- `system_type` field with CHECK constraint for 'mass-liturgy', 'special-liturgy', 'parish-event'
+- No `role_definitions` column - roles defined via `input_field_definitions` instead
+- See migration: `20251031000002_create_event_types_table.sql`
 
-**masses table (deleted):**
-- Migrated to unified structure via `master_events`
-- All masses are now `master_events` with `event_type_id` pointing to event_types where `system_type = 'mass-liturgy'`
-
-**Migration Files:**
-- `20251216000001_update_event_types_system_type.sql`
-- `20251216000002_update_input_field_definitions_calendar_event.sql`
-- `20251216000003_recreate_calendar_events_table.sql`
-- `20251216000004_add_status_to_master_events.sql`
-- `20251216000005_create_master_event_roles_table.sql`
-- `20251216000006_add_role_definitions_to_event_types.sql`
-- `20251216000007_delete_masses_table.sql`
+**master_events table:**
+- `field_values` (jsonb) stores dynamic field data
+- `status` field for event lifecycle
+- `liturgical_color` optional field for liturgical events
+- See migration: `20251210000007_create_master_events_table.sql`
 
 ## Database Resets
 

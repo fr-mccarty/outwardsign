@@ -34,39 +34,39 @@ interface MasterEventViewClientProps {
 
 export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlug }: MasterEventViewClientProps) {
   const router = useRouter()
-  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
-  const [templateName, setTemplateName] = useState('')
-  const [templateDescription, setTemplateDescription] = useState('')
-  const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+  const [showSavePresetDialog, setShowSavePresetDialog] = useState(false)
+  const [presetName, setPresetName] = useState('')
+  const [presetDescription, setPresetDescription] = useState('')
+  const [isSavingPreset, setIsSavingPreset] = useState(false)
 
-  // Handle save as template
-  const handleSaveAsTemplate = async () => {
-    if (!templateName.trim()) {
-      toast.error('Please enter a template name')
+  // Handle save as preset
+  const handleSaveAsPreset = async () => {
+    if (!presetName.trim()) {
+      toast.error('Please enter a preset name')
       return
     }
 
-    setIsSavingTemplate(true)
+    setIsSavingPreset(true)
     try {
-      const result = await createTemplateFromEvent(event.id, templateName, templateDescription)
+      const result = await createTemplateFromEvent(event.id, presetName, presetDescription)
       if (result.success) {
-        toast.success('Template saved successfully')
-        setShowSaveTemplateDialog(false)
-        setTemplateName('')
-        setTemplateDescription('')
+        toast.success('Preset saved successfully')
+        setShowSavePresetDialog(false)
+        setPresetName('')
+        setPresetDescription('')
         router.refresh()
       } else {
-        toast.error(result.error || 'Failed to save template')
+        toast.error(result.error || 'Failed to save preset')
       }
     } catch (error) {
-      console.error('Error saving template:', error)
-      toast.error('Failed to save template')
+      console.error('Error saving preset:', error)
+      toast.error('Failed to save preset')
     } finally {
-      setIsSavingTemplate(false)
+      setIsSavingPreset(false)
     }
   }
 
-  // Generate action buttons (Edit + Save as Template + Settings - Delete handled via onDelete prop)
+  // Generate action buttons (Edit + Save as Preset + Settings - Delete handled via onDelete prop)
   const actionButtons = (
     <div className="space-y-2 w-full">
       <Button asChild className="w-full">
@@ -78,10 +78,10 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       <Button
         variant="outline"
         className="w-full"
-        onClick={() => setShowSaveTemplateDialog(true)}
+        onClick={() => setShowSavePresetDialog(true)}
       >
         <BookmarkPlus className="h-4 w-4 mr-2" />
-        Save as Template
+        Save as Preset
       </Button>
       <Button asChild variant="outline" className="w-full">
         <Link href={`/settings/event-types/${eventType.slug}/scripts`}>
@@ -146,32 +146,32 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
         )}
       </div>
 
-      {/* Save as Template Dialog */}
-      <Dialog open={showSaveTemplateDialog} onOpenChange={setShowSaveTemplateDialog}>
+      {/* Save as Preset Dialog */}
+      <Dialog open={showSavePresetDialog} onOpenChange={setShowSavePresetDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save as Template</DialogTitle>
+            <DialogTitle>Save as Preset</DialogTitle>
             <DialogDescription>
-              Create a reusable template from this {eventType.name.toLowerCase()}
+              Create a reusable preset from this {eventType.name.toLowerCase()}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="template-name">Template Name *</Label>
+              <Label htmlFor="preset-name">Preset Name *</Label>
               <Input
-                id="template-name"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder={`${eventType.name} Template`}
+                id="preset-name"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                placeholder={`${eventType.name} Preset`}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="template-description">Description (optional)</Label>
+              <Label htmlFor="preset-description">Description (optional)</Label>
               <Textarea
-                id="template-description"
-                value={templateDescription}
-                onChange={(e) => setTemplateDescription(e.target.value)}
-                placeholder="Describe what this template is for..."
+                id="preset-description"
+                value={presetDescription}
+                onChange={(e) => setPresetDescription(e.target.value)}
+                placeholder="Describe what this preset is for..."
                 rows={3}
               />
             </div>
@@ -179,16 +179,16 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowSaveTemplateDialog(false)}
-              disabled={isSavingTemplate}
+              onClick={() => setShowSavePresetDialog(false)}
+              disabled={isSavingPreset}
             >
               Cancel
             </Button>
             <Button
-              onClick={handleSaveAsTemplate}
-              disabled={isSavingTemplate || !templateName.trim()}
+              onClick={handleSaveAsPreset}
+              disabled={isSavingPreset || !presetName.trim()}
             >
-              {isSavingTemplate ? 'Saving...' : 'Save Template'}
+              {isSavingPreset ? 'Saving...' : 'Save Preset'}
             </Button>
           </DialogFooter>
         </DialogContent>

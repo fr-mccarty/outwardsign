@@ -53,7 +53,7 @@ export default async function ViewSpecialLiturgyPage({ params }: PageProps) {
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: eventType.name, href: `/special-liturgies/${event_type_slug}` },
-    { label: "View" }
+    { label: title }
   ]
 
   return (

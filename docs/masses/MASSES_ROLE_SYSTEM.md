@@ -1,9 +1,9 @@
 # Mass Module - Role System Architecture
 
 > **⚠️ DEPRECATED:** This document describes the legacy `mass_roles` system that was removed in December 2024. The Mass Liturgies module now uses the unified event data model with three-concern separation:
-> 1. **Role Definitions** - Defined in event_types.role_definitions (via input_field_definitions)
+> 1. **Role Definitions** - Defined in `input_field_definitions` table (with `input_type = 'person'`)
 > 2. **Role Capability** - Managed through groups + group_members (who CAN serve)
-> 3. **Role Assignments** - Stored in people_event_assignments (who IS serving)
+> 3. **Role Assignments** - Stored in `people_event_assignments` table (who IS serving)
 >
 > For current implementation, see [MASSES_OVERVIEW.md](./MASSES_OVERVIEW.md)
 
