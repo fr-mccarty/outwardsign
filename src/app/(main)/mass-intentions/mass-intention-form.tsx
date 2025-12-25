@@ -19,6 +19,8 @@ import { MassPickerField } from "@/components/mass-picker-field"
 import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE, type MassIntentionStatus, type MassIntentionTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
 import type { MassWithNames } from "@/lib/schemas/mass-liturgies"
@@ -38,7 +40,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   // Initialize React Hook Form with Zod validation
   const {
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
     setValue,
     watch,
   } = useForm<CreateMassIntentionData>({
@@ -60,6 +62,9 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   useEffect(() => {
     onLoadingChange?.(isSubmitting)
   }, [isSubmitting, onLoadingChange])
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && isDirty })
 
   // Watch form values
   const status = watch("status")
@@ -246,6 +251,14 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         isLoading={isSubmitting}
         cancelHref={isEditing ? `/mass-intentions/${intention.id}` : '/mass-intentions'}
         moduleName="Mass Intention"
+        isDirty={isEditing && isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
 
       {/* Mass Picker Modal */}

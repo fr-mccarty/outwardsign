@@ -12,6 +12,10 @@ interface CancelButtonProps extends Omit<React.ComponentProps<typeof Button>, 'a
   onClick?: () => void
   children?: React.ReactNode
   showIcon?: boolean
+  /** When true with onNavigate, shows confirmation before navigating */
+  isDirty?: boolean
+  /** Callback to handle navigation with unsaved changes check */
+  onNavigate?: (href: string) => void
 }
 
 /**
@@ -23,6 +27,7 @@ interface CancelButtonProps extends Omit<React.ComponentProps<typeof Button>, 'a
  * - Navigation: <CancelButton href="/weddings" />
  * - Dialog: <CancelButton onClick={() => setOpen(false)} />
  * - Custom: <CancelButton href="/home">Go Back</CancelButton>
+ * - With unsaved changes: <CancelButton href="/home" isDirty={isDirty} onNavigate={handleNavigation} />
  */
 export function CancelButton({
   href,
@@ -32,6 +37,8 @@ export function CancelButton({
   className,
   variant = "outline",
   disabled,
+  isDirty,
+  onNavigate,
   ...props
 }: CancelButtonProps) {
   const t = useTranslations('components.buttons')
@@ -62,6 +69,23 @@ export function CancelButton({
   // Otherwise, use Link for navigation (for forms)
   if (!href) {
     throw new Error('CancelButton requires either href or onClick prop')
+  }
+
+  // If isDirty and onNavigate are provided, use button with click handler
+  // to intercept navigation and show confirmation dialog
+  if (isDirty && onNavigate) {
+    return (
+      <Button
+        type="button"
+        variant={variant}
+        onClick={() => onNavigate(href)}
+        disabled={disabled}
+        className={cn(className)}
+        {...props}
+      >
+        {buttonContent}
+      </Button>
+    )
   }
 
   return (

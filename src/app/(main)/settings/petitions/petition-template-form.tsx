@@ -8,6 +8,8 @@ import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { Button } from "@/components/ui/button"
 import { FormInput } from '@/components/form-input'
 import { FormBottomActions } from '@/components/form-bottom-actions'
+import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { FileText } from "lucide-react"
 import { createPetitionTemplate, updatePetitionTemplate, PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { PETITION_MODULE_VALUES, PETITION_MODULE_LABELS, PETITION_LANGUAGE_VALUES, PETITION_LANGUAGE_LABELS, DEFAULT_PETITIONS } from '@/lib/constants'
@@ -53,6 +55,9 @@ export default function PetitionTemplateForm({ template }: PetitionTemplateFormP
     toast.success('Default petition text loaded')
   }
 
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && form.formState.isDirty })
+
   return (
     <ModuleFormWrapper
       title={isEditing ? 'Edit Petition Template' : 'Create Petition Template'}
@@ -97,7 +102,20 @@ export default function PetitionTemplateForm({ template }: PetitionTemplateFormP
                 <FormInput id="context" label="" inputType="textarea" value={form.watch('context')} onChange={(v) => form.setValue('context', v)} placeholder="Enter template text..." rows={10} required error={form.formState.errors.context?.message} />
               </div>
             </FormSectionCard>
-            <FormBottomActions isEditing={isEditing} isLoading={isLoading} cancelHref={template ? `/settings/petitions/${template.id}` : '/settings/petitions'} moduleName="Petition Template" />
+            <FormBottomActions
+              isEditing={isEditing}
+              isLoading={isLoading}
+              cancelHref={template ? `/settings/petitions/${template.id}` : '/settings/petitions'}
+              moduleName="Petition Template"
+              isDirty={isEditing && form.formState.isDirty}
+              onNavigate={unsavedChanges.handleNavigation}
+            />
+
+            <UnsavedChangesDialog
+              open={unsavedChanges.showDialog}
+              onConfirm={unsavedChanges.confirmNavigation}
+              onCancel={unsavedChanges.cancelNavigation}
+            />
           </form>
         )
       }}

@@ -108,7 +108,11 @@
     "clearFilters": "Limpiar Filtros",
     "back": "Volver",
     "orderUpdated": "Orden actualizado",
-    "orderUpdateFailed": "Error al actualizar el orden"
+    "orderUpdateFailed": "Error al actualizar el orden",
+    "unsavedChanges": "Cambios sin guardar",
+    "unsavedChangesDescription": "Tienes cambios sin guardar. Si sales ahora, tus cambios se perderán.",
+    "stayOnPage": "Quedarse",
+    "leaveWithoutSaving": "Salir sin guardar"
   },
   "status": {
     "planning": "Planificación",

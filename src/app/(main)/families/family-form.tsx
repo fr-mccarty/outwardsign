@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FormInput } from '@/components/form-input'
 import { FormBottomActions } from '@/components/form-bottom-actions'
+import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import {
   createFamily,
   updateFamily,
@@ -48,6 +50,9 @@ export function FamilyForm({ family }: FamilyFormProps) {
       active: family?.active ?? true
     }
   })
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && form.formState.isDirty })
 
   const onSubmit = async (data: FamilyFormValues) => {
     setIsSubmitting(true)
@@ -96,6 +101,14 @@ export function FamilyForm({ family }: FamilyFormProps) {
         isLoading={isSubmitting}
         cancelHref={isEditing && family ? `/families/${family.id}` : '/families'}
         moduleName={t('families.title')}
+        isDirty={isEditing && form.formState.isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
     </form>
   )

@@ -9,6 +9,8 @@ import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
 import { ImageCropUpload } from "@/components/image-crop-upload"
 import { PronunciationToggle } from "@/components/pronunciation-toggle"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl } from "@/lib/actions/people"
 import { generatePronunciation } from "@/lib/actions/generate-pronunciation"
 import type { Person } from "@/lib/types"
@@ -63,7 +65,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
 
   const {
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
     setValue,
     watch,
   } = useForm<CreatePersonData>({
@@ -82,6 +84,9 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       note: person?.note || "",
     },
   })
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && isDirty })
 
   // Watch form values
   const firstName = watch("first_name")
@@ -429,6 +434,14 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         isLoading={isSubmitting}
         cancelHref={isEditing ? `/people/${person.id}` : "/people"}
         moduleName="Person"
+        isDirty={isEditing && isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
     </form>
   )

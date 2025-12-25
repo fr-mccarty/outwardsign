@@ -109,7 +109,11 @@
     "clearFilters": "Clear Filters",
     "back": "Back",
     "orderUpdated": "Order updated",
-    "orderUpdateFailed": "Failed to update order"
+    "orderUpdateFailed": "Failed to update order",
+    "unsavedChanges": "Unsaved Changes",
+    "unsavedChangesDescription": "You have unsaved changes. If you leave now, your changes will be lost.",
+    "stayOnPage": "Stay",
+    "leaveWithoutSaving": "Leave Without Saving"
   },
   "status": {
     "planning": "Planning",

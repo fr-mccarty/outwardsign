@@ -15,6 +15,7 @@ import { getContentTags } from '@/lib/actions/content-tags'
 import type { ContentWithTags, ContentTag, CreateContentData, UpdateContentData } from '@/lib/types'
 import { toast } from 'sonner'
 import { MultiSelect } from '@/components/multi-select'
+import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
 
 const contentSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
@@ -44,6 +45,7 @@ export function ContentForm({
   const [saving, setSaving] = useState(false)
   const [allTags, setAllTags] = useState<ContentTag[]>([])
   const [loadingTags, setLoadingTags] = useState(false)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
 
   const isEditing = !!content
 
@@ -75,6 +77,24 @@ export function ContentForm({
     loadTags()
   }, [])
 
+  // Browser beforeunload warning for unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isEditing || !form.formState.isDirty) return
+
+      e.preventDefault()
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
+    }
+
+    if (isEditing && form.formState.isDirty) {
+      window.addEventListener('beforeunload', handleBeforeUnload)
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [isEditing, form.formState.isDirty])
+
   const handleSubmit = async (data: ContentFormData) => {
     try {
       setSaving(true)
@@ -92,6 +112,15 @@ export function ContentForm({
     value: tag.id,
     label: tag.name,
   }))
+
+  // Handle cancel with unsaved changes check
+  const handleCancelClick = () => {
+    if (isEditing && form.formState.isDirty) {
+      setShowUnsavedDialog(true)
+    } else {
+      onCancel()
+    }
+  }
 
   return (
     <Form {...form}>
@@ -216,7 +245,7 @@ export function ContentForm({
           <Button
             type="button"
             variant="outline"
-            onClick={onCancel}
+            onClick={handleCancelClick}
             disabled={saving}
           >
             Cancel
@@ -232,6 +261,12 @@ export function ContentForm({
             )}
           </Button>
         </div>
+
+        <UnsavedChangesDialog
+          open={showUnsavedDialog}
+          onConfirm={onCancel}
+          onCancel={() => setShowUnsavedDialog(false)}
+        />
       </form>
     </Form>
   )

@@ -8,6 +8,10 @@ interface FormBottomActionsProps {
   isLoading: boolean
   cancelHref: string
   moduleName: string
+  /** Whether the form has unsaved changes */
+  isDirty?: boolean
+  /** Callback from useUnsavedChanges hook to handle navigation */
+  onNavigate?: (href: string) => void
 }
 
 /**
@@ -18,6 +22,7 @@ interface FormBottomActionsProps {
  * Behavior:
  * - Both create and edit modes: Shows Save + Cancel buttons
  * - Save button also appears in header (via FormWrapper) for additional convenience
+ * - Supports unsaved changes warning when isDirty and onNavigate are provided
  *
  * Usage:
  * <FormBottomActions
@@ -25,18 +30,27 @@ interface FormBottomActionsProps {
  *   isLoading={isLoading}
  *   cancelHref={isEditing ? `/module/${id}` : '/module'}
  *   moduleName="Wedding"
+ *   isDirty={isDirty}
+ *   onNavigate={unsavedChanges.handleNavigation}
  * />
  */
 export function FormBottomActions({
   isEditing,
   isLoading,
   cancelHref,
-  moduleName
+  moduleName,
+  isDirty,
+  onNavigate,
 }: FormBottomActionsProps) {
   // Both create and edit modes: Show Save + Cancel
   return (
     <div className="flex gap-4 justify-end">
-      <CancelButton href={cancelHref} disabled={isLoading} />
+      <CancelButton
+        href={cancelHref}
+        disabled={isLoading}
+        isDirty={isDirty}
+        onNavigate={onNavigate}
+      />
       <SaveButton moduleName={moduleName} isLoading={isLoading} isEditing={isEditing} />
     </div>
   )

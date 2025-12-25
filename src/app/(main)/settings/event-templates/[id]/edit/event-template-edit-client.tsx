@@ -8,6 +8,8 @@ import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { FormInput } from '@/components/form-input'
 import { FormSectionCard } from '@/components/form-section-card'
 import { FormBottomActions } from '@/components/form-bottom-actions'
+import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { updateTemplate } from '@/lib/actions/master-event-templates'
 import type { MasterEventTemplateWithRelations } from '@/lib/types'
@@ -47,6 +49,9 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
     { label: template.name, href: `/settings/event-templates/${template.id}` },
     { label: t('common.edit') },
   ]
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: form.formState.isDirty })
 
   return (
     <ModuleFormWrapper
@@ -113,6 +118,14 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
                 isLoading={isLoading}
                 cancelHref={`/settings/event-templates/${template.id}`}
                 moduleName={t('settings.eventTemplate')}
+                isDirty={form.formState.isDirty}
+                onNavigate={unsavedChanges.handleNavigation}
+              />
+
+              <UnsavedChangesDialog
+                open={unsavedChanges.showDialog}
+                onConfirm={unsavedChanges.confirmNavigation}
+                onCancel={unsavedChanges.cancelNavigation}
               />
             </form>
           </>

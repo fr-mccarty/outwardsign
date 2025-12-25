@@ -14,6 +14,8 @@ import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { ListCard, CardListItem } from "@/components/list-card"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +56,9 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
       is_active: group?.is_active ?? true,
     },
   })
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && form.formState.isDirty })
 
   // Member management state
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
@@ -271,8 +276,16 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           isLoading={isLoading}
           cancelHref={isEditing && group ? `/groups/${group.id}` : '/groups'}
           moduleName={t('groups.title')}
+          isDirty={isEditing && form.formState.isDirty}
+          onNavigate={unsavedChanges.handleNavigation}
         />
       </form>
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
+      />
 
       {/* Add Member Dialog */}
       {isEditing && (
