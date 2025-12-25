@@ -4,7 +4,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/conte
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { TestTube2 } from 'lucide-react'
+import { TestTube2, FileText } from 'lucide-react'
 
 export default async function TestingIndexPage() {
   const supabase = await createClient()
@@ -26,6 +26,12 @@ export default async function TestingIndexPage() {
       description: "Test and preview all picker components (People, Events, Readings, etc.)",
       href: "/testing/pickers",
       icon: TestTube2
+    },
+    {
+      title: "Render Test",
+      description: "Test the rich text editor and compare HTML vs text rendering output",
+      href: "/testing/render",
+      icon: FileText
     }
   ]
 

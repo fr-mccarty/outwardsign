@@ -4,7 +4,12 @@
  * This module provides utilities for processing HTML script content from dynamic events,
  * including field placeholder replacement, content rendering, and HTML sanitization.
  *
- * Content format: HTML with inline styles (e.g., <div style="color: red;">)
+ * Content format: Pure HTML with inline styles from Tiptap editor
+ * - Text formatting: <strong>, <em>, <u>
+ * - Text size: <span style="font-size: ...">
+ * - Text color: <span style="color: ...">
+ * - Alignment: <p style="text-align: ...">
+ * - Spacing: <p style="margin-top/bottom: ...; line-height: ...">
  *
  * Security: All HTML content is sanitized to prevent XSS attacks.
  */
@@ -335,28 +340,22 @@ function resolveGenderedText(
 }
 
 /**
- * Process HTML content by replacing custom syntax and sanitizing
+ * Process HTML content by sanitizing for safe rendering
  *
  * @param content - HTML content
  * @returns Sanitized HTML string
  */
 export function parseContentToHTML(content: string): string {
-  // Process custom {red}{/red} syntax
-  const processed = content.replace(
-    /\{red\}(.*?)\{\/red\}/g,
-    '<span style="color: #c41e3a">$1</span>'
-  )
-
   // Sanitize HTML to prevent XSS
-  return sanitizeHTML(processed)
+  return sanitizeHTML(content)
 }
 
 /**
- * Process a script section by replacing placeholders
+ * Process a script section by replacing placeholders and sanitizing
  *
  * @param sectionContent - HTML content from section
  * @param event - Event with resolved field values
- * @returns HTML content with placeholders replaced
+ * @returns Sanitized HTML content with placeholders replaced
  */
 export function processScriptSection(
   sectionContent: string,
@@ -365,7 +364,7 @@ export function processScriptSection(
   // Step 1: Replace field placeholders
   const replacedContent = replaceFieldPlaceholders(sectionContent, event)
 
-  // Step 2: Process {red} syntax
+  // Step 2: Sanitize HTML
   const htmlContent = parseContentToHTML(replacedContent)
 
   return htmlContent

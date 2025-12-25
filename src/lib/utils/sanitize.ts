@@ -2,14 +2,15 @@
  * Sanitization Utilities
  *
  * These functions sanitize user input by stripping HTML tags while preserving:
- * - Standard markdown syntax (**bold**, *italic*, # headings, - lists, etc.)
- * - Custom liturgical syntax: {red}text{/red}
  * - Field placeholders: {{field_name}}, {{field.property}}, {{field | male | female}}
  * - Parish placeholders: {{parish.name}}, {{parish.city_state}}
  *
+ * Note: Rich text content from the Tiptap editor is HTML with inline styles.
+ * The content-renderer.ts module handles XSS sanitization for HTML content.
+ *
  * Usage:
  * - sanitizeTextInput: For plain text fields (strips all HTML)
- * - sanitizeRichText: For rich text fields (preserves allowed syntax)
+ * - sanitizeRichText: For rich text fields (preserves placeholders)
  * - sanitizeFieldValues: For sanitizing entire field_values objects
  */
 
@@ -30,19 +31,21 @@ export function sanitizeTextInput(input: string | null | undefined): string {
 
 /**
  * Sanitizes rich text input while preserving allowed syntax.
- * Use for rich_text fields that may contain markdown and custom syntax.
+ * Use for rich_text fields that may contain placeholders.
  *
  * Preserved:
- * - Markdown: **bold**, *italic*, # headings, - lists, [links](url), etc.
- * - Custom: {red}text{/red}
  * - Placeholders: {{field}}, {{field.prop}}, {{field | a | b}}
  *
  * Stripped:
  * - All HTML tags: <script>, <div>, <span>, <style>, etc.
  * - JavaScript event handlers: onclick, onerror, etc.
  *
+ * Note: Rich text from Tiptap editor is HTML. For HTML content,
+ * use the sanitizeHTML function in content-renderer.ts which
+ * preserves safe inline styles while removing dangerous elements.
+ *
  * @param input - The raw user input
- * @returns Sanitized string with HTML stripped but allowed syntax preserved
+ * @returns Sanitized string with HTML stripped but placeholders preserved
  */
 export function sanitizeRichText(input: string | null | undefined): string {
   if (!input) return ''
@@ -51,15 +54,8 @@ export function sanitizeRichText(input: string | null | undefined): string {
   const protectionMap: Map<string, string> = new Map()
   let protectionIndex = 0
 
-  // Protect {red}...{/red} syntax
-  let protected_ = input.replace(/\{red\}([\s\S]*?)\{\/red\}/g, (match) => {
-    const key = `___PROTECTED_${protectionIndex++}___`
-    protectionMap.set(key, match)
-    return key
-  })
-
   // Protect {{...}} placeholders (including those with pipes and dots)
-  protected_ = protected_.replace(/\{\{[^}]+\}\}/g, (match) => {
+  const protected_ = input.replace(/\{\{[^}]+\}\}/g, (match) => {
     const key = `___PROTECTED_${protectionIndex++}___`
     protectionMap.set(key, match)
     return key

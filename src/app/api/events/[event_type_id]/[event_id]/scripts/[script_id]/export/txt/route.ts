@@ -2,15 +2,15 @@
  * Text Export API Route for User-Defined Event Scripts
  *
  * Generates a plain text file from a script with sections, replacing
- * {{Field Name}} placeholders with actual event data. Markdown is kept
- * as-is, and {red} tags are removed.
+ * {{Field Name}} placeholders with actual event data. All HTML tags
+ * are stripped for plain text output.
  *
  * Route: /api/events/[event_type_id]/[event_id]/scripts/[script_id]/export/txt
  * Note: event_type_id can be either a UUID or a slug
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { renderMarkdownToText } from '@/lib/utils/content-renderer'
+import { htmlToText, formatSectionTitleForText, TEXT_PAGE_BREAK } from '@/lib/utils/export-helpers'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
@@ -110,17 +110,11 @@ export async function GET(
 
       // Add section title - centered with underline
       if (section.name) {
-        // Center the title (assuming ~70 char width for text files)
-        const lineWidth = 70
-        const padding = Math.max(0, Math.floor((lineWidth - section.name.length) / 2))
-        const centeredTitle = ' '.repeat(padding) + section.name
-        const centeredUnderline = ' '.repeat(padding) + '='.repeat(section.name.length)
-        textOutput += `${centeredTitle}\n`
-        textOutput += `${centeredUnderline}\n\n`
+        textOutput += formatSectionTitleForText(section.name)
       }
 
-      // Convert section content (markdown) to plain text
-      const sectionText = renderMarkdownToText(section.content, {
+      // Convert section content (HTML) to plain text
+      const sectionText = htmlToText(section.content, {
         fieldValues: event.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,
@@ -132,7 +126,7 @@ export async function GET(
 
       // Add page break indicator if requested
       if (section.page_break_after && i < sortedSections.length - 1) {
-        textOutput += '\n--- PAGE BREAK ---\n\n'
+        textOutput += TEXT_PAGE_BREAK
       }
     }
 

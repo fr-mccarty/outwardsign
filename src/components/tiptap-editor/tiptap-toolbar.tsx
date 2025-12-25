@@ -1,25 +1,25 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import type { Editor } from '@tiptap/react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Bold,
   Italic,
   Underline,
-  Heading1,
-  Heading2,
-  Heading3,
   AlignLeft,
   AlignCenter,
   AlignRight,
-  List,
-  ListOrdered,
-  Type,
   ChevronDown,
   Users,
   Church,
+  Palette,
+  Type,
+  ArrowUpToLine,
+  ArrowDownToLine,
+  ChevronsUpDown,
 } from 'lucide-react'
 import { PARISH_PLACEHOLDERS } from '@/lib/utils/content-processor'
 import {
@@ -31,6 +31,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import {
   Dialog,
@@ -40,131 +41,42 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import type { InputFieldDefinition } from '@/lib/types'
 
-interface MarkdownEditorProps {
-  value: string
-  onChange: (value: string) => void
+const LITURGICAL_RED = '#c41e3a'
+
+// Text size options with font-size values
+const TEXT_SIZES = {
+  xs: '0.75em',
+  small: '0.875em',
+  medium: '1em',
+  large: '1.25em',
+  xl: '1.5em',
+} as const
+
+interface TiptapToolbarProps {
+  editor: Editor | null
   availableFields: InputFieldDefinition[]
-  placeholder?: string
-  label?: string
-  required?: boolean
+  onInsertText: (text: string) => void
 }
 
-export function MarkdownEditor({
-  value,
-  onChange,
+export function TiptapToolbar({
+  editor,
   availableFields,
-  placeholder,
-  label,
-  required,
-}: MarkdownEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
+  onInsertText,
+}: TiptapToolbarProps) {
   // Gendered text dialog state
   const [genderedDialogOpen, setGenderedDialogOpen] = useState(false)
-  const [selectedPersonField, setSelectedPersonField] = useState<string | null>(null)  // property_name for template
-  const [selectedPersonFieldDisplay, setSelectedPersonFieldDisplay] = useState<string | null>(null)  // display name for dialog
+  const [selectedPersonField, setSelectedPersonField] = useState<string | null>(null)
+  const [selectedPersonFieldDisplay, setSelectedPersonFieldDisplay] = useState<string | null>(null)
   const [maleText, setMaleText] = useState('')
   const [femaleText, setFemaleText] = useState('')
 
   // Filter to only person-type fields for gendered text
   const personFields = availableFields.filter(field => field.type === 'person')
 
-  // Get current selection or cursor position
-  const getSelection = () => {
-    const textarea = textareaRef.current
-    if (!textarea) return { start: 0, end: 0, text: '' }
-
-    return {
-      start: textarea.selectionStart,
-      end: textarea.selectionEnd,
-      text: textarea.value.substring(
-        textarea.selectionStart,
-        textarea.selectionEnd
-      ),
-    }
-  }
-
-  // Insert text at cursor position or wrap selection
-  const insertText = (before: string, after: string = '') => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const { start, end, text } = getSelection()
-    const newValue =
-      value.substring(0, start) + before + text + after + value.substring(end)
-
-    onChange(newValue)
-
-    // Set cursor position after the inserted text
-    setTimeout(() => {
-      const newCursorPos = start + before.length + text.length + after.length
-      textarea.focus()
-      textarea.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
-  }
-
-  // Insert text at line start (for headings and lists)
-  const insertAtLineStart = (prefix: string) => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const { start } = getSelection()
-
-    // Find the start of the current line
-    let lineStart = start
-    while (lineStart > 0 && value[lineStart - 1] !== '\n') {
-      lineStart--
-    }
-
-    const newValue =
-      value.substring(0, lineStart) + prefix + value.substring(lineStart)
-
-    onChange(newValue)
-
-    // Set cursor position after the prefix
-    setTimeout(() => {
-      const newCursorPos = start + prefix.length
-      textarea.focus()
-      textarea.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
-  }
-
-  // Formatting functions
-  const applyBold = () => insertText('**', '**')
-  const applyItalic = () => insertText('*', '*')
-  const applyUnderline = () => insertText('<u>', '</u>')
-  const applyRed = () => insertText('{red}', '{/red}')
-  const applyH1 = () => insertAtLineStart('# ')
-  const applyH2 = () => insertAtLineStart('## ')
-  const applyH3 = () => insertAtLineStart('### ')
-  const applyBulletList = () => insertAtLineStart('- ')
-  const applyNumberedList = () => insertAtLineStart('1. ')
-
-  // Alignment helpers (using HTML since markdown doesn't have native alignment)
-  const applyAlignment = (align: 'left' | 'center' | 'right') => {
-    const { start, end, text } = getSelection()
-    if (!text) return
-
-    const alignedText = `<div style="text-align: ${align}">\n${text}\n</div>`
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const newValue =
-      value.substring(0, start) + alignedText + value.substring(end)
-    onChange(newValue)
-
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start, start + alignedText.length)
-    }, 0)
-  }
-
-  // Insert field placeholder
-  const insertField = (fieldName: string) => {
-    insertText(`{{${fieldName}}}`)
+  if (!editor) {
+    return null
   }
 
   // Open gendered text dialog for a person field
@@ -180,7 +92,7 @@ export function MarkdownEditor({
   const insertGenderedText = () => {
     if (!selectedPersonField || !maleText.trim() || !femaleText.trim()) return
 
-    insertText(`{{${selectedPersonField}.sex | ${maleText.trim()} | ${femaleText.trim()}}}`)
+    onInsertText(`{{${selectedPersonField}.sex | ${maleText.trim()} | ${femaleText.trim()}}}`)
     setGenderedDialogOpen(false)
     setSelectedPersonField(null)
     setSelectedPersonFieldDisplay(null)
@@ -188,24 +100,27 @@ export function MarkdownEditor({
     setFemaleText('')
   }
 
-  return (
-    <div className="space-y-2">
-      {label && (
-        <Label htmlFor="markdown-editor">
-          {label}
-          {required && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+  // Apply text size using the FontSize extension
+  const applyTextSize = (size: keyof typeof TEXT_SIZES) => {
+    const fontSize = TEXT_SIZES[size]
+    editor.chain().focus().setFontSize(fontSize).run()
+  }
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border rounded-md bg-muted/20">
+  // Reset text size to default
+  const resetTextSize = () => {
+    editor.chain().focus().unsetFontSize().run()
+  }
+
+  return (
+    <>
+      <div className="tiptap-toolbar flex flex-wrap gap-1 p-2 border-b bg-muted/20">
         {/* Text formatting */}
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={applyBold}
+          className={`h-8 w-8 ${editor.isActive('bold') ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().toggleBold().run()}
           title="Bold"
         >
           <Bold className="h-4 w-4" />
@@ -214,8 +129,8 @@ export function MarkdownEditor({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={applyItalic}
+          className={`h-8 w-8 ${editor.isActive('italic') ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
           title="Italic"
         >
           <Italic className="h-4 w-4" />
@@ -224,8 +139,8 @@ export function MarkdownEditor({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={applyUnderline}
+          className={`h-8 w-8 ${editor.isActive('underline') ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
           title="Underline"
         >
           <Underline className="h-4 w-4" />
@@ -233,37 +148,77 @@ export function MarkdownEditor({
 
         <div className="w-px h-8 bg-border" />
 
-        {/* Headings */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyH1}
-          title="Heading 1"
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyH2}
-          title="Heading 2"
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyH3}
-          title="Heading 3"
-        >
-          <Heading3 className="h-4 w-4" />
-        </Button>
+        {/* Text Size dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Text Size"
+            >
+              <Type className="h-4 w-4 mr-1" />
+              Size
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => applyTextSize('xs')}>
+              <span className="text-xs">Extra Small</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => applyTextSize('small')}>
+              <span className="text-sm">Small</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => applyTextSize('medium')}>
+              <span className="text-base">Medium</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => applyTextSize('large')}>
+              <span className="text-lg">Large</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => applyTextSize('xl')}>
+              <span className="text-xl">Extra Large</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={resetTextSize}>
+              Reset to Default
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Text Color dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Text Color"
+            >
+              <Palette className="h-4 w-4 mr-1" />
+              Color
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().unsetColor().run()}
+            >
+              <span className="w-4 h-4 rounded border border-border bg-foreground mr-2" />
+              Black (Default)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().setColor(LITURGICAL_RED).run()}
+            >
+              <span
+                className="w-4 h-4 rounded mr-2"
+                style={{ backgroundColor: LITURGICAL_RED }}
+              />
+              Liturgical Red
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="w-px h-8 bg-border" />
 
@@ -272,8 +227,8 @@ export function MarkdownEditor({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => applyAlignment('left')}
+          className={`h-8 w-8 ${editor.isActive({ textAlign: 'left' }) ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
           title="Align Left"
         >
           <AlignLeft className="h-4 w-4" />
@@ -282,8 +237,8 @@ export function MarkdownEditor({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => applyAlignment('center')}
+          className={`h-8 w-8 ${editor.isActive({ textAlign: 'center' }) ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
           title="Align Center"
         >
           <AlignCenter className="h-4 w-4" />
@@ -292,8 +247,8 @@ export function MarkdownEditor({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => applyAlignment('right')}
+          className={`h-8 w-8 ${editor.isActive({ textAlign: 'right' }) ? 'bg-accent' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
           title="Align Right"
         >
           <AlignRight className="h-4 w-4" />
@@ -301,41 +256,82 @@ export function MarkdownEditor({
 
         <div className="w-px h-8 bg-border" />
 
-        {/* Lists */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyBulletList}
-          title="Bullet List"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyNumberedList}
-          title="Numbered List"
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-
-        <div className="w-px h-8 bg-border" />
-
-        {/* Red text */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={applyRed}
-          title="Red Text (Liturgical)"
-        >
-          <Type className="h-4 w-4 text-red-600" />
-        </Button>
+        {/* Spacing dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Spacing"
+            >
+              <ChevronsUpDown className="h-4 w-4 mr-1" />
+              Spacing
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ArrowUpToLine className="h-4 w-4 mr-2" />
+                Space Before
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-top: 0.5em' }).run()}>
+                    Small
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-top: 1em' }).run()}>
+                    Medium
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-top: 2em' }).run()}>
+                    Large
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ArrowDownToLine className="h-4 w-4 mr-2" />
+                Space After
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-bottom: 0.5em' }).run()}>
+                    Small
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-bottom: 1em' }).run()}>
+                    Medium
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'margin-bottom: 2em' }).run()}>
+                    Large
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ChevronsUpDown className="h-4 w-4 mr-2" />
+                Line Spacing
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'line-height: 1.2' }).run()}>
+                    Single
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'line-height: 1.5' }).run()}>
+                    1.5 Lines
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editor.chain().focus().updateAttributes('paragraph', { style: 'line-height: 2' }).run()}>
+                    Double
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="w-px h-8 bg-border" />
 
@@ -359,7 +355,6 @@ export function MarkdownEditor({
             ) : (
               availableFields.map((field) => (
                 field.type === 'person' ? (
-                  // Person fields get a submenu with property options
                   <DropdownMenuSub key={field.id}>
                     <DropdownMenuSubTrigger>
                       {field.name}
@@ -369,19 +364,19 @@ export function MarkdownEditor({
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.full_name`)}>
+                        <DropdownMenuItem onClick={() => onInsertText(`{{${field.property_name}.full_name}}`)}>
                           Full Name
                           <span className="ml-2 text-xs text-muted-foreground">
                             {`{{${field.property_name}.full_name}}`}
                           </span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.first_name`)}>
+                        <DropdownMenuItem onClick={() => onInsertText(`{{${field.property_name}.first_name}}`)}>
                           First Name
                           <span className="ml-2 text-xs text-muted-foreground">
                             {`{{${field.property_name}.first_name}}`}
                           </span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.last_name`)}>
+                        <DropdownMenuItem onClick={() => onInsertText(`{{${field.property_name}.last_name}}`)}>
                           Last Name
                           <span className="ml-2 text-xs text-muted-foreground">
                             {`{{${field.property_name}.last_name}}`}
@@ -391,10 +386,9 @@ export function MarkdownEditor({
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
                 ) : (
-                  // Non-person fields insert directly using property_name
                   <DropdownMenuItem
                     key={field.id}
-                    onClick={() => insertField(field.property_name)}
+                    onClick={() => onInsertText(`{{${field.property_name}}}`)}
                   >
                     {field.name}
                     <span className="ml-2 text-xs text-muted-foreground">
@@ -455,7 +449,7 @@ export function MarkdownEditor({
             {PARISH_PLACEHOLDERS.map((placeholder) => (
               <DropdownMenuItem
                 key={placeholder.key}
-                onClick={() => insertText(`{{${placeholder.key}}}`)}
+                onClick={() => onInsertText(`{{${placeholder.key}}}`)}
               >
                 <div className="flex flex-col">
                   <span>{placeholder.label}</span>
@@ -467,40 +461,6 @@ export function MarkdownEditor({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      {/* Textarea */}
-      <Textarea
-        ref={textareaRef}
-        id="markdown-editor"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || 'Enter your content here...'}
-        className="min-h-[400px] font-mono text-sm"
-      />
-
-      {/* Help text */}
-      <div className="text-xs text-muted-foreground space-y-1">
-        <p>
-          <strong>Formatting:</strong> Use the toolbar buttons or markdown
-          syntax
-        </p>
-        <p>
-          <strong>Person Fields:</strong> {"{{person_field.full_name}}"}, {"{{person_field.first_name}}"}, {"{{person_field.last_name}}"}
-        </p>
-        <p>
-          <strong>Other Fields:</strong> {"{{field_name}}"} - Use &quot;Insert Field&quot; dropdown
-        </p>
-        <p>
-          <strong>Parish Info:</strong> {"{{parish.name}}"}, {"{{parish.city}}"}, {"{{parish.state}}"}, {"{{parish.city_state}}"}
-        </p>
-        <p>
-          <strong>Gendered Text:</strong> {"{{person_field.sex | male text | female text}}"}
-        </p>
-        <p>
-          <strong>Red Text:</strong> {"{red}"}text{"{/red}"} for liturgical
-          instructions
-        </p>
       </div>
 
       {/* Gendered Text Dialog */}
@@ -555,6 +515,6 @@ export function MarkdownEditor({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   )
 }

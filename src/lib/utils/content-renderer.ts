@@ -35,9 +35,6 @@
  * - {{parish.state}} - Parish state
  * - {{parish.city_state}} - City, State formatted
  *
- * OTHER:
- * - {red}text{/red} - Red text (liturgical color #c41e3a)
- *
  * Security: All HTML content is sanitized to prevent XSS attacks.
  */
 
@@ -162,33 +159,6 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
  */
 function isUUID(value: any): boolean {
   return typeof value === 'string' && UUID_REGEX.test(value)
-}
-
-/**
- * Parses custom {red}text{/red} syntax
- * Converts to format-specific output
- */
-function parseRedText(content: string, format: 'html' | 'pdf' | 'word' | 'text'): string {
-  const redColor = '#c41e3a'
-
-  switch (format) {
-    case 'html':
-      return content.replace(
-        /\{red\}(.*?)\{\/red\}/g,
-        `<span style="color: ${redColor}">$1</span>`
-      )
-    case 'pdf':
-      // PDF will be handled separately in pdf-renderer
-      return content
-    case 'word':
-      // Word will be handled separately in word-renderer
-      return content
-    case 'text':
-      // Remove {red} tags for plain text
-      return content.replace(/\{red\}(.*?)\{\/red\}/g, '$1')
-    default:
-      return content
-  }
 }
 
 /**
@@ -547,12 +517,9 @@ export async function renderContentToHTML(
   options: RenderContentOptions
 ): Promise<string> {
   // Step 1: Replace {{Field Name}} placeholders with actual values
-  let processedContent = replacePlaceholders(content, options)
+  const processedContent = replacePlaceholders(content, options)
 
-  // Step 2: Parse {red}text{/red} syntax to HTML
-  processedContent = parseRedText(processedContent, 'html')
-
-  // Step 3: Sanitize HTML to prevent XSS
+  // Step 2: Sanitize HTML to prevent XSS
   return sanitizeHTML(processedContent)
 }
 
@@ -574,13 +541,10 @@ export function renderContentToText(
   // Step 1: Replace {{Field Name}} placeholders with actual values
   let processedContent = replacePlaceholders(content, options)
 
-  // Step 2: Remove {red} tags
-  processedContent = parseRedText(processedContent, 'text')
-
-  // Step 3: Strip HTML tags for plain text output
+  // Step 2: Strip HTML tags for plain text output
   processedContent = processedContent.replace(/<[^>]*>/g, '')
 
-  // Step 4: Decode HTML entities
+  // Step 3: Decode HTML entities
   processedContent = processedContent
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -595,57 +559,3 @@ export function renderContentToText(
 // Legacy alias for backward compatibility
 export const renderMarkdownToText = renderContentToText
 
-/**
- * Extracts red text spans from content for PDF/Word rendering
- * Returns array of text segments with color information
- *
- * This is used by PDF and Word renderers to apply color formatting
- */
-export interface TextSegment {
-  text: string
-  isRed: boolean
-}
-
-export function extractTextSegments(content: string): TextSegment[] {
-  const segments: TextSegment[] = []
-  const redRegex = /\{red\}(.*?)\{\/red\}/g
-
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-
-  while ((match = redRegex.exec(content)) !== null) {
-    // Add text before the red span
-    if (match.index > lastIndex) {
-      segments.push({
-        text: content.substring(lastIndex, match.index),
-        isRed: false
-      })
-    }
-
-    // Add the red text
-    segments.push({
-      text: match[1],
-      isRed: true
-    })
-
-    lastIndex = redRegex.lastIndex
-  }
-
-  // Add remaining text after last red span
-  if (lastIndex < content.length) {
-    segments.push({
-      text: content.substring(lastIndex),
-      isRed: false
-    })
-  }
-
-  // If no red text found, return entire content as single segment
-  if (segments.length === 0) {
-    segments.push({
-      text: content,
-      isRed: false
-    })
-  }
-
-  return segments
-}

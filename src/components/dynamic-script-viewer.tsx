@@ -14,12 +14,12 @@ interface DynamicScriptViewerProps {
  * DynamicScriptViewer Component
  *
  * Renders a dynamic event script with field placeholders replaced by actual event data.
- * Converts markdown content to HTML and applies liturgical styling.
+ * Renders HTML content with inline styles for formatting.
  *
  * Per requirements:
  * - Processes all sections in order
  * - Replaces {{Field Name}} placeholders with event data
- * - Parses markdown to HTML with custom {red}{/red} syntax
+ * - Renders HTML with inline styles (color, font-size, alignment, spacing)
  * - Shows page break indicators
  */
 export function DynamicScriptViewer({ script, event }: DynamicScriptViewerProps) {

@@ -71,22 +71,24 @@ const consent = buildCeremonySection('marriage-consent', [
 
 ## Content Library for Readings
 
-Readings (First Reading, Psalm, Second Reading, Gospel) are stored in the `contents` table and selected via the ContentPicker. The reading `body` field should contain markdown-formatted text:
+Readings (First Reading, Psalm, Second Reading, Gospel) are stored in the `contents` table and selected via the ContentPicker. The reading `body` field contains HTML with inline styles from the Tiptap editor:
 
-- Standard markdown: `**bold**`, `*italic*`
-- Liturgical red text: `{red}text{/red}`
-- Line breaks for verse structure
+- Bold: `<strong>text</strong>`
+- Italic: `<em>text</em>`
+- Liturgical red text: `<span style="color: #c41e3a">text</span>`
+- Text sizes: `<span style="font-size: 1.25em">text</span>`
+- Paragraph styling: `<p style="text-align: center; margin-top: 1em">text</p>`
 
 Example psalm format:
-```
-**Reader:** The Lord is my shepherd; there is nothing I shall want.
+```html
+<p><strong>Reader:</strong> The Lord is my shepherd; there is nothing I shall want.</p>
 
-{red}*People: The Lord is my shepherd; there is nothing I shall want.*{/red}
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 
-**Reader:** The Lord is my shepherd; I shall not want.
-In verdant pastures he gives me repose;
-Beside restful waters he leads me;
-he refreshes my soul.
+<p><strong>Reader:</strong> The Lord is my shepherd; I shall not want.<br>
+In verdant pastures he gives me repose;<br>
+Beside restful waters he leads me;<br>
+he refreshes my soul.</p>
 
-{red}*People: The Lord is my shepherd; there is nothing I shall want.*{/red}
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 ```

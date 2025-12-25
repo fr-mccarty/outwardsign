@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MarkdownEditor } from '@/components/markdown-editor'
+import { TiptapEditor } from '@/components/tiptap-editor'
 import { createSection, updateSection } from '@/lib/actions/sections'
 import { toast } from 'sonner'
 import type { Section, InputFieldDefinition, SectionType } from '@/lib/types'
@@ -158,13 +158,13 @@ export function SectionEditorDialog({
 
           {/* Content - only show for text type */}
           {sectionType === 'text' && (
-            <MarkdownEditor
+            <TiptapEditor
               value={content}
               onChange={setContent}
               availableFields={inputFields}
               label="Content"
               required
-              placeholder="Enter the section content using markdown and field placeholders..."
+              placeholder="Enter the section content..."
             />
           )}
 

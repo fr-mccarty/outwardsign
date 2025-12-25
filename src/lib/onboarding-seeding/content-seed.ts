@@ -7,11 +7,12 @@
  *
  * SCRIPTURE READING FORMAT:
  * -------------------------
- * - First/Second Readings: *Introduction* (italic) + body text + *conclusion* (italic)
- *   - Example: *A reading from the Book of Genesis* ... *The word of the Lord.*
- * - Gospels: *Introduction* (italic) + body text + *conclusion* (italic)
- *   - Example: *A reading from the holy Gospel according to Matthew* ... *The Gospel of the Lord.*
- * - Psalms: **Reader:** (bold black) + verses + {red}*People: response*{/red} (red italic)
+ * Content uses HTML with inline styles from the Tiptap rich text editor:
+ * - Bold: <strong>text</strong>
+ * - Italic: <em>text</em>
+ * - Red text: <span style="color: #c41e3a">text</span> or style="color: #c41e3a"
+ * - Alignment: <p style="text-align: center">text</p>
+ * - Psalms: <strong>Reader:</strong> verses + <p style="color: #c41e3a;"><em>People: response</em></p>
  *
  * NOTE: Reader names and page breaks are configured in SCRIPT TEMPLATES, not here.
  * The script template section should include: **Reader:** {{First_Reading_Reader}}
@@ -69,96 +70,42 @@ interface SeedContent {
 const OPENING_PRAYERS: SeedContent[] = [
   {
     title: 'Wedding Opening Prayer',
-    body: `Father, you have made the bond of marriage a holy mystery,
-a symbol of Christ's love for his Church.
-Hear our prayers for {{Bride}} and {{Groom}}.
-With faith in you and in each other
-they pledge their love today.
-May their lives always bear witness
-to the reality of that love.
-We ask this through our Lord Jesus Christ, your Son,
-who lives and reigns with you and the Holy Spirit,
-one God, for ever and ever.
-Amen.`,
+    body: `<p>Father, you have made the bond of marriage a holy mystery,<br>a symbol of Christ's love for his Church.<br>Hear our prayers for {{bride.full_name}} and {{groom.full_name}}.<br>With faith in you and in each other<br>they pledge their love today.<br>May their lives always bear witness<br>to the reality of that love.<br>We ask this through our Lord Jesus Christ, your Son,<br>who lives and reigns with you and the Holy Spirit,<br>one God, for ever and ever.<br>Amen.</p>`,
     language: 'en',
     description: 'Traditional Catholic wedding opening prayer',
     tags: ['wedding', 'opening-prayer']
   },
   {
     title: 'Oración Inicial del Matrimonio',
-    body: `Padre, has hecho del vínculo del matrimonio un santo misterio,
-símbolo del amor de Cristo por su Iglesia.
-Escucha nuestras oraciones por {{Bride}} y {{Groom}}.
-Con fe en ti y el uno en el otro
-hoy prometen su amor.
-Que sus vidas siempre den testimonio
-de la realidad de ese amor.
-Te lo pedimos por nuestro Señor Jesucristo, tu Hijo,
-que vive y reina contigo y el Espíritu Santo,
-un solo Dios, por los siglos de los siglos.
-Amén.`,
+    body: `<p>Padre, has hecho del vínculo del matrimonio un santo misterio,<br>símbolo del amor de Cristo por su Iglesia.<br>Escucha nuestras oraciones por {{bride.full_name}} y {{groom.full_name}}.<br>Con fe en ti y el uno en el otro<br>hoy prometen su amor.<br>Que sus vidas siempre den testimonio<br>de la realidad de ese amor.<br>Te lo pedimos por nuestro Señor Jesucristo, tu Hijo,<br>que vive y reina contigo y el Espíritu Santo,<br>un solo Dios, por los siglos de los siglos.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración inicial tradicional católica para bodas',
     tags: ['wedding', 'opening-prayer']
   },
   {
     title: 'Funeral Opening Prayer',
-    body: `O God, to whom mercy and forgiveness belong,
-hear our prayers on behalf of your servant {{Deceased}},
-whom you have called out of this world.
-Because they put their hope and trust in you,
-command that they be carried safely home to heaven
-and come to enjoy your eternal reward.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>O God, to whom mercy and forgiveness belong,<br>hear our prayers on behalf of your servant {{deceased.full_name}},<br>whom you have called out of this world.<br>Because they put their hope and trust in you,<br>command that they be carried safely home to heaven<br>and come to enjoy your eternal reward.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Traditional Catholic funeral opening prayer',
     tags: ['funeral', 'opening-prayer', 'comfort']
   },
   {
     title: 'Oración Inicial del Funeral',
-    body: `Oh Dios, a quien pertenece la misericordia y el perdón,
-escucha nuestras oraciones por tu siervo {{Deceased}},
-a quien has llamado de este mundo.
-Porque pusieron su esperanza y confianza en ti,
-ordena que sean llevados a salvo al cielo
-y lleguen a disfrutar de tu recompensa eterna.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>Oh Dios, a quien pertenece la misericordia y el perdón,<br>escucha nuestras oraciones por tu siervo {{deceased.full_name}},<br>a quien has llamado de este mundo.<br>Porque pusieron su esperanza y confianza en ti,<br>ordena que sean llevados a salvo al cielo<br>y lleguen a disfrutar de tu recompensa eterna.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración inicial tradicional católica para funerales',
     tags: ['funeral', 'opening-prayer', 'comfort']
   },
   {
     title: 'Baptism Opening Prayer',
-    body: `Almighty and ever-living God,
-you sent your only Son into the world
-to cast out the power of Satan, spirit of evil,
-to rescue us from the kingdom of darkness,
-and bring us into the splendor of your kingdom of light.
-We pray for this child:
-set them free from original sin,
-make them a temple of your glory,
-and send your Holy Spirit to dwell within them.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>Almighty and ever-living God,<br>you sent your only Son into the world<br>to cast out the power of Satan, spirit of evil,<br>to rescue us from the kingdom of darkness,<br>and bring us into the splendor of your kingdom of light.<br>We pray for this child:<br>set them free from original sin,<br>make them a temple of your glory,<br>and send your Holy Spirit to dwell within them.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Traditional Catholic baptism opening prayer',
     tags: ['baptism', 'opening-prayer', 'hope']
   },
   {
     title: 'Oración Inicial del Bautismo',
-    body: `Dios todopoderoso y eterno,
-enviaste a tu único Hijo al mundo
-para expulsar el poder de Satanás, espíritu del mal,
-para rescatarnos del reino de las tinieblas,
-y traernos al esplendor de tu reino de luz.
-Oramos por este niño:
-líbralo del pecado original,
-hazlo templo de tu gloria,
-y envía tu Espíritu Santo para que habite en él.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>Dios todopoderoso y eterno,<br>enviaste a tu único Hijo al mundo<br>para expulsar el poder de Satanás, espíritu del mal,<br>para rescatarnos del reino de las tinieblas,<br>y traernos al esplendor de tu reino de luz.<br>Oramos por este niño:<br>líbralo del pecado original,<br>hazlo templo de tu gloria,<br>y envía tu Espíritu Santo para que habite en él.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración inicial tradicional católica para bautismos',
     tags: ['baptism', 'opening-prayer', 'hope']
@@ -169,76 +116,32 @@ Amén.`,
 const CLOSING_PRAYERS: SeedContent[] = [
   {
     title: 'Wedding Closing Prayer',
-    body: `Lord, we thank you for {{Bride}} and {{Groom}}.
-May their love continue to grow,
-and may they always find in each other
-the best friend they will ever have.
-May they never take each other for granted,
-and always experience the wonder of married love.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>Lord, we thank you for {{bride.full_name}} and {{groom.full_name}}.<br>May their love continue to grow,<br>and may they always find in each other<br>the best friend they will ever have.<br>May they never take each other for granted,<br>and always experience the wonder of married love.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Wedding closing prayer and blessing',
     tags: ['wedding', 'closing-prayer', 'love']
   },
   {
     title: 'Oración Final del Matrimonio',
-    body: `Señor, te damos gracias por {{Bride}} y {{Groom}}.
-Que su amor siga creciendo,
-y que siempre encuentren el uno en el otro
-al mejor amigo que jamás tendrán.
-Que nunca se den por sentados,
-y siempre experimenten la maravilla del amor conyugal.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>Señor, te damos gracias por {{bride.full_name}} y {{groom.full_name}}.<br>Que su amor siga creciendo,<br>y que siempre encuentren el uno en el otro<br>al mejor amigo que jamás tendrán.<br>Que nunca se den por sentados,<br>y siempre experimenten la maravilla del amor conyugal.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración final y bendición del matrimonio',
     tags: ['wedding', 'closing-prayer', 'love']
   },
   {
     title: 'Funeral Final Commendation',
-    body: `Into your hands, Father of mercies,
-we commend our brother/sister {{Deceased}}
-in the sure and certain hope
-that, together with all who have died in Christ,
-they will rise with him on the last day.
-We give you thanks for the blessings
-which you bestowed upon {{Deceased}} in this life:
-they are signs to us of your goodness
-and of our fellowship with the saints in Christ.
-Merciful Lord,
-turn toward us and listen to our prayers:
-open the gates of paradise to your servant
-and help us who remain
-to comfort one another with assurances of faith,
-until we all meet in Christ
-and are with you and with our brother/sister for ever.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>Into your hands, Father of mercies,<br>we commend our brother/sister {{deceased.full_name}}<br>in the sure and certain hope<br>that, together with all who have died in Christ,<br>they will rise with him on the last day.</p>
+<p>We give you thanks for the blessings<br>which you bestowed upon {{deceased.full_name}} in this life:<br>they are signs to us of your goodness<br>and of our fellowship with the saints in Christ.</p>
+<p>Merciful Lord,<br>turn toward us and listen to our prayers:<br>open the gates of paradise to your servant<br>and help us who remain<br>to comfort one another with assurances of faith,<br>until we all meet in Christ<br>and are with you and with our brother/sister for ever.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Funeral final commendation prayer',
     tags: ['funeral', 'closing-prayer', 'eternal-life', 'hope']
   },
   {
     title: 'Encomendación Final del Funeral',
-    body: `En tus manos, Padre de misericordia,
-encomendamos a nuestro hermano/a {{Deceased}}
-en la esperanza segura y cierta
-de que, junto con todos los que han muerto en Cristo,
-resucitará con él en el último día.
-Te damos gracias por las bendiciones
-que derramaste sobre {{Deceased}} en esta vida:
-son signos para nosotros de tu bondad
-y de nuestra comunión con los santos en Cristo.
-Señor misericordioso,
-vuélvete hacia nosotros y escucha nuestras oraciones:
-abre las puertas del paraíso a tu siervo
-y ayúdanos a los que quedamos
-a consolarnos unos a otros con garantías de fe,
-hasta que todos nos encontremos en Cristo
-y estemos contigo y con nuestro hermano/a para siempre.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>En tus manos, Padre de misericordia,<br>encomendamos a nuestro hermano/a {{deceased.full_name}}<br>en la esperanza segura y cierta<br>de que, junto con todos los que han muerto en Cristo,<br>resucitará con él en el último día.</p>
+<p>Te damos gracias por las bendiciones<br>que derramaste sobre {{deceased.full_name}} en esta vida:<br>son signos para nosotros de tu bondad<br>y de nuestra comunión con los santos en Cristo.</p>
+<p>Señor misericordioso,<br>vuélvete hacia nosotros y escucha nuestras oraciones:<br>abre las puertas del paraíso a tu siervo<br>y ayúdanos a los que quedamos<br>a consolarnos unos a otros con garantías de fe,<br>hasta que todos nos encontremos en Cristo<br>y estemos contigo y con nuestro hermano/a para siempre.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración de encomendación final del funeral',
     tags: ['funeral', 'closing-prayer', 'eternal-life', 'hope']
@@ -249,120 +152,66 @@ Amén.`,
 const PRAYERS_OF_THE_FAITHFUL: SeedContent[] = [
   {
     title: 'Wedding Intercessions',
-    body: `**For the Church:** That all married couples may be signs of Christ's love for his Church.
-*Lord, hear our prayer.*
-
-**For {{Bride}} and {{Groom}}:** That God will bless their covenant as he chose to sanctify marriage at Cana in Galilee.
-*Lord, hear our prayer.*
-
-**For their families:** That their love and support may strengthen this new family.
-*Lord, hear our prayer.*
-
-**For all married couples:** That the grace of this Sacrament will be renewed in all married persons here present.
-*Lord, hear our prayer.*
-
-**For those who have died:** That our departed loved ones may share in the wedding feast of heaven.
-*Lord, hear our prayer.*`,
+    body: `<p><strong>For the Church:</strong> That all married couples may be signs of Christ's love for his Church.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For {{bride.full_name}} and {{groom.full_name}}:</strong> That God will bless their covenant as he chose to sanctify marriage at Cana in Galilee.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For their families:</strong> That their love and support may strengthen this new family.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For all married couples:</strong> That the grace of this Sacrament will be renewed in all married persons here present.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For those who have died:</strong> That our departed loved ones may share in the wedding feast of heaven.<br><em>Lord, hear our prayer.</em></p>`,
     language: 'en',
     description: 'Wedding Mass intercessions/petitions',
     tags: ['wedding', 'prayers-of-the-faithful', 'love']
   },
   {
     title: 'Intercesiones del Matrimonio',
-    body: `**Por la Iglesia:** Que todas las parejas casadas sean signos del amor de Cristo por su Iglesia.
-*Señor, escucha nuestra oración.*
-
-**Por {{Bride}} y {{Groom}}:** Que Dios bendiga su alianza como eligió santificar el matrimonio en Caná de Galilea.
-*Señor, escucha nuestra oración.*
-
-**Por sus familias:** Que su amor y apoyo fortalezcan a esta nueva familia.
-*Señor, escucha nuestra oración.*
-
-**Por todas las parejas casadas:** Que la gracia de este Sacramento se renueve en todas las personas casadas aquí presentes.
-*Señor, escucha nuestra oración.*
-
-**Por los que han fallecido:** Que nuestros seres queridos difuntos compartan el banquete de bodas del cielo.
-*Señor, escucha nuestra oración.*`,
+    body: `<p><strong>Por la Iglesia:</strong> Que todas las parejas casadas sean signos del amor de Cristo por su Iglesia.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por {{bride.full_name}} y {{groom.full_name}}:</strong> Que Dios bendiga su alianza como eligió santificar el matrimonio en Caná de Galilea.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por sus familias:</strong> Que su amor y apoyo fortalezcan a esta nueva familia.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por todas las parejas casadas:</strong> Que la gracia de este Sacramento se renueve en todas las personas casadas aquí presentes.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por los que han fallecido:</strong> Que nuestros seres queridos difuntos compartan el banquete de bodas del cielo.<br><em>Señor, escucha nuestra oración.</em></p>`,
     language: 'es',
     description: 'Intercesiones/peticiones de la Misa de Matrimonio',
     tags: ['wedding', 'prayers-of-the-faithful', 'love']
   },
   {
     title: 'Funeral Intercessions',
-    body: `**For {{Deceased}}:** That they may rest in eternal peace and rise in glory on the last day.
-*Lord, hear our prayer.*
-
-**For the family and friends:** That they may find comfort in God's love and the support of this community.
-*Lord, hear our prayer.*
-
-**For all the faithful departed:** Especially those who have no one to pray for them.
-*Lord, hear our prayer.*
-
-**For those who minister to the grieving:** That God may strengthen them in their work of mercy.
-*Lord, hear our prayer.*
-
-**For ourselves:** That we may be prepared for our own journey to eternal life.
-*Lord, hear our prayer.*`,
+    body: `<p><strong>For {{deceased.full_name}}:</strong> That they may rest in eternal peace and rise in glory on the last day.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For the family and friends:</strong> That they may find comfort in God's love and the support of this community.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For all the faithful departed:</strong> Especially those who have no one to pray for them.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For those who minister to the grieving:</strong> That God may strengthen them in their work of mercy.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For ourselves:</strong> That we may be prepared for our own journey to eternal life.<br><em>Lord, hear our prayer.</em></p>`,
     language: 'en',
     description: 'Funeral Mass intercessions/petitions',
     tags: ['funeral', 'prayers-of-the-faithful', 'comfort', 'hope']
   },
   {
     title: 'Intercesiones del Funeral',
-    body: `**Por {{Deceased}}:** Que descanse en paz eterna y resucite en gloria en el último día.
-*Señor, escucha nuestra oración.*
-
-**Por la familia y amigos:** Que encuentren consuelo en el amor de Dios y el apoyo de esta comunidad.
-*Señor, escucha nuestra oración.*
-
-**Por todos los fieles difuntos:** Especialmente por aquellos que no tienen quien rece por ellos.
-*Señor, escucha nuestra oración.*
-
-**Por los que ministran a los afligidos:** Que Dios los fortalezca en su obra de misericordia.
-*Señor, escucha nuestra oración.*
-
-**Por nosotros mismos:** Que estemos preparados para nuestro propio viaje a la vida eterna.
-*Señor, escucha nuestra oración.*`,
+    body: `<p><strong>Por {{deceased.full_name}}:</strong> Que descanse en paz eterna y resucite en gloria en el último día.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por la familia y amigos:</strong> Que encuentren consuelo en el amor de Dios y el apoyo de esta comunidad.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por todos los fieles difuntos:</strong> Especialmente por aquellos que no tienen quien rece por ellos.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por los que ministran a los afligidos:</strong> Que Dios los fortalezca en su obra de misericordia.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por nosotros mismos:</strong> Que estemos preparados para nuestro propio viaje a la vida eterna.<br><em>Señor, escucha nuestra oración.</em></p>`,
     language: 'es',
     description: 'Intercesiones/peticiones de la Misa de Funeral',
     tags: ['funeral', 'prayers-of-the-faithful', 'comfort', 'hope']
   },
   {
     title: 'Baptism Intercessions',
-    body: `**For {{Child}}:** That they may grow in faith, hope, and love throughout their life.
-*Lord, hear our prayer.*
-
-**For the parents {{Mother}} and {{Father}}:** That they may be living examples of faith for their child.
-*Lord, hear our prayer.*
-
-**For the godparents {{Godmother}} and {{Godfather}}:** That they may faithfully fulfill their responsibilities.
-*Lord, hear our prayer.*
-
-**For this community:** That we may support this family in their journey of faith.
-*Lord, hear our prayer.*
-
-**For all the baptized:** That we may live out our baptismal promises each day.
-*Lord, hear our prayer.*`,
+    body: `<p><strong>For {{child.full_name}}:</strong> That they may grow in faith, hope, and love throughout their life.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For the parents {{mother.full_name}} and {{father.full_name}}:</strong> That they may be living examples of faith for their child.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For the godparents {{godmother.full_name}} and {{godfather.full_name}}:</strong> That they may faithfully fulfill their responsibilities.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For this community:</strong> That we may support this family in their journey of faith.<br><em>Lord, hear our prayer.</em></p>
+<p><strong>For all the baptized:</strong> That we may live out our baptismal promises each day.<br><em>Lord, hear our prayer.</em></p>`,
     language: 'en',
     description: 'Baptism intercessions/petitions',
     tags: ['baptism', 'prayers-of-the-faithful', 'hope', 'faith']
   },
   {
     title: 'Intercesiones del Bautismo',
-    body: `**Por {{Child}}:** Que crezca en fe, esperanza y amor a lo largo de su vida.
-*Señor, escucha nuestra oración.*
-
-**Por los padres {{Mother}} y {{Father}}:** Que sean ejemplos vivos de fe para su hijo.
-*Señor, escucha nuestra oración.*
-
-**Por los padrinos {{Godmother}} y {{Godfather}}:** Que cumplan fielmente sus responsabilidades.
-*Señor, escucha nuestra oración.*
-
-**Por esta comunidad:** Que apoyemos a esta familia en su camino de fe.
-*Señor, escucha nuestra oración.*
-
-**Por todos los bautizados:** Que vivamos nuestras promesas bautismales cada día.
-*Señor, escucha nuestra oración.*`,
+    body: `<p><strong>Por {{child.full_name}}:</strong> Que crezca en fe, esperanza y amor a lo largo de su vida.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por los padres {{mother.full_name}} y {{father.full_name}}:</strong> Que sean ejemplos vivos de fe para su hijo.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por los padrinos {{godmother.full_name}} y {{godfather.full_name}}:</strong> Que cumplan fielmente sus responsabilidades.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por esta comunidad:</strong> Que apoyemos a esta familia en su camino de fe.<br><em>Señor, escucha nuestra oración.</em></p>
+<p><strong>Por todos los bautizados:</strong> Que vivamos nuestras promesas bautismales cada día.<br><em>Señor, escucha nuestra oración.</em></p>`,
     language: 'es',
     description: 'Intercesiones/peticiones del Bautismo',
     tags: ['baptism', 'prayers-of-the-faithful', 'hope', 'faith']
@@ -373,126 +222,72 @@ const PRAYERS_OF_THE_FAITHFUL: SeedContent[] = [
 const CEREMONY_INSTRUCTIONS: SeedContent[] = [
   {
     title: 'Exchange of Consent',
-    body: `The presider invites the couple to declare their consent:
-
-**Presider:** {{Groom}}, do you take {{Bride}} to be your wife? Do you promise to be faithful to her in good times and in bad, in sickness and in health, to love her and to honor her all the days of your life?
-
-**Groom:** I do.
-
-**Presider:** {{Bride}}, do you take {{Groom}} to be your husband? Do you promise to be faithful to him in good times and in bad, in sickness and in health, to love him and to honor him all the days of your life?
-
-**Bride:** I do.
-
-**Presider:** Since it is your intention to enter the covenant of Holy Matrimony, join your right hands and declare your consent before God and his Church.`,
+    body: `<p><em>The presider invites the couple to declare their consent:</em></p>
+<p><strong>Presider:</strong> {{groom.full_name}}, do you take {{bride.full_name}} to be your wife? Do you promise to be faithful to her in good times and in bad, in sickness and in health, to love her and to honor her all the days of your life?</p>
+<p><strong>Groom:</strong> I do.</p>
+<p><strong>Presider:</strong> {{bride.full_name}}, do you take {{groom.full_name}} to be your husband? Do you promise to be faithful to him in good times and in bad, in sickness and in health, to love him and to honor him all the days of your life?</p>
+<p><strong>Bride:</strong> I do.</p>
+<p><strong>Presider:</strong> Since it is your intention to enter the covenant of Holy Matrimony, join your right hands and declare your consent before God and his Church.</p>`,
     language: 'en',
     description: 'Wedding exchange of consent ceremony instructions',
     tags: ['wedding', 'ceremony-instructions']
   },
   {
     title: 'Intercambio de Consentimientos',
-    body: `El celebrante invita a la pareja a declarar su consentimiento:
-
-**Celebrante:** {{Groom}}, ¿aceptas a {{Bride}} como tu esposa? ¿Prometes serle fiel en las alegrías y en las penas, en la salud y en la enfermedad, amarla y respetarla todos los días de tu vida?
-
-**Novio:** Sí, acepto.
-
-**Celebrante:** {{Bride}}, ¿aceptas a {{Groom}} como tu esposo? ¿Prometes serle fiel en las alegrías y en las penas, en la salud y en la enfermedad, amarlo y respetarlo todos los días de tu vida?
-
-**Novia:** Sí, acepto.
-
-**Celebrante:** Ya que es su intención entrar en la alianza del Santo Matrimonio, unan sus manos derechas y declaren su consentimiento ante Dios y su Iglesia.`,
+    body: `<p><em>El celebrante invita a la pareja a declarar su consentimiento:</em></p>
+<p><strong>Celebrante:</strong> {{groom.full_name}}, ¿aceptas a {{bride.full_name}} como tu esposa? ¿Prometes serle fiel en las alegrías y en las penas, en la salud y en la enfermedad, amarla y respetarla todos los días de tu vida?</p>
+<p><strong>Novio:</strong> Sí, acepto.</p>
+<p><strong>Celebrante:</strong> {{bride.full_name}}, ¿aceptas a {{groom.full_name}} como tu esposo? ¿Prometes serle fiel en las alegrías y en las penas, en la salud y en la enfermedad, amarlo y respetarlo todos los días de tu vida?</p>
+<p><strong>Novia:</strong> Sí, acepto.</p>
+<p><strong>Celebrante:</strong> Ya que es su intención entrar en la alianza del Santo Matrimonio, unan sus manos derechas y declaren su consentimiento ante Dios y su Iglesia.</p>`,
     language: 'es',
     description: 'Instrucciones de la ceremonia de intercambio de consentimientos',
     tags: ['wedding', 'ceremony-instructions']
   },
   {
     title: 'Blessing and Exchange of Rings',
-    body: `**Blessing of the Rings:**
-
-Lord, bless these rings which we bless in your name.
-Grant that those who wear them
-may always have a deep faith in each other.
-May they do your will
-and always live together
-in peace, good will, and love.
-We ask this through Christ our Lord.
-Amen.
-
-**Exchange of Rings:**
-
-The groom places the ring on the bride's finger, saying:
-"{{Bride}}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit."
-
-The bride places the ring on the groom's finger, saying:
-"{{Groom}}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit."`,
+    body: `<p><strong>Blessing of the Rings:</strong></p>
+<p>Lord, bless these rings which we bless in your name.<br>Grant that those who wear them<br>may always have a deep faith in each other.<br>May they do your will<br>and always live together<br>in peace, good will, and love.<br>We ask this through Christ our Lord.<br>Amen.</p>
+<p><strong>Exchange of Rings:</strong></p>
+<p><em>The groom places the ring on the bride's finger, saying:</em><br>"{{bride.full_name}}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit."</p>
+<p><em>The bride places the ring on the groom's finger, saying:</em><br>"{{groom.full_name}}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit."</p>`,
     language: 'en',
     description: 'Blessing and exchange of wedding rings',
     tags: ['wedding', 'ceremony-instructions', 'love']
   },
   {
     title: 'Bendición e Intercambio de Anillos',
-    body: `**Bendición de los Anillos:**
-
-Señor, bendice estos anillos que bendecimos en tu nombre.
-Concede que quienes los lleven
-tengan siempre una fe profunda el uno en el otro.
-Que hagan tu voluntad
-y vivan siempre juntos
-en paz, buena voluntad y amor.
-Te lo pedimos por Cristo nuestro Señor.
-Amén.
-
-**Intercambio de Anillos:**
-
-El novio coloca el anillo en el dedo de la novia, diciendo:
-"{{Bride}}, recibe este anillo como signo de mi amor y fidelidad. En el nombre del Padre, y del Hijo, y del Espíritu Santo."
-
-La novia coloca el anillo en el dedo del novio, diciendo:
-"{{Groom}}, recibe este anillo como signo de mi amor y fidelidad. En el nombre del Padre, y del Hijo, y del Espíritu Santo."`,
+    body: `<p><strong>Bendición de los Anillos:</strong></p>
+<p>Señor, bendice estos anillos que bendecimos en tu nombre.<br>Concede que quienes los lleven<br>tengan siempre una fe profunda el uno en el otro.<br>Que hagan tu voluntad<br>y vivan siempre juntos<br>en paz, buena voluntad y amor.<br>Te lo pedimos por Cristo nuestro Señor.<br>Amén.</p>
+<p><strong>Intercambio de Anillos:</strong></p>
+<p><em>El novio coloca el anillo en el dedo de la novia, diciendo:</em><br>"{{bride.full_name}}, recibe este anillo como signo de mi amor y fidelidad. En el nombre del Padre, y del Hijo, y del Espíritu Santo."</p>
+<p><em>La novia coloca el anillo en el dedo del novio, diciendo:</em><br>"{{groom.full_name}}, recibe este anillo como signo de mi amor y fidelidad. En el nombre del Padre, y del Hijo, y del Espíritu Santo."</p>`,
     language: 'es',
     description: 'Bendición e intercambio de anillos de boda',
     tags: ['wedding', 'ceremony-instructions', 'love']
   },
   {
     title: 'Baptismal Promises Renewal',
-    body: `The presider addresses the parents and godparents:
-
-**Presider:** Dear parents and godparents, you have come here to present this child for baptism. By water and the Holy Spirit they will receive the gift of new life from God, who is love.
-
-On your part, you must make it your constant care to bring them up in the practice of the faith. See that the divine life which God gives them is kept safe from the poison of sin, to grow always stronger in their hearts.
-
-If your faith makes you ready to accept this responsibility, renew now the vows of your own baptism. Reject sin; profess your faith in Christ Jesus. This is the faith of the Church. This is the faith in which this child is about to be baptized.
-
-**Do you renounce Satan?**
-*I do.*
-
-**And all his works?**
-*I do.*
-
-**And all his empty show?**
-*I do.*`,
+    body: `<p><em>The presider addresses the parents and godparents:</em></p>
+<p><strong>Presider:</strong> Dear parents and godparents, you have come here to present this child for baptism. By water and the Holy Spirit they will receive the gift of new life from God, who is love.</p>
+<p>On your part, you must make it your constant care to bring them up in the practice of the faith. See that the divine life which God gives them is kept safe from the poison of sin, to grow always stronger in their hearts.</p>
+<p>If your faith makes you ready to accept this responsibility, renew now the vows of your own baptism. Reject sin; profess your faith in Christ Jesus. This is the faith of the Church. This is the faith in which this child is about to be baptized.</p>
+<p><strong>Do you renounce Satan?</strong><br><em>I do.</em></p>
+<p><strong>And all his works?</strong><br><em>I do.</em></p>
+<p><strong>And all his empty show?</strong><br><em>I do.</em></p>`,
     language: 'en',
     description: 'Baptismal promises renewal ceremony',
     tags: ['baptism', 'ceremony-instructions', 'faith']
   },
   {
     title: 'Renovación de las Promesas Bautismales',
-    body: `El celebrante se dirige a los padres y padrinos:
-
-**Celebrante:** Queridos padres y padrinos, han venido aquí para presentar a este niño para el bautismo. Por el agua y el Espíritu Santo recibirá el don de la nueva vida de Dios, que es amor.
-
-De su parte, deben procurar constantemente educarlo en la práctica de la fe. Cuiden que la vida divina que Dios les da se mantenga a salvo del veneno del pecado, para que crezca siempre más fuerte en sus corazones.
-
-Si su fe los hace dispuestos a aceptar esta responsabilidad, renueven ahora los votos de su propio bautismo. Rechacen el pecado; profesen su fe en Cristo Jesús. Esta es la fe de la Iglesia. Esta es la fe en la que este niño será bautizado.
-
-**¿Renuncian a Satanás?**
-*Sí, renuncio.*
-
-**¿Y a todas sus obras?**
-*Sí, renuncio.*
-
-**¿Y a todas sus seducciones?**
-*Sí, renuncio.*`,
+    body: `<p><em>El celebrante se dirige a los padres y padrinos:</em></p>
+<p><strong>Celebrante:</strong> Queridos padres y padrinos, han venido aquí para presentar a este niño para el bautismo. Por el agua y el Espíritu Santo recibirá el don de la nueva vida de Dios, que es amor.</p>
+<p>De su parte, deben procurar constantemente educarlo en la práctica de la fe. Cuiden que la vida divina que Dios les da se mantenga a salvo del veneno del pecado, para que crezca siempre más fuerte en sus corazones.</p>
+<p>Si su fe los hace dispuestos a aceptar esta responsabilidad, renueven ahora los votos de su propio bautismo. Rechacen el pecado; profesen su fe en Cristo Jesús. Esta es la fe de la Iglesia. Esta es la fe en la que este niño será bautizado.</p>
+<p><strong>¿Renuncian a Satanás?</strong><br><em>Sí, renuncio.</em></p>
+<p><strong>¿Y a todas sus obras?</strong><br><em>Sí, renuncio.</em></p>
+<p><strong>¿Y a todas sus seducciones?</strong><br><em>Sí, renuncio.</em></p>`,
     language: 'es',
     description: 'Renovación de las promesas bautismales',
     tags: ['baptism', 'ceremony-instructions', 'faith']
@@ -503,62 +298,52 @@ Si su fe los hace dispuestos a aceptar esta responsabilidad, renueven ahora los 
 const ANNOUNCEMENTS: SeedContent[] = [
   {
     title: 'Wedding Reception Announcement',
-    body: `Please join us for a reception immediately following the ceremony at:
-
-**{{Reception Location}}**
-
-We look forward to celebrating with you!`,
+    body: `<p>Please join us for a reception immediately following the ceremony at:</p>
+<p><strong>{{reception_location.name}}</strong></p>
+<p>We look forward to celebrating with you!</p>`,
     language: 'en',
     description: 'Wedding reception announcement',
     tags: ['wedding', 'announcements']
   },
   {
     title: 'Anuncio de Recepción de Boda',
-    body: `Por favor, acompáñenos a una recepción inmediatamente después de la ceremonia en:
-
-**{{Reception Location}}**
-
-¡Esperamos celebrar con ustedes!`,
+    body: `<p>Por favor, acompáñenos a una recepción inmediatamente después de la ceremonia en:</p>
+<p><strong>{{reception_location.name}}</strong></p>
+<p>¡Esperamos celebrar con ustedes!</p>`,
     language: 'es',
     description: 'Anuncio de recepción de boda',
     tags: ['wedding', 'announcements']
   },
   {
     title: 'Funeral Repast Announcement',
-    body: `The family invites you to join them for a reception following the burial at:
-
-**{{Reception Location}}**
-
-May we continue to support one another in this time of mourning.`,
+    body: `<p>The family invites you to join them for a reception following the burial at:</p>
+<p><strong>{{reception_location.name}}</strong></p>
+<p>May we continue to support one another in this time of mourning.</p>`,
     language: 'en',
     description: 'Funeral reception/repast announcement',
     tags: ['funeral', 'announcements']
   },
   {
     title: 'Anuncio de Recepción del Funeral',
-    body: `La familia les invita a acompañarlos a una recepción después del entierro en:
-
-**{{Reception Location}}**
-
-Que podamos seguir apoyándonos unos a otros en este tiempo de duelo.`,
+    body: `<p>La familia les invita a acompañarlos a una recepción después del entierro en:</p>
+<p><strong>{{reception_location.name}}</strong></p>
+<p>Que podamos seguir apoyándonos unos a otros en este tiempo de duelo.</p>`,
     language: 'es',
     description: 'Anuncio de recepción del funeral',
     tags: ['funeral', 'announcements']
   },
   {
     title: 'Baptism Reception Announcement',
-    body: `Please join the family for a celebration following the baptism.
-
-Light refreshments will be served in the parish hall.`,
+    body: `<p>Please join the family for a celebration following the baptism.</p>
+<p>Light refreshments will be served in the parish hall.</p>`,
     language: 'en',
     description: 'Baptism reception announcement',
     tags: ['baptism', 'announcements']
   },
   {
     title: 'Anuncio de Recepción del Bautismo',
-    body: `Por favor, acompañen a la familia para una celebración después del bautismo.
-
-Se servirán refrescos ligeros en el salón parroquial.`,
+    body: `<p>Por favor, acompañen a la familia para una celebración después del bautismo.</p>
+<p>Se servirán refrescos ligeros en el salón parroquial.</p>`,
     language: 'es',
     description: 'Anuncio de recepción del bautismo',
     tags: ['baptism', 'announcements']
@@ -569,62 +354,34 @@ Se servirán refrescos ligeros en el salón parroquial.`,
 const QUINCEANERA_CONTENT: SeedContent[] = [
   {
     title: 'Quinceañera Thanksgiving Prayer',
-    body: `Lord God, we thank you for the gift of {{Quinceañera}}.
-Today, as she celebrates her fifteenth birthday,
-we ask your blessing upon her.
-Give her wisdom to make good choices,
-courage to follow your will,
-and a heart full of love for you and for others.
-May she always know that she is your beloved daughter.
-Guide her steps as she continues her journey of faith.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>Lord God, we thank you for the gift of {{quinceanera.full_name}}.<br>Today, as she celebrates her fifteenth birthday,<br>we ask your blessing upon her.<br>Give her wisdom to make good choices,<br>courage to follow your will,<br>and a heart full of love for you and for others.<br>May she always know that she is your beloved daughter.<br>Guide her steps as she continues her journey of faith.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Quinceañera thanksgiving prayer',
     tags: ['quinceanera', 'opening-prayer', 'joy']
   },
   {
     title: 'Oración de Acción de Gracias de la Quinceañera',
-    body: `Señor Dios, te damos gracias por el don de {{Quinceañera}}.
-Hoy, mientras celebra su quinceavo cumpleaños,
-te pedimos tu bendición sobre ella.
-Dale sabiduría para tomar buenas decisiones,
-valor para seguir tu voluntad,
-y un corazón lleno de amor por ti y por los demás.
-Que siempre sepa que es tu hija amada.
-Guía sus pasos mientras continúa su camino de fe.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>Señor Dios, te damos gracias por el don de {{quinceanera.full_name}}.<br>Hoy, mientras celebra su quinceavo cumpleaños,<br>te pedimos tu bendición sobre ella.<br>Dale sabiduría para tomar buenas decisiones,<br>valor para seguir tu voluntad,<br>y un corazón lleno de amor por ti y por los demás.<br>Que siempre sepa que es tu hija amada.<br>Guía sus pasos mientras continúa su camino de fe.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración de acción de gracias de la quinceañera',
     tags: ['quinceanera', 'opening-prayer', 'joy']
   },
   {
     title: 'Quinceañera Blessing',
-    body: `**Blessing of the Quinceañera:**
-
-{{Quinceañera}}, today you stand at the threshold of a new chapter in your life. As you leave childhood behind and embrace the responsibilities of young adulthood, know that God walks with you.
-
-May the Lord bless you and keep you.
-May the Lord make his face shine upon you and be gracious to you.
-May the Lord look upon you with kindness and give you peace.
-
-Go forth with confidence, knowing that you are loved by God, by your family, and by this community of faith.`,
+    body: `<p><strong>Blessing of the Quinceañera:</strong></p>
+<p>{{quinceanera.full_name}}, today you stand at the threshold of a new chapter in your life. As you leave childhood behind and embrace the responsibilities of young adulthood, know that God walks with you.</p>
+<p>May the Lord bless you and keep you.<br>May the Lord make his face shine upon you and be gracious to you.<br>May the Lord look upon you with kindness and give you peace.</p>
+<p>Go forth with confidence, knowing that you are loved by God, by your family, and by this community of faith.</p>`,
     language: 'en',
     description: 'Quinceañera blessing ceremony',
     tags: ['quinceanera', 'ceremony-instructions', 'joy', 'faith']
   },
   {
     title: 'Bendición de la Quinceañera',
-    body: `**Bendición de la Quinceañera:**
-
-{{Quinceañera}}, hoy te encuentras en el umbral de un nuevo capítulo en tu vida. Al dejar atrás la niñez y abrazar las responsabilidades de la juventud, sabe que Dios camina contigo.
-
-Que el Señor te bendiga y te guarde.
-Que el Señor haga resplandecer su rostro sobre ti y tenga misericordia de ti.
-Que el Señor te mire con bondad y te conceda la paz.
-
-Sal adelante con confianza, sabiendo que eres amada por Dios, por tu familia y por esta comunidad de fe.`,
+    body: `<p><strong>Bendición de la Quinceañera:</strong></p>
+<p>{{quinceanera.full_name}}, hoy te encuentras en el umbral de un nuevo capítulo en tu vida. Al dejar atrás la niñez y abrazar las responsabilidades de la juventud, sabe que Dios camina contigo.</p>
+<p>Que el Señor te bendiga y te guarde.<br>Que el Señor haga resplandecer su rostro sobre ti y tenga misericordia de ti.<br>Que el Señor te mire con bondad y te conceda la paz.</p>
+<p>Sal adelante con confianza, sabiendo que eres amada por Dios, por tu familia y por esta comunidad de fe.</p>`,
     language: 'es',
     description: 'Ceremonia de bendición de la quinceañera',
     tags: ['quinceanera', 'ceremony-instructions', 'joy', 'faith']
@@ -635,30 +392,14 @@ Sal adelante con confianza, sabiendo que eres amada por Dios, por tu familia y p
 const PRESENTATION_CONTENT: SeedContent[] = [
   {
     title: 'Presentation Prayer',
-    body: `Loving God, we present this child {{Child}} to you.
-As Mary and Joseph presented Jesus in the Temple,
-so we present {{Child}} before your altar.
-Bless this child and watch over them.
-Guide {{Mother}} and {{Father}} as they raise their child in faith.
-Strengthen {{Godmother}} and {{Godfather}} to support them on this journey.
-May {{Child}} grow in wisdom, age, and grace before you and all people.
-Through Christ our Lord.
-Amen.`,
+    body: `<p>Loving God, we present this child {{child.full_name}} to you.<br>As Mary and Joseph presented Jesus in the Temple,<br>so we present {{child.full_name}} before your altar.<br>Bless this child and watch over them.<br>Guide {{mother.full_name}} and {{father.full_name}} as they raise their child in faith.<br>Strengthen {{godmother.full_name}} and {{godfather.full_name}} to support them on this journey.<br>May {{child.full_name}} grow in wisdom, age, and grace before you and all people.<br>Through Christ our Lord.<br>Amen.</p>`,
     language: 'en',
     description: 'Child presentation prayer',
     tags: ['presentation', 'opening-prayer', 'family']
   },
   {
     title: 'Oración de la Presentación',
-    body: `Dios amoroso, presentamos a este niño {{Child}} ante ti.
-Como María y José presentaron a Jesús en el Templo,
-así presentamos a {{Child}} ante tu altar.
-Bendice a este niño y cuídalo.
-Guía a {{Mother}} y {{Father}} mientras crían a su hijo en la fe.
-Fortalece a {{Godmother}} y {{Godfather}} para que los apoyen en este camino.
-Que {{Child}} crezca en sabiduría, edad y gracia ante ti y ante todos.
-Por Cristo nuestro Señor.
-Amén.`,
+    body: `<p>Dios amoroso, presentamos a este niño {{child.full_name}} ante ti.<br>Como María y José presentaron a Jesús en el Templo,<br>así presentamos a {{child.full_name}} ante tu altar.<br>Bendice a este niño y cuídalo.<br>Guía a {{mother.full_name}} y {{father.full_name}} mientras crían a su hijo en la fe.<br>Fortalece a {{godmother.full_name}} y {{godfather.full_name}} para que los apoyen en este camino.<br>Que {{child.full_name}} crezca en sabiduría, edad y gracia ante ti y ante todos.<br>Por Cristo nuestro Señor.<br>Amén.</p>`,
     language: 'es',
     description: 'Oración de presentación del niño',
     tags: ['presentation', 'opening-prayer', 'family']
@@ -675,7 +416,7 @@ const FIRST_READINGS: SeedContent[] = [
     title: 'Genesis 1:26-28, 31a',
     body: `<div style="text-align: right; font-style: italic;">Genesis 1:26-28, 31a</div>
 
-<div style="text-align: right; color: red;">FIRST READING</div>
+<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
 
 <p><strong>A reading from the Book of Genesis</strong></p>
 
@@ -696,7 +437,7 @@ const FIRST_READINGS: SeedContent[] = [
     title: 'Ecclesiastes 3:1-8',
     body: `<div style="text-align: right; font-style: italic;">Ecclesiastes 3:1-8</div>
 
-<div style="text-align: right; color: red;">FIRST READING</div>
+<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
 
 <p><strong>A reading from the Book of Ecclesiastes</strong></p>
 
@@ -725,7 +466,7 @@ A time of war, and a time of peace.</p>
     title: 'Isaiah 25:6-9',
     body: `<div style="text-align: right; font-style: italic;">Isaiah 25:6-9</div>
 
-<div style="text-align: right; color: red;">FIRST READING</div>
+<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
 
 <p><strong>A reading from the Book of the Prophet Isaiah</strong></p>
 
@@ -746,7 +487,7 @@ A time of war, and a time of peace.</p>
     title: 'Sirach 26:1-4, 13-16',
     body: `<div style="text-align: right; font-style: italic;">Sirach 26:1-4, 13-16</div>
 
-<div style="text-align: right; color: red;">FIRST READING</div>
+<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
 
 <p><strong>A reading from the Book of Sirach</strong></p>
 
@@ -775,7 +516,7 @@ A time of war, and a time of peace.</p>
     title: 'Lamentations 3:17-26',
     body: `<div style="text-align: right; font-style: italic;">Lamentations 3:17-26</div>
 
-<div style="text-align: right; color: red;">FIRST READING</div>
+<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
 
 <p><strong>A reading from the Book of Lamentations</strong></p>
 
@@ -812,7 +553,7 @@ const SECOND_READINGS: SeedContent[] = [
     title: 'Romans 8:31b-35, 37-39',
     body: `<div style="text-align: right; font-style: italic;">Romans 8:31b-35, 37-39</div>
 
-<div style="text-align: right; color: red;">SECOND READING</div>
+<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
 
 <p><strong>A reading from the Letter of Saint Paul to the Romans</strong></p>
 
@@ -839,7 +580,7 @@ const SECOND_READINGS: SeedContent[] = [
     title: '1 Corinthians 12:31-13:8a',
     body: `<div style="text-align: right; font-style: italic;">1 Corinthians 12:31-13:8a</div>
 
-<div style="text-align: right; color: red;">SECOND READING</div>
+<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
 
 <p><strong>A reading from the first Letter of Saint Paul to the Corinthians</strong></p>
 
@@ -870,7 +611,7 @@ const SECOND_READINGS: SeedContent[] = [
     title: 'Colossians 3:12-17',
     body: `<div style="text-align: right; font-style: italic;">Colossians 3:12-17</div>
 
-<div style="text-align: right; color: red;">SECOND READING</div>
+<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
 
 <p><strong>A reading from the Letter of Saint Paul to the Colossians</strong></p>
 
@@ -895,7 +636,7 @@ const SECOND_READINGS: SeedContent[] = [
     title: '1 John 3:14-16',
     body: `<div style="text-align: right; font-style: italic;">1 John 3:14-16</div>
 
-<div style="text-align: right; color: red;">SECOND READING</div>
+<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
 
 <p><strong>A reading from the first Letter of Saint John</strong></p>
 
@@ -914,7 +655,7 @@ const SECOND_READINGS: SeedContent[] = [
     title: 'Revelation 21:1-5a, 6b-7',
     body: `<div style="text-align: right; font-style: italic;">Revelation 21:1-5a, 6b-7</div>
 
-<div style="text-align: right; color: red;">SECOND READING</div>
+<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
 
 <p><strong>A reading from the Book of Revelation</strong></p>
 
@@ -945,7 +686,7 @@ const GOSPELS: SeedContent[] = [
     title: 'Matthew 5:1-12a',
     body: `<div style="text-align: right; font-style: italic;">Matthew 5:1-12a</div>
 
-<div style="text-align: right; color: red;">GOSPEL</div>
+<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
 
 <p><strong>A reading from the holy Gospel according to Matthew</strong></p>
 
@@ -982,7 +723,7 @@ const GOSPELS: SeedContent[] = [
     title: 'Matthew 19:3-6',
     body: `<div style="text-align: right; font-style: italic;">Matthew 19:3-6</div>
 
-<div style="text-align: right; color: red;">GOSPEL</div>
+<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
 
 <p><strong>A reading from the holy Gospel according to Matthew</strong></p>
 
@@ -1003,7 +744,7 @@ const GOSPELS: SeedContent[] = [
     title: 'John 11:21-27',
     body: `<div style="text-align: right; font-style: italic;">John 11:21-27</div>
 
-<div style="text-align: right; color: red;">GOSPEL</div>
+<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -1030,7 +771,7 @@ const GOSPELS: SeedContent[] = [
     title: 'John 15:9-12',
     body: `<div style="text-align: right; font-style: italic;">John 15:9-12</div>
 
-<div style="text-align: right; color: red;">GOSPEL</div>
+<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -1051,7 +792,7 @@ const GOSPELS: SeedContent[] = [
     title: 'John 14:1-6',
     body: `<div style="text-align: right; font-style: italic;">John 14:1-6</div>
 
-<div style="text-align: right; color: red;">GOSPEL</div>
+<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -1080,11 +821,11 @@ const PSALMS: SeedContent[] = [
     title: 'Psalm 23:1-6',
     body: `<div style="text-align: right; font-style: italic;">Psalm 23:1-6</div>
 
-<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
 
 <p><strong>Reader:</strong> The Lord is my shepherd; there is nothing I shall want.</p>
 
-<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 
 <p><strong>Reader:</strong> The Lord is my shepherd; I shall not want.<br>
 In verdant pastures he gives me repose;<br>
@@ -1092,26 +833,26 @@ Beside restful waters he leads me;<br>
 he refreshes my soul.<br>
 He guides me in right paths for his name's sake.</p>
 
-<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 
 <p><strong>Reader:</strong> Even though I walk in the dark valley I fear no evil;<br>
 for you are at my side with your rod and your staff<br>
 that give me courage.</p>
 
-<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 
 <p><strong>Reader:</strong> You spread the table before me in the sight of my foes;<br>
 You anoint my head with oil;<br>
 my cup overflows.</p>
 
-<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
 
 <p><strong>Reader:</strong> Only goodness and kindness follow me<br>
 all the days of my life;<br>
 And I shall dwell in the house of the Lord<br>
 for years to come.</p>
 
-<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>`,
+<p style="color: #c41e3a;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>`,
     language: 'en',
     description: 'Responsorial Psalm',
     tags: ['funeral', 'psalm', 'old-testament', 'comfort']
@@ -1120,32 +861,32 @@ for years to come.</p>
     title: 'Psalm 33:12, 18-22',
     body: `<div style="text-align: right; font-style: italic;">Psalm 33:12, 18-22</div>
 
-<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
 
 <p><strong>Reader:</strong> The earth is full of the goodness of the Lord.</p>
 
-<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: The earth is full of the goodness of the Lord.</em></p>
 
 <p><strong>Reader:</strong> Blessed the nation whose God is the Lord,<br>
 the people he has chosen for his own inheritance.<br>
 See, the eyes of the Lord are upon those who fear him,<br>
 upon those who hope for his kindness.</p>
 
-<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: The earth is full of the goodness of the Lord.</em></p>
 
 <p><strong>Reader:</strong> To deliver them from death<br>
 and preserve them in spite of famine.<br>
 Our soul waits for the Lord,<br>
 who is our help and our shield.</p>
 
-<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: The earth is full of the goodness of the Lord.</em></p>
 
 <p><strong>Reader:</strong> For in him our hearts rejoice;<br>
 in his holy name we trust.<br>
 May your kindness, O Lord, be upon us<br>
 who have put our hope in you.</p>
 
-<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>`,
+<p style="color: #c41e3a;"><em>People: The earth is full of the goodness of the Lord.</em></p>`,
     language: 'en',
     description: 'Responsorial Psalm',
     tags: ['wedding', 'psalm', 'old-testament', 'joy']
@@ -1154,39 +895,39 @@ who have put our hope in you.</p>
     title: 'Psalm 103:1-4, 8, 10, 13-18',
     body: `<div style="text-align: right; font-style: italic;">Psalm 103:1-4, 8, 10, 13-18</div>
 
-<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
 
 <p><strong>Reader:</strong> The Lord is kind and merciful.</p>
 
-<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is kind and merciful.</em></p>
 
 <p><strong>Reader:</strong> Bless the Lord, O my soul;<br>
 and all my being, bless his holy name.<br>
 Bless the Lord, O my soul,<br>
 and forget not all his benefits.</p>
 
-<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is kind and merciful.</em></p>
 
 <p><strong>Reader:</strong> He pardons all your iniquities,<br>
 heals all your ills,<br>
 He redeems your life from destruction,<br>
 crowns you with kindness and compassion.</p>
 
-<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is kind and merciful.</em></p>
 
 <p><strong>Reader:</strong> Merciful and gracious is the Lord,<br>
 slow to anger and abounding in kindness.<br>
 Not according to our sins does he deal with us,<br>
 nor does he requite us according to our crimes.</p>
 
-<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is kind and merciful.</em></p>
 
 <p><strong>Reader:</strong> As a father has compassion on his children,<br>
 so the Lord has compassion on those who fear him,<br>
 For he knows how we are formed;<br>
 he remembers that we are dust.</p>
 
-<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>`,
+<p style="color: #c41e3a;"><em>People: The Lord is kind and merciful.</em></p>`,
     language: 'en',
     description: 'Responsorial Psalm',
     tags: ['funeral', 'psalm', 'old-testament', 'comfort', 'hope']
@@ -1195,25 +936,25 @@ he remembers that we are dust.</p>
     title: 'Psalm 128:1-5',
     body: `<div style="text-align: right; font-style: italic;">Psalm 128:1-5</div>
 
-<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
 
 <p><strong>Reader:</strong> Blessed are those who fear the Lord.</p>
 
-<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: Blessed are those who fear the Lord.</em></p>
 
 <p><strong>Reader:</strong> Blessed are you who fear the Lord,<br>
 who walk in his ways!<br>
 For you shall eat the fruit of your handiwork;<br>
 blessed shall you be, and favored.</p>
 
-<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: Blessed are those who fear the Lord.</em></p>
 
 <p><strong>Reader:</strong> Your wife shall be like a fruitful vine<br>
 in the recesses of your home;<br>
 Your children like olive plants<br>
 around your table.</p>
 
-<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+<p style="color: #c41e3a;"><em>People: Blessed are those who fear the Lord.</em></p>
 
 <p><strong>Reader:</strong> Behold, thus is the man blessed<br>
 who fears the Lord.<br>
@@ -1221,7 +962,7 @@ The Lord bless you from Zion:<br>
 may you see the prosperity of Jerusalem<br>
 all the days of your life.</p>
 
-<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>`,
+<p style="color: #c41e3a;"><em>People: Blessed are those who fear the Lord.</em></p>`,
     language: 'en',
     description: 'Responsorial Psalm',
     tags: ['wedding', 'psalm', 'old-testament', 'family']
@@ -1230,18 +971,18 @@ all the days of your life.</p>
     title: 'Psalm 27:1, 4, 7-9, 13-14',
     body: `<div style="text-align: right; font-style: italic;">Psalm 27:1, 4, 7-9, 13-14</div>
 
-<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
 
 <p><strong>Reader:</strong> The Lord is my light and my salvation.</p>
 
-<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my light and my salvation.</em></p>
 
 <p><strong>Reader:</strong> The Lord is my light and my salvation;<br>
 whom should I fear?<br>
 The Lord is my life's refuge;<br>
 of whom should I be afraid?</p>
 
-<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my light and my salvation.</em></p>
 
 <p><strong>Reader:</strong> One thing I ask of the Lord; this I seek:<br>
 To dwell in the house of the Lord<br>
@@ -1249,20 +990,20 @@ all the days of my life,<br>
 That I may gaze on the loveliness of the Lord<br>
 and contemplate his temple.</p>
 
-<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my light and my salvation.</em></p>
 
 <p><strong>Reader:</strong> Hear, O Lord, the sound of my call;<br>
 have pity on me, and answer me.<br>
 Of you my heart speaks; you my glance seeks.</p>
 
-<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+<p style="color: #c41e3a;"><em>People: The Lord is my light and my salvation.</em></p>
 
 <p><strong>Reader:</strong> I believe that I shall see the bounty of the Lord<br>
 in the land of the living.<br>
 Wait for the Lord with courage;<br>
 be stouthearted, and wait for the Lord.</p>
 
-<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>`,
+<p style="color: #c41e3a;"><em>People: The Lord is my light and my salvation.</em></p>`,
     language: 'en',
     description: 'Responsorial Psalm',
     tags: ['funeral', 'psalm', 'old-testament', 'hope', 'comfort']
