@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { DialogButton } from "@/components/dialog-button"
+import { FormDialog } from "@/components/form-dialog"
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Label } from "@/components/ui/label"
 import { FormInput } from '@/components/form-input'
@@ -152,64 +151,49 @@ export default function PetitionContextsPage() {
       description="Manage reusable contexts for different types of liturgical celebrations."
     >
       <div className="flex justify-end items-center mb-6">
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogButton onClick={openCreateDialog}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Context
-          </DialogButton>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingContext ? 'Edit Context' : 'Create New Context'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <FormInput
-                id="title"
-                label="Title"
-                value={formData.title}
-                onChange={(value) => setFormData({ ...formData, title: value })}
-                placeholder="e.g., Christmas Mass, Easter Vigil"
-                required
-              />
-              <FormInput
-                id="description"
-                label="Description"
-                value={formData.description || ''}
-                onChange={(value) => setFormData({ ...formData, description: value })}
-                placeholder="Brief description of when to use this context"
-              />
-              <FormInput
-                id="context"
-                label="Template Text"
-                inputType="textarea"
-                value={formData.context || ''}
-                onChange={(value) => setFormData({ 
-                  ...formData, 
-                  context: value
-                })}
-                placeholder="Enter the template text for this context..."
-                rows={12}
-                className="font-mono text-sm"
-              />
-              <div className="flex gap-4">
-                <Button 
-                  onClick={editingContext ? handleUpdateContext : handleCreateContext}
-                  className="flex-1"
-                >
-                  {editingContext ? 'Update Context' : 'Create Context'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openCreateDialog}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Context
+        </Button>
+        <FormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          title={editingContext ? 'Edit Context' : 'Create New Context'}
+          onSubmit={editingContext ? handleUpdateContext : handleCreateContext}
+          submitLabel={editingContext ? 'Update Context' : 'Create Context'}
+          contentClassName="max-w-2xl max-h-[80vh] overflow-y-auto"
+        >
+          <div className="space-y-4">
+            <FormInput
+              id="title"
+              label="Title"
+              value={formData.title}
+              onChange={(value) => setFormData({ ...formData, title: value })}
+              placeholder="e.g., Christmas Mass, Easter Vigil"
+              required
+            />
+            <FormInput
+              id="description"
+              label="Description"
+              value={formData.description || ''}
+              onChange={(value) => setFormData({ ...formData, description: value })}
+              placeholder="Brief description of when to use this context"
+            />
+            <FormInput
+              id="context"
+              label="Template Text"
+              inputType="textarea"
+              value={formData.context || ''}
+              onChange={(value) => setFormData({
+                ...formData,
+                context: value
+              })}
+              placeholder="Enter the template text for this context..."
+              rows={12}
+              className="font-mono text-sm"
+            />
+          </div>
+        </FormDialog>
       </div>
 
       <div className="grid gap-6">

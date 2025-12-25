@@ -47,7 +47,7 @@ export default async function LocationsPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Locations"
+      title={t('nav.ourLocations')}
       description="Manage parish locations."
       primaryAction={<ModuleCreateButton moduleName="Location" href="/locations/create" />}
     >

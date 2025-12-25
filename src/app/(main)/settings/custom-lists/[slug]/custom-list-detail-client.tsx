@@ -22,14 +22,7 @@ import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/form-dialog'
 import { Plus, Trash2, GripVertical, Edit2 } from 'lucide-react'
 import type { CustomListWithItems, CustomListItem } from '@/lib/types'
 import {
@@ -317,52 +310,35 @@ export function CustomListDetailClient({ customList: initialCustomList }: Custom
       </div>
 
       {/* Add/Edit Item Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{editingItem ? 'Edit Item' : 'Add Item'}</DialogTitle>
-            <DialogDescription>
-              {editingItem ? 'Update the item value below.' : 'Enter the value for the new item.'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4 space-y-2">
-            <Label htmlFor="item-value">
-              Value <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="item-value"
-              value={editingItemValue}
-              onChange={(e) => setEditingItemValue(e.target.value)}
-              placeholder="Item value"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleSaveItem()
-                }
-              }}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-              disabled={isSavingEdit}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveItem}
-              disabled={isSavingEdit}
-            >
-              {isSavingEdit ? 'Saving...' : editingItem ? 'Save' : 'Add'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        title={editingItem ? 'Edit Item' : 'Add Item'}
+        description={editingItem ? 'Update the item value below.' : 'Enter the value for the new item.'}
+        onSubmit={handleSaveItem}
+        isLoading={isSavingEdit}
+        submitLabel={editingItem ? 'Save' : 'Add'}
+        contentClassName="sm:max-w-[425px]"
+      >
+        <div className="py-4 space-y-2">
+          <Label htmlFor="item-value">
+            Value <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="item-value"
+            value={editingItemValue}
+            onChange={(e) => setEditingItemValue(e.target.value)}
+            placeholder="Item value"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleSaveItem()
+              }
+            }}
+          />
+        </div>
+      </FormDialog>
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog

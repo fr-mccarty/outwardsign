@@ -57,7 +57,7 @@ export default async function GroupsPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Groups"
+      title={t('nav.ourGroups')}
       description="Manage groups of people who serve together in liturgical ministries"
       primaryAction={<ModuleCreateButton moduleName="Group" href="/groups/create" />}
     >

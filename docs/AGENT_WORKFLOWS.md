@@ -37,7 +37,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 
 ## Agent Inventory
 
-### Complete Agent List (16 agents)
+### Complete Agent List (17 agents)
 
 | Agent | Folder | Role | Phase |
 |-------|--------|------|-------|
@@ -48,7 +48,8 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **test-writer** | `/tests/` | Test creation | Execution |
 | **test-runner-debugger** | N/A (read-only) | Test execution | Execution |
 | **project-documentation-writer** | `/docs/` | Developer docs | Execution |
-| **code-review-agent** | N/A (read-only) | Code review | Execution |
+| **supervisor-agent** | `/supervisor/` | Codebase health audits | Execution |
+| **cleanup-agent** | N/A | Mechanical code fixes | Execution |
 | **user-documentation-writer** | `/src/app/documentation/content/` | End-user guides | Optional |
 | **release-agent** | `/releases/` | Deployment | Optional |
 | **explorer-agent** | N/A | Codebase exploration | As-needed |
@@ -57,7 +58,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **ui-agent** | N/A (read-only) | Visual styling audits | As-needed |
 | **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
 | **wisdom-agent** | N/A (read-only) | Perspective and encouragement | As-needed |
-| **supervisor-agent** | `/supervisor/` | Codebase health audits | As-needed |
+| **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits | As-needed |
 
 ---
 
@@ -75,10 +76,11 @@ Each agent "owns" a specific folder where it creates and manages files:
 | `/releases/` | release-agent | Deployment logs | Permanent (audit trail) |
 | `/src/app/documentation/content/` | user-documentation-writer | End-user guides | Permanent |
 | `/supervisor/` | supervisor-agent | Codebase health reports | Permanent (audit trail) |
+| `/agent-audit-agent/` | agent-audit-agent | Agent ecosystem audit reports | Permanent (audit trail) |
 
 **Read-only agents** (no folder ownership):
 - test-runner-debugger (runs tests)
-- code-review-agent (reviews code)
+- cleanup-agent (fixes mechanical issues in /src/)
 - explorer-agent (explores codebase)
 - refactor-agent (improves code in /src/)
 - qa-specialist (audits quality)
@@ -99,14 +101,14 @@ USER REQUEST
     │   └─ brainstorming-agent → devils-advocate-agent → requirements-agent → developer-agent
     │
     ├─ "Create new [feature/module]"
-    │   └─ brainstorming-agent → devils-advocate-agent → requirements-agent → developer-agent → test-writer → project-documentation-writer → code-review-agent
+    │   └─ brainstorming-agent → devils-advocate-agent → requirements-agent → developer-agent → test-writer → test-runner-debugger → project-documentation-writer
     │
     ├─ "Challenge/review brainstorming" or "Poke holes in this"
     │   └─ devils-advocate-agent → requirements-agent
     │
     ├─ "Fix bug in [feature]"
-    │   ├─ Bug is clear/simple → developer-agent → test-writer (regression test) → test-runner-debugger → code-review-agent
-    │   └─ Bug is complex/unclear → explorer-agent → developer-agent → test-writer (regression test) → test-runner-debugger → code-review-agent
+    │   ├─ Bug is clear/simple → developer-agent → test-writer (regression test) → test-runner-debugger
+    │   └─ Bug is complex/unclear → explorer-agent → developer-agent → test-writer (regression test) → test-runner-debugger
     │
     ├─ "How does [feature] work?"
     │   └─ explorer-agent
@@ -118,7 +120,7 @@ USER REQUEST
     │   └─ test-writer → test-runner-debugger
     │
     ├─ "Code has duplication/is messy"
-    │   └─ explorer-agent → refactor-agent → test-runner-debugger → code-review-agent
+    │   └─ explorer-agent → refactor-agent → test-runner-debugger
     │
     ├─ "Update /docs/ documentation"
     │   └─ project-documentation-writer
@@ -127,29 +129,35 @@ USER REQUEST
     │   └─ user-documentation-writer
     │
     ├─ "Deploy to production"
-    │   └─ qa-specialist → code-review-agent → release-agent
+    │   └─ qa-specialist → release-agent
     │
     ├─ "Performance/accessibility issues"
-    │   └─ qa-specialist → developer-agent (fix) → test-runner-debugger → code-review-agent
+    │   └─ qa-specialist → developer-agent (fix) → test-runner-debugger
     │
     ├─ "UI looks inconsistent/styling issues"
-    │   └─ ui-agent → developer-agent (fix) → test-runner-debugger → code-review-agent
+    │   └─ ui-agent → developer-agent (fix) → test-runner-debugger
     │
     ├─ "Labels/navigation/descriptions unclear"
-    │   └─ ux-agent → developer-agent (fix) → test-runner-debugger → code-review-agent
+    │   └─ ux-agent → developer-agent (fix) → test-runner-debugger
     │
     ├─ "I'm stuck/overwhelmed/need perspective"
     │   └─ wisdom-agent (conversational support, no code changes)
     │
-    └─ "Run a health check/audit the codebase"
-        └─ supervisor-agent → produces report → DONE (user decides next steps)
+    ├─ "Run a health check/audit the codebase"
+    │   └─ supervisor-agent → produces report → cleanup-agent (for lint) or developer-agent (for judgment fixes)
+    │
+    ├─ "Fix linting errors" or "run lint fix"
+    │   └─ cleanup-agent (runs lint --fix in isolation, verifies build)
+    │
+    └─ "Audit agents/settings/hooks"
+        └─ agent-audit-agent → produces report → DONE (user decides next steps)
 ```
 
 ---
 
 ## Standard Workflow
 
-### The Complete 9-Step Workflow
+### The Complete 8-Step Workflow
 
 ```mermaid
 graph LR
@@ -160,12 +168,14 @@ graph LR
     D --> E[test-writer]
     E --> F[test-runner-debugger]
     F --> G[project-documentation-writer]
-    G --> H[code-review-agent]
-    H --> I{Issues?}
-    I -->|Yes| J[Loop Back]
-    I -->|No| K[user-documentation-writer OPTIONAL]
-    K --> L[DONE]
+    G --> H[user-documentation-writer OPTIONAL]
+    H --> I[DONE]
 ```
+
+**Periodic maintenance (separate from feature workflow):**
+- supervisor-agent → identifies issues
+- cleanup-agent → fixes lint (in isolation)
+- developer-agent → fixes issues requiring judgment
 
 ### Step-by-Step Breakdown
 
@@ -217,21 +227,42 @@ graph LR
 - **Folder:** `/docs/`
 - **Output:** Updated MODULE_REGISTRY.md, COMPONENT_REGISTRY.md, guides
 - **Action:** Documents new patterns, updates registries
-- **Next:** code-review-agent (code review)
+- **Next:** DONE (or user-documentation-writer if requested)
 
-**8. code-review-agent (EXECUTION - Code Review)**
-- **Input:** Completed implementation + tests + docs
-- **Folder:** N/A (read-only)
-- **Output:** Review report, verdict (READY / NEEDS ATTENTION / LOOP BACK)
-- **Special:** Smart loop-back identifies which agent should fix issues
-- **Next:** If issues → loop back to appropriate agent, else → DONE (or user-documentation-writer if requested)
-
-**9. user-documentation-writer (OPTIONAL - End-User Guides)**
+**8. user-documentation-writer (OPTIONAL - End-User Guides)**
 - **Input:** User request for end-user documentation
 - **Folder:** `/src/app/documentation/content/`
 - **Output:** Bilingual (en/es) user guides for parish staff
 - **Action:** Creates step-by-step guides for non-technical users
 - **Next:** DONE
+
+---
+
+## Maintenance Workflow
+
+**For periodic codebase health:**
+
+**1. supervisor-agent (AUDIT)**
+- **Input:** Request for health check
+- **Folder:** `/supervisor/`
+- **Output:** Health report with categorized issues
+- **Action:** Identifies linting, security, pattern, and other issues
+- **Next:** User decides which issues to address
+
+**2. cleanup-agent (LINT FIXES ONLY)**
+- **Input:** Linting issues from supervisor report (or direct request)
+- **Folder:** N/A (modifies /src/)
+- **Output:** Lint fixes applied, build verified
+- **Action:** Runs `npm run lint -- --fix` in isolation, reports changes
+- **Critical:** Requires clean working directory, verifies build after
+- **Next:** DONE (or developer-agent if build fails)
+
+**3. developer-agent (JUDGMENT FIXES)**
+- **Input:** Non-mechanical issues from supervisor report
+- **Folder:** `/src/`
+- **Output:** Code fixes for issues requiring judgment
+- **Action:** Fixes security, pattern, and logic issues
+- **Next:** test-runner-debugger to verify
 
 ---
 
@@ -290,19 +321,15 @@ These hand-offs happen **automatically** (AI proactively triggers next agent):
 | developer-agent | test-writer | Implementation complete |
 | test-writer | test-runner-debugger | Tests written |
 | test-runner-debugger | project-documentation-writer | All tests pass |
-| project-documentation-writer | code-review-agent | Docs updated |
+| project-documentation-writer | DONE | Docs updated (user-documentation-writer if requested) |
 
-### Smart Loop-Back (from code-review-agent)
+### Maintenance Hand-offs
 
-code-review-agent identifies issues and recommends which agent should fix them:
-
-| Issue Type | Loop Back To | Example |
-|------------|--------------|---------|
-| Build failures, TypeScript errors | developer-agent | "Build fails with errors in wedding-form.tsx" |
-| Missing tests, test coverage gaps | test-writer | "No tests for Confirmations module" |
-| Test failures | test-runner-debugger | "Wedding tests failing after form changes" |
-| Documentation outdated/incomplete | project-documentation-writer | "MODULE_REGISTRY.md not updated" |
-| Unclear requirements | requirements-agent | "Requirements don't specify sponsor table schema" |
+| From Agent | To Agent | Trigger Condition |
+|------------|----------|-------------------|
+| supervisor-agent | cleanup-agent | Linting issues identified |
+| supervisor-agent | developer-agent | Issues requiring judgment identified |
+| cleanup-agent | developer-agent | Build fails after lint fix (needs judgment) |
 
 ---
 
@@ -346,10 +373,7 @@ code-review-agent identifies issues and recommends which agent should fix them:
    - Updates MODULE_REGISTRY.md
    - Updates TESTING_REGISTRY.md
    - Creates module-specific docs if needed
-
-8. **code-review-agent**
-   - Reviews build, lint, tests, docs
-   - Verdict: READY TO COMMIT
+   - DONE (ready to commit)
 
 ### Scenario 1b: Challenging Existing Brainstorming
 
@@ -383,10 +407,7 @@ code-review-agent identifies issues and recommends which agent should fix them:
 
 3. **test-runner-debugger** (re-run)
    - Tests now pass
-
-4. **code-review-agent**
-   - Reviews form changes
-   - Verdict: READY TO COMMIT
+   - DONE (ready to commit)
 
 ### Scenario 3: Performance Optimization
 
@@ -408,9 +429,7 @@ code-review-agent identifies issues and recommends which agent should fix them:
 
 4. **qa-specialist** (re-check)
    - Confirms performance improved
-
-5. **code-review-agent**
-   - Final review
+   - DONE (ready to commit)
 
 ### Scenario 4: Deployment to Production
 
@@ -422,11 +441,7 @@ code-review-agent identifies issues and recommends which agent should fix them:
    - Security audit
    - Accessibility check
 
-2. **code-review-agent**
-   - Final code review
-   - All quality gates pass
-
-3. **release-agent**
+2. **release-agent**
    - Creates `/releases/2025-12-02-confirmations-module.md`
    - Validates environment
    - Deploys to staging
@@ -485,21 +500,19 @@ Each agent enforces specific quality gates before passing work to the next agent
 - [ ] No test failures or errors
 - [ ] Implementation stable
 
-### project-documentation-writer → code-review-agent
+### project-documentation-writer → DONE
 - [ ] MODULE_REGISTRY.md updated (if applicable)
 - [ ] COMPONENT_REGISTRY.md updated (if applicable)
 - [ ] Guide docs updated with new patterns
 - [ ] Cross-references added
 - [ ] File size limits respected (<1000 lines)
 
-### code-review-agent → release-agent (or DONE)
-- [ ] Build passes
-- [ ] Lint passes
-- [ ] All tests pass
-- [ ] Documentation updated
-- [ ] Database migrations safe (if any)
-- [ ] No critical issues found
-- [ ] Feedback file created in `/requirements/`
+### cleanup-agent → DONE (or developer-agent if build fails)
+- [ ] Working directory was clean before running
+- [ ] `npm run lint -- --fix` executed
+- [ ] Files changed are documented
+- [ ] `npm run build` passes
+- [ ] Revert commands provided if needed
 
 ---
 
@@ -548,8 +561,11 @@ Each agent enforces specific quality gates before passing work to the next agent
 - ✅ Vision challenged for gaps and edge cases before requirements
 - ✅ Clear folder ownership and organization
 - ✅ Systematic quality gates at each step
-- ✅ Smart loop-back for efficient issue resolution
 - ✅ Complete documentation from idea to deployment
+- ✅ Safe, isolated lint fixes via cleanup-agent
 - ✅ Audit trail of all decisions and changes
 
-**Key Takeaway:** When in doubt, start with brainstorming-agent for new features, then use devils-advocate-agent to challenge the vision before proceeding to requirements.
+**Key Takeaways:**
+- New features: brainstorming → devils-advocate → requirements → developer → test-writer → test-runner → docs
+- Lint fixes: cleanup-agent (always in isolation, always verify build)
+- Health checks: supervisor-agent → cleanup-agent (lint) or developer-agent (judgment)

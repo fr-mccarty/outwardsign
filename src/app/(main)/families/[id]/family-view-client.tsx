@@ -13,14 +13,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { PeoplePicker } from '@/components/people-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/form-dialog'
 import {
   type FamilyWithMembers,
   type FamilyMember,
@@ -32,6 +25,7 @@ import {
 } from '@/lib/actions/families'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface FamilyViewClientProps {
@@ -40,6 +34,7 @@ interface FamilyViewClientProps {
 
 export function FamilyViewClient({ family }: FamilyViewClientProps) {
   const router = useRouter()
+  const t = useTranslations('families')
 
   // State for add member dialog
   const [addMemberOpen, setAddMemberOpen] = useState(false)
@@ -198,23 +193,25 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
         <Card className="bg-card text-card-foreground border">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Family Members</CardTitle>
+              <CardTitle>{t('familyMembers')}</CardTitle>
               <CardDescription>
                 {family.members.length === 0
-                  ? 'No members added yet'
-                  : `${family.members.length} member${family.members.length === 1 ? '' : 's'}`}
+                  ? t('noMembersAddedYet')
+                  : family.members.length === 1
+                    ? t('memberCount', { count: family.members.length })
+                    : t('membersCount', { count: family.members.length })}
               </CardDescription>
             </div>
             <Button onClick={() => setAddMemberOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Add Member
+              {t('addMember')}
             </Button>
           </CardHeader>
           <CardContent>
             {family.members.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>No family members added yet.</p>
-                <p className="text-sm mt-1">Click &ldquo;Add Member&rdquo; to add people to this family.</p>
+                <p>{t('noMembersAddedYet')}</p>
+                <p className="text-sm mt-1">{t('noMembersAddedYetDescription')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -308,87 +305,79 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
       />
 
       {/* Add Member Dialog */}
-      <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Family Member</DialogTitle>
-            <DialogDescription>
-              Select a person to add to the {family.family_name} family.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Person Selection */}
-            <div className="space-y-2">
-              <Label>Person</Label>
-              {selectedPerson ? (
-                <div className="flex items-center gap-3 p-3 border rounded-lg">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback>
-                      {selectedPerson.first_name?.charAt(0) || ''}
-                      {selectedPerson.last_name?.charAt(0) || ''}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium">{selectedPerson.full_name}</p>
-                    {selectedPerson.email && (
-                      <p className="text-sm text-muted-foreground">{selectedPerson.email}</p>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPeoplePickerOpen(true)}
-                  >
-                    Change
-                  </Button>
+      <FormDialog
+        open={addMemberOpen}
+        onOpenChange={setAddMemberOpen}
+        title="Add Family Member"
+        description={`Select a person to add to the ${family.family_name} family.`}
+        onSubmit={handleAddMember}
+        isLoading={isAddingMember}
+        submitLabel="Add Member"
+        loadingLabel="Adding..."
+        submitDisabled={!selectedPerson}
+      >
+        <div className="space-y-4 py-4">
+          {/* Person Selection */}
+          <div className="space-y-2">
+            <Label>Person</Label>
+            {selectedPerson ? (
+              <div className="flex items-center gap-3 p-3 border rounded-lg">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback>
+                    {selectedPerson.first_name?.charAt(0) || ''}
+                    {selectedPerson.last_name?.charAt(0) || ''}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-medium">{selectedPerson.full_name}</p>
+                  {selectedPerson.email && (
+                    <p className="text-sm text-muted-foreground">{selectedPerson.email}</p>
+                  )}
                 </div>
-              ) : (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  size="sm"
                   onClick={() => setPeoplePickerOpen(true)}
                 >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Select Person
+                  Change
                 </Button>
-              )}
-            </div>
-
-            {/* Relationship */}
-            <div className="space-y-2">
-              <Label htmlFor="relationship">Relationship (optional)</Label>
-              <Input
-                id="relationship"
-                value={relationship}
-                onChange={(e) => setRelationship(e.target.value)}
-                placeholder="e.g., Parent, Child, Spouse, Sibling"
-              />
-            </div>
-
-            {/* Primary Contact Checkbox */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="is_primary"
-                checked={isPrimaryContact}
-                onCheckedChange={(checked) => setIsPrimaryContact(checked === true)}
-              />
-              <Label htmlFor="is_primary" className="text-sm font-normal">
-                Set as primary contact for this family
-              </Label>
-            </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setPeoplePickerOpen(true)}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Select Person
+              </Button>
+            )}
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddMemberOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddMember} disabled={!selectedPerson || isAddingMember}>
-              {isAddingMember ? 'Adding...' : 'Add Member'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {/* Relationship */}
+          <div className="space-y-2">
+            <Label htmlFor="relationship">Relationship (optional)</Label>
+            <Input
+              id="relationship"
+              value={relationship}
+              onChange={(e) => setRelationship(e.target.value)}
+              placeholder="e.g., Parent, Child, Spouse, Sibling"
+            />
+          </div>
+
+          {/* Primary Contact Checkbox */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="is_primary"
+              checked={isPrimaryContact}
+              onCheckedChange={(checked) => setIsPrimaryContact(checked === true)}
+            />
+            <Label htmlFor="is_primary" className="text-sm font-normal">
+              Set as primary contact for this family
+            </Label>
+          </div>
+        </div>
+      </FormDialog>
 
       {/* People Picker */}
       <PeoplePicker
@@ -399,50 +388,40 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
       />
 
       {/* Edit Member Dialog */}
-      <Dialog open={editMemberOpen} onOpenChange={setEditMemberOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Family Member</DialogTitle>
-            <DialogDescription>
-              Update the relationship or primary contact status for {memberToEdit?.person?.full_name}.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Relationship */}
-            <div className="space-y-2">
-              <Label htmlFor="edit_relationship">Relationship (optional)</Label>
-              <Input
-                id="edit_relationship"
-                value={editRelationship}
-                onChange={(e) => setEditRelationship(e.target.value)}
-                placeholder="e.g., Parent, Child, Spouse, Sibling"
-              />
-            </div>
-
-            {/* Primary Contact Checkbox */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="edit_is_primary"
-                checked={editIsPrimary}
-                onCheckedChange={(checked) => setEditIsPrimary(checked === true)}
-              />
-              <Label htmlFor="edit_is_primary" className="text-sm font-normal">
-                Set as primary contact for this family
-              </Label>
-            </div>
+      <FormDialog
+        open={editMemberOpen}
+        onOpenChange={setEditMemberOpen}
+        title="Edit Family Member"
+        description={`Update the relationship or primary contact status for ${memberToEdit?.person?.full_name}.`}
+        onSubmit={handleUpdateMember}
+        isLoading={isUpdatingMember}
+        submitLabel="Save Changes"
+      >
+        <div className="space-y-4 py-4">
+          {/* Relationship */}
+          <div className="space-y-2">
+            <Label htmlFor="edit_relationship">Relationship (optional)</Label>
+            <Input
+              id="edit_relationship"
+              value={editRelationship}
+              onChange={(e) => setEditRelationship(e.target.value)}
+              placeholder="e.g., Parent, Child, Spouse, Sibling"
+            />
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditMemberOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateMember} disabled={isUpdatingMember}>
-              {isUpdatingMember ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {/* Primary Contact Checkbox */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="edit_is_primary"
+              checked={editIsPrimary}
+              onCheckedChange={(checked) => setEditIsPrimary(checked === true)}
+            />
+            <Label htmlFor="edit_is_primary" className="text-sm font-normal">
+              Set as primary contact for this family
+            </Label>
+          </div>
+        </div>
+      </FormDialog>
 
       {/* Remove Member Confirmation */}
       <ConfirmationDialog

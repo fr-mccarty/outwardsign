@@ -14,14 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-// DialogButton available for dialog actions
+import { FormDialog } from '@/components/form-dialog'
 import { Checkbox } from "@/components/ui/checkbox"
 import { MoreVertical, Trash2, Edit, Send } from "lucide-react"
 import { getParishMembers, removeParishMember, updateMemberRole } from '@/lib/actions/setup'
@@ -338,133 +331,119 @@ export function ParishUsersSettingsClient({
       </PageContainer>
 
       {/* Invite User Dialog */}
-      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-        <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Invite Parish User</DialogTitle>
-                  <DialogDescription>
-                    Send an invitation to join this parish. They will receive an email with a link to create their account.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <FormInput
-                    id="invite-email"
-                    label="Email Address"
-                    inputType="email"
-                    value={inviteEmail}
-                    onChange={setInviteEmail}
-                    placeholder="user@example.com"
-                    required
-                  />
-                  <FormInput
-                    id="invite-role"
-                    label="Role"
-                    inputType="select"
-                    value={inviteRole}
-                    onChange={(value) => setInviteRole(value as UserParishRoleType)}
-                    options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
-                      value: role,
-                      label: USER_PARISH_ROLE_LABELS[role].en
-                    }))}
-                    description={
-                      inviteRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
-                      inviteRole === 'staff' ? 'Can create and manage all sacrament modules' :
-                      inviteRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
-                    }
-                  />
-                  {inviteRole === 'ministry-leader' && (
-                    <div className="space-y-2">
-                      <Label>Enabled Modules</Label>
-                      <div className="space-y-2">
-                        {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
-                          <div key={module} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`module-${module}`}
-                              checked={inviteModules.includes(module)}
-                              onCheckedChange={() => handleModuleToggle(module)}
-                            />
-                            <label
-                              htmlFor={`module-${module}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                            >
-                              {module}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleInviteUser} disabled={saving}>
-              {saving ? 'Sending...' : 'Send Invitation'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
+        title="Invite Parish User"
+        description="Send an invitation to join this parish. They will receive an email with a link to create their account."
+        onSubmit={handleInviteUser}
+        isLoading={saving}
+        submitLabel="Send Invitation"
+        loadingLabel="Sending..."
+      >
+        <div className="space-y-4 py-4">
+          <FormInput
+            id="invite-email"
+            label="Email Address"
+            inputType="email"
+            value={inviteEmail}
+            onChange={setInviteEmail}
+            placeholder="user@example.com"
+            required
+          />
+          <FormInput
+            id="invite-role"
+            label="Role"
+            inputType="select"
+            value={inviteRole}
+            onChange={(value) => setInviteRole(value as UserParishRoleType)}
+            options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
+              value: role,
+              label: USER_PARISH_ROLE_LABELS[role].en
+            }))}
+            description={
+              inviteRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
+              inviteRole === 'staff' ? 'Can create and manage all sacrament modules' :
+              inviteRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
+            }
+          />
+          {inviteRole === 'ministry-leader' && (
+            <div className="space-y-2">
+              <Label>Enabled Modules</Label>
+              <div className="space-y-2">
+                {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
+                  <div key={module} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`module-${module}`}
+                      checked={inviteModules.includes(module)}
+                      onCheckedChange={() => handleModuleToggle(module)}
+                    />
+                    <label
+                      htmlFor={`module-${module}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                    >
+                      {module}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </FormDialog>
 
       {/* Edit User Role Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User Role</DialogTitle>
-            <DialogDescription>
-              Update the role and permissions for <strong>{userToEdit?.email}</strong>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <FormInput
-              id="edit-role"
-              label="Role"
-              inputType="select"
-              value={editRole}
-              onChange={(value) => setEditRole(value as UserParishRoleType)}
-              options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
-                value: role,
-                label: USER_PARISH_ROLE_LABELS[role].en
-              }))}
-              description={
-                editRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
-                editRole === 'staff' ? 'Can create and manage all sacrament modules' :
-                editRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
-              }
-            />
-            {editRole === 'ministry-leader' && (
+      <FormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        title="Edit User Role"
+        description={`Update the role and permissions for ${userToEdit?.email}`}
+        onSubmit={handleConfirmEdit}
+        isLoading={saving}
+        submitLabel="Save Changes"
+        loadingLabel="Saving..."
+      >
+        <div className="space-y-4 py-4">
+          <FormInput
+            id="edit-role"
+            label="Role"
+            inputType="select"
+            value={editRole}
+            onChange={(value) => setEditRole(value as UserParishRoleType)}
+            options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
+              value: role,
+              label: USER_PARISH_ROLE_LABELS[role].en
+            }))}
+            description={
+              editRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
+              editRole === 'staff' ? 'Can create and manage all sacrament modules' :
+              editRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
+            }
+          />
+          {editRole === 'ministry-leader' && (
+            <div className="space-y-2">
+              <Label>Enabled Modules</Label>
               <div className="space-y-2">
-                <Label>Enabled Modules</Label>
-                <div className="space-y-2">
-                  {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
-                    <div key={module} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`edit-module-${module}`}
-                        checked={editModules.includes(module)}
-                        onCheckedChange={() => handleEditModuleToggle(module)}
-                      />
-                      <label
-                        htmlFor={`edit-module-${module}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                      >
-                        {module}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+                {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
+                  <div key={module} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`edit-module-${module}`}
+                      checked={editModules.includes(module)}
+                      onCheckedChange={() => handleEditModuleToggle(module)}
+                    />
+                    <label
+                      htmlFor={`edit-module-${module}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                    >
+                      {module}
+                    </label>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmEdit} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </div>
+          )}
+        </div>
+      </FormDialog>
 
       {/* Remove User Confirmation Dialog */}
       <ConfirmationDialog

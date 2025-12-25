@@ -47,6 +47,7 @@ import { createMassSchema, type CreateMassData } from "@/lib/schemas/mass-liturg
 import { useState } from "react"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
+import { useTranslations } from "next-intl"
 import { PeopleEventAssignmentSection } from "@/components/people-event-assignment-section"
 import { CalendarEventAssignmentSection } from "@/components/calendar-event-assignment-section"
 
@@ -59,6 +60,7 @@ interface MassLiturgyFormProps {
 
 export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgicalEvent }: MassLiturgyFormProps) {
   const router = useRouter()
+  const t = useTranslations('masses')
   const isEditing = !!mass
 
   // Initialize React Hook Form
@@ -774,8 +776,11 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
             ) : (
               <div className="text-center py-6">
                 <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  No mass intention linked yet
+                <p className="text-sm text-muted-foreground mb-2">
+                  {t('noMassIntentionLinked')}
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t('noMassIntentionLinkedDescription')}
                 </p>
                 <Button
                   type="button"
@@ -784,7 +789,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
                   data-testid="link-mass-intention-button"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Link Mass Intention
+                  {t('linkMassIntention')}
                 </Button>
               </div>
             )}

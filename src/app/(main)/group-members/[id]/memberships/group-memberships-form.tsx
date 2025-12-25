@@ -16,14 +16,7 @@ import { toast } from 'sonner'
 import type { Person } from '@/lib/types'
 import type { PersonGroupMembership, Group } from '@/lib/actions/groups'
 import type { GroupRole } from '@/lib/actions/group-roles'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface GroupMembershipsFormProps {
   person: Person
@@ -321,37 +314,18 @@ export function GroupMembershipsForm({
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remove Membership</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to remove this person from the group? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirmId(null)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                const membership = memberships.find(m => m.id === deleteConfirmId)
-                if (membership) {
-                  handleRemoveMembership(membership.group_id)
-                }
-              }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Removing...' : 'Remove Membership'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+        onConfirm={() => {
+          const membership = memberships.find(m => m.id === deleteConfirmId)
+          if (membership) {
+            handleRemoveMembership(membership.group_id)
+          }
+        }}
+        preset="remove"
+        itemName="membership"
+      />
     </PageContainer>
   )
 }

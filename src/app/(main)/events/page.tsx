@@ -74,13 +74,13 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Our Events"
+      title={t('nav.ourEvents')}
       description="Organize parish gatherings, meetings, and special occasions."
       primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
       additionalActions={[
         {
           type: 'action',
-          label: 'Configure Event Types',
+          label: t('events.manageEventTypes'),
           icon: <Settings className="h-4 w-4" />,
           href: '/settings/events'
         }

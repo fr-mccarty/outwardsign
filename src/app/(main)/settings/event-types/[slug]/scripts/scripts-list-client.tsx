@@ -32,13 +32,7 @@ import {
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { useTranslations } from 'next-intl'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/form-dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -297,49 +291,42 @@ export function ScriptsListClient({ eventType, initialScripts }: ScriptsListClie
       )}
 
       {/* Create Script Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('eventType.scripts.createScript')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="script-name">{t('eventType.scripts.scriptName')}</Label>
-              <Input
-                id="script-name"
-                value={newScriptName}
-                onChange={(e) => setNewScriptName(e.target.value)}
-                placeholder={t('eventType.scripts.scriptNamePlaceholder')}
-              />
-            </div>
-            <div>
-              <Label htmlFor="script-description">{t('eventType.scripts.scriptDescription')}</Label>
-              <Textarea
-                id="script-description"
-                value={newScriptDescription}
-                onChange={(e) => setNewScriptDescription(e.target.value)}
-                placeholder={t('eventType.scripts.scriptDescriptionPlaceholder')}
-                rows={3}
-              />
-            </div>
+      <FormDialog
+        open={createDialogOpen}
+        onOpenChange={(open) => {
+          setCreateDialogOpen(open)
+          if (!open) {
+            setNewScriptName('')
+            setNewScriptDescription('')
+          }
+        }}
+        title={t('eventType.scripts.createScript')}
+        onSubmit={handleCreate}
+        isLoading={isCreating}
+        submitLabel={t('common.create')}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="script-name">{t('eventType.scripts.scriptName')}</Label>
+            <Input
+              id="script-name"
+              value={newScriptName}
+              onChange={(e) => setNewScriptName(e.target.value)}
+              placeholder={t('eventType.scripts.scriptNamePlaceholder')}
+            />
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCreateDialogOpen(false)
-                setNewScriptName('')
-                setNewScriptDescription('')
-              }}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleCreate} disabled={isCreating}>
-              {t('common.create')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div>
+            <Label htmlFor="script-description">{t('eventType.scripts.scriptDescription')}</Label>
+            <Textarea
+              id="script-description"
+              value={newScriptDescription}
+              onChange={(e) => setNewScriptDescription(e.target.value)}
+              placeholder={t('eventType.scripts.scriptDescriptionPlaceholder')}
+              rows={3}
+            />
+          </div>
+        </div>
+      </FormDialog>
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog

@@ -3,8 +3,8 @@
 import { useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SelectItem } from '@/components/ui/select'
+import { FormInput } from '@/components/form-input'
 import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react'
 import { ContentCard } from '@/components/content-card'
 import { EmptyState } from '@/components/empty-state'
@@ -137,25 +137,27 @@ export function ContentLibraryList({
       <ContentCard className="mb-6">
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Input
-                placeholder="Search by title or body text..."
-                value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
-            </div>
-            <div>
-              <Select value={language} onValueChange={handleLanguageChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <FormInput
+              id="search-content"
+              label="Search"
+              hideLabel
+              inputType="text"
+              placeholder="Search by title or body text..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <FormInput
+              id="language-filter"
+              label="Filter by language"
+              hideLabel
+              inputType="select"
+              value={language}
+              onChange={handleLanguageChange}
+            >
+              <SelectItem value="all">All Languages</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="es">Spanish</SelectItem>
+            </FormInput>
           </div>
 
           {/* Category tag filters */}

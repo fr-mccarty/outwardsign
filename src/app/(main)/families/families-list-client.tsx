@@ -18,16 +18,12 @@ import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Users2, Filter, ArrowUpDown, Check } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Plus, Users2, Filter, Check } from "lucide-react"
+import { FormInput } from "@/components/form-input"
+import { SelectItem } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { useTranslations } from 'next-intl'
 import { useListFilters } from "@/hooks/use-list-filters"
 import { buildActionsColumn } from '@/lib/utils/table-columns'
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
@@ -40,6 +36,7 @@ interface FamiliesListClientProps {
 
 export function FamiliesListClient({ initialData, stats, initialHasMore }: FamiliesListClientProps) {
   const router = useRouter()
+  const t = useTranslations('families')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -208,37 +205,20 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
               className="w-full"
             />
           </div>
-          <div className="flex items-center gap-2">
-            {/* Active Filter */}
-            <Select
+          {/* Active Filter */}
+          <div className="w-[130px]">
+            <FormInput
+              id="active-filter"
+              label={t('statusFilter')}
+              hideLabel
+              inputType="select"
               value={filters.getFilterValue('active') || 'all'}
-              onValueChange={(value) => filters.updateFilter('active', value === 'all' ? '' : value)}
+              onChange={(value) => filters.updateFilter('active', value === 'all' ? '' : value)}
             >
-              <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active Only</SelectItem>
-                <SelectItem value="inactive">Inactive Only</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* Sort Select */}
-            <Select
-              value={filters.getFilterValue('sort') || 'name_asc'}
-              onValueChange={(value) => filters.updateFilter('sort', value)}
-            >
-              <SelectTrigger className="w-[160px]">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-                <SelectItem value="created_desc">Newest First</SelectItem>
-                <SelectItem value="created_asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectItem value="all">{t('allStatus')}</SelectItem>
+              <SelectItem value="active">{t('activeOnly')}</SelectItem>
+              <SelectItem value="inactive">{t('inactiveOnly')}</SelectItem>
+            </FormInput>
           </div>
         </div>
       </SearchCard>
@@ -257,22 +237,22 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
             hasMore={hasMore}
             emptyState={{
               icon: <Users2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-              title: hasActiveFilters ? 'No families found' : 'No families yet',
+              title: hasActiveFilters ? t('noFamilies') : t('noFamiliesYet'),
               description: hasActiveFilters
-                ? 'Try adjusting your search to find more families.'
-                : 'Create your first family to start linking parishioners together.',
+                ? t('noFamiliesMessage')
+                : t('noFamiliesYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild>
                     <Link href="/families/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Family
+                      {t('createYourFirstFamily')}
                     </Link>
                   </Button>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      {t('clearFilters')}
                     </Button>
                   )}
                 </div>
@@ -286,22 +266,22 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
       ) : (
         <EmptyState
           icon={<Users2 className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No families found' : 'No families yet'}
+          title={hasActiveFilters ? t('noFamilies') : t('noFamiliesYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search to find more families.'
-            : 'Create and manage family relationships between parishioners. Families help coordinate Mass scheduling and communications.'}
+            ? t('noFamiliesMessage')
+            : t('noFamiliesYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/families/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Family
+                  {t('createYourFirstFamily')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('clearFilters')}
                 </Button>
               )}
             </>

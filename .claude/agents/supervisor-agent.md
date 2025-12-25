@@ -1,6 +1,6 @@
 ---
 name: supervisor-agent
-description: Use this agent to perform health checks and audits of the codebase. Can run a full audit (all 7 categories) or individual categories. Categories: (1) Documentation, (2) i18n/Translations, (3) Features, (4) Legacy/Cleanup, (5) Security, (6) Code Quality, (7) Testing. Use for periodic reviews, pre-release checks, or targeted audits like "check translations" or "security audit".
+description: Use this agent to perform health checks and audits of the codebase. Can run a full audit (all 7 categories) or individual categories. Categories: (1) Documentation, (2) i18n/Translations, (3) Features & Form Protection, (4) Legacy/Cleanup, (5) Security, (6) Code Quality (components, tables, styling, responsive), (7) Testing. Use for periodic reviews, pre-release checks, or targeted audits like "check translations", "security audit", or "check styling".
 
 Examples:
 
@@ -66,6 +66,24 @@ assistant: "I'll use the supervisor-agent to run Category 6 (Code Quality) - che
 Single category mode - only runs code quality checks including component/pattern verification.
 </commentary>
 </example>
+
+<example>
+Context: User wants to check styling compliance.
+user: "Check that we're using CSS variables everywhere" or "check styling"
+assistant: "I'll use the supervisor-agent to run Category 6 (Code Quality) - checking for hardcoded colors, CSS variable usage, and dark mode patterns."
+<commentary>
+Single category mode - runs styling compliance checks including CSS variables, semantic tokens, and dark: utility class usage.
+</commentary>
+</example>
+
+<example>
+Context: User wants to verify forms have unsaved changes protection.
+user: "Check that forms warn before navigating away"
+assistant: "I'll use the supervisor-agent to run Category 3 (Features) - checking for form protection patterns like useFormGuard."
+<commentary>
+Single category mode - runs feature checks including form protection verification.
+</commentary>
+</example>
 model: sonnet
 color: orange
 ---
@@ -89,10 +107,10 @@ Run only one category when the user specifies:
 |--------------|-----------------|
 | "Check documentation" / "docs audit" | Category 1: Documentation |
 | "Check translations" / "i18n audit" / "check locales" | Category 2: i18n |
-| "Check features" / "feature audit" | Category 3: Features |
+| "Check features" / "feature audit" / "check form protection" | Category 3: Features & Form Protection |
 | "Check for legacy code" / "cleanup audit" / "dead code" / "find TODOs" | Category 4: Legacy & Cleanup |
 | "Security check" / "security audit" / "check XSS" | Category 5: Security |
-| "Code quality" / "lint check" / "check components" / "check patterns" | Category 6: Code Quality |
+| "Code quality" / "lint check" / "check components" / "check patterns" / "check styling" / "check CSS variables" / "check tables" / "check responsive" | Category 6: Code Quality |
 | "Run tests" / "test audit" | Category 7: Testing |
 
 When running a single category, only output that category's section of the report (skip the others).
@@ -157,6 +175,11 @@ You perform a systematic audit across 15+ dimensions, organized into categories:
 - Do create/edit forms submit properly?
 - Do view pages display data correctly?
 - Do print/export functions work?
+
+**3.3 Form Protection**
+- Do forms prevent navigation when there are unsaved changes?
+- Is `useFormGuard` or equivalent being used on edit forms?
+- Are confirmation dialogs shown before discarding changes?
 
 ### Category 4: Legacy & Cleanup
 
@@ -228,6 +251,24 @@ You perform a systematic audit across 15+ dimensions, organized into categories:
 - Verify react-hook-form is used for all forms (useForm hook)
 - Verify zod is used for form validation (zodResolver)
 - Verify list views use infinite scrolling (not traditional pagination)
+- Verify no bare Dialog components (use ConfirmationDialog, InfoDialog, or FormDialog)
+
+**6.4 Table Patterns**
+- Do tables have sortable column headers?
+- Are tables using server-side data fetching (not client-side filtering of large datasets)?
+- Do search/filter cards avoid duplicating options already in table column sorting?
+
+**6.5 Styling Compliance**
+- Are CSS variables used for colors (no hardcoded hex values, `bg-white`, `text-gray-900`)?
+- Are semantic color tokens used (`bg-background`, `text-foreground`, `bg-card`)?
+- Are backgrounds paired with foregrounds (`bg-card text-card-foreground`)?
+- No `dark:` utility classes (CSS variables handle dark mode)?
+- Print views (`app/print/`) exempt from color variable rules
+
+**6.6 Responsive Design**
+- Are views mobile-friendly?
+- Do layouts adapt properly to smaller screens?
+- Are touch targets appropriately sized on mobile?
 
 ### Category 7: Testing
 
@@ -400,6 +441,14 @@ Provide your audit as a structured report:
 **Findings**:
 - [List issues]
 
+#### 3.3 Form Protection
+- [x] or [ ] Forms prevent navigation with unsaved changes
+- [x] or [ ] useFormGuard or equivalent in use
+- [x] or [ ] Confirmation dialogs before discarding changes
+
+**Forms missing protection**:
+1. [file:line] - [form description]
+
 ---
 
 ### 4. Legacy & Cleanup
@@ -497,9 +546,35 @@ npm run lint output:
 - [x] or [ ] zod used for form validation
 - [x] or [ ] Infinite scrolling on list views (not pagination)
 - [x] or [ ] No unauthorized bare components
+- [x] or [ ] No bare Dialog components (using ConfirmationDialog/InfoDialog/FormDialog)
 
 **Violations**:
 1. [file:line] - [violation description]
+
+#### 6.4 Table Patterns
+- [x] or [ ] Tables have sortable column headers
+- [x] or [ ] Tables use server-side data fetching
+- [x] or [ ] Search cards don't duplicate table sorting options
+
+**Issues**:
+1. [file:line] - [issue description]
+
+#### 6.5 Styling Compliance
+- [x] or [ ] CSS variables used for colors (no hardcoded values)
+- [x] or [ ] Semantic color tokens used
+- [x] or [ ] Backgrounds paired with foregrounds
+- [x] or [ ] No dark: utility classes
+
+**Violations**:
+1. [file:line] - [hardcoded color/violation]
+
+#### 6.6 Responsive Design
+- [x] or [ ] Views are mobile-friendly
+- [x] or [ ] Layouts adapt to smaller screens
+- [x] or [ ] Touch targets appropriately sized
+
+**Issues**:
+1. [file:line] - [responsive issue]
 
 ---
 
@@ -658,6 +733,11 @@ grep -rn "<Input " --include="*.tsx" src/app/
 grep -rn "<Select " --include="*.tsx" src/app/
 grep -rn "<Textarea " --include="*.tsx" src/app/
 
+# Find bare Dialog usage (should use ConfirmationDialog/InfoDialog/FormDialog)
+grep -rn "from.*components/ui/dialog" --include="*.tsx" src/app/
+grep -rn "<Dialog>" --include="*.tsx" src/app/
+grep -rn "<DialogContent" --include="*.tsx" src/app/
+
 # Verify react-hook-form usage
 grep -rn "useForm" --include="*.tsx" src/app/
 
@@ -666,6 +746,47 @@ grep -rn "zodResolver" --include="*.tsx" src/app/
 
 # Check for traditional pagination (should use infinite scroll)
 grep -rn "pagination\|Pagination\|page=" --include="*.tsx" src/app/
+```
+
+### Finding Hardcoded Colors (Styling Violations)
+```bash
+# Find hardcoded Tailwind color classes (should use CSS variables)
+grep -rn "bg-white\|bg-black\|bg-gray-\|bg-slate-\|bg-zinc-" --include="*.tsx" src/app/
+grep -rn "text-white\|text-black\|text-gray-\|text-slate-\|text-zinc-" --include="*.tsx" src/app/
+grep -rn "border-white\|border-black\|border-gray-\|border-slate-" --include="*.tsx" src/app/
+
+# Find hardcoded hex colors
+grep -rn "#[0-9a-fA-F]\{3,6\}" --include="*.tsx" src/app/
+
+# Find dark: utility classes (CSS variables should handle dark mode)
+grep -rn "dark:" --include="*.tsx" src/app/
+
+# Exclude print views from these checks (they are exempt)
+# Run the above but add: | grep -v "src/app/print/"
+```
+
+### Finding Form Protection Issues
+```bash
+# Check for useFormGuard usage in edit forms
+grep -rn "useFormGuard" --include="*.tsx" src/app/
+
+# Find edit pages that might need form protection
+find src/app -path "*/edit/page.tsx" -o -name "*-form.tsx" | head -20
+
+# Check for beforeunload handlers (alternative form protection)
+grep -rn "beforeunload" --include="*.tsx" src/app/
+```
+
+### Finding Table Pattern Issues
+```bash
+# Find DataTable or Table components
+grep -rn "<DataTable\|<Table" --include="*.tsx" src/app/
+
+# Check for client-side filtering of large datasets (potential issue)
+grep -rn "\.filter(\|\.sort(" --include="*-list-client.tsx" src/app/
+
+# Find search cards to compare with table sorting
+grep -rn "SearchCard\|FilterCard" --include="*.tsx" src/app/
 ```
 
 ## Integration with Other Agents

@@ -15,8 +15,7 @@ import { EndOfListMessage } from '@/components/end-of-list-message'
 import { PersonAvatarGroup } from '@/components/person-avatar-group'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DialogButton } from '@/components/dialog-button'
+import { FormDialog } from '@/components/form-dialog'
 import { Label } from '@/components/ui/label'
 import {
   DropdownMenu,
@@ -28,6 +27,7 @@ import Link from 'next/link'
 import { UserPlus, Users, MoreVertical, Filter } from 'lucide-react'
 import { addGroupMember, type PersonWithMemberships, type GroupMemberStats, getPeopleWithGroupMemberships, type GroupMemberFilters } from '@/lib/actions/groups'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { useListFilters } from '@/hooks/use-list-filters'
 import { useDebounce } from '@/hooks/use-debounce'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
@@ -54,6 +54,7 @@ export function GroupMembersListClient({
   initialHasMore
 }: GroupMembersListClientProps) {
   const router = useRouter()
+  const t = useTranslations('groups')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -286,86 +287,73 @@ export function GroupMembersListClient({
                 />
               </div>
 
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogButton>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Add Membership
-                </DialogButton>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Group Membership</DialogTitle>
-                    <DialogDescription>
-                      Add a person to a group with an optional role
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="person">Person</Label>
-                      <select
-                        id="person"
-                        value={selectedPersonId}
-                        onChange={(e) => setSelectedPersonId(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="">Select a person...</option>
-                        {allPeople.map((person) => (
-                          <option key={person.id} value={person.id}>
-                            {person.full_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="group">Group</Label>
-                      <select
-                        id="group"
-                        value={selectedGroupId}
-                        onChange={(e) => setSelectedGroupId(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="">Select a group...</option>
-                        {groups.map((group) => (
-                          <option key={group.id} value={group.id}>
-                            {group.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="role">Role (Optional)</Label>
-                      <select
-                        id="role"
-                        value={selectedRoleId}
-                        onChange={(e) => setSelectedRoleId(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="">No specific role</option>
-                        {groupRoles.map((role) => (
-                          <option key={role.id} value={role.id}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+              <Button onClick={() => setDialogOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Membership
+              </Button>
+              <FormDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                title="Add Group Membership"
+                description="Add a person to a group with an optional role"
+                onSubmit={handleAddMembership}
+                isLoading={isSubmitting}
+                submitLabel="Add Membership"
+                loadingLabel="Adding..."
+              >
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="person">Person</Label>
+                    <select
+                      id="person"
+                      value={selectedPersonId}
+                      onChange={(e) => setSelectedPersonId(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">Select a person...</option>
+                      {allPeople.map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.full_name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDialogOpen(false)}
-                      disabled={isSubmitting}
+                  <div className="space-y-2">
+                    <Label htmlFor="group">Group</Label>
+                    <select
+                      id="group"
+                      value={selectedGroupId}
+                      onChange={(e) => setSelectedGroupId(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Cancel
-                    </Button>
-                    <Button onClick={handleAddMembership} disabled={isSubmitting}>
-                      {isSubmitting ? 'Adding...' : 'Add Membership'}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                      <option value="">Select a group...</option>
+                      {groups.map((group) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Role (Optional)</Label>
+                    <select
+                      id="role"
+                      value={selectedRoleId}
+                      onChange={(e) => setSelectedRoleId(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">No specific role</option>
+                      {groupRoles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </FormDialog>
             </div>
 
             {/* Advanced Search */}
@@ -385,14 +373,14 @@ export function GroupMembersListClient({
               hasMore={hasMore}
               emptyState={{
                 icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-                title: hasActiveFilters ? 'No members found' : 'No group members yet',
+                title: hasActiveFilters ? t('noMembersFound') : t('noGroupMembersYet'),
                 description: hasActiveFilters
-                  ? 'Try adjusting your search to find more members.'
-                  : 'Add people to groups to see them here.',
+                  ? t('noMembersFoundMessage')
+                  : t('noGroupMembersYetMessage'),
                 action: hasActiveFilters ? (
                   <Button variant="outline" onClick={handleClearFilters}>
                     <Filter className="h-4 w-4 mr-2" />
-                    Clear Filters
+                    {t('clearFilters')}
                   </Button>
                 ) : undefined
               }}
@@ -404,14 +392,14 @@ export function GroupMembersListClient({
         ) : (
           <EmptyState
             icon={<Users className="h-16 w-16" />}
-            title={hasActiveFilters ? 'No members found' : 'No group members yet'}
+            title={hasActiveFilters ? t('noMembersFound') : t('noGroupMembersYet')}
             description={hasActiveFilters
-              ? 'Try adjusting your search to find more members.'
-              : 'Add people to groups to see them here.'}
+              ? t('noMembersFoundMessage')
+              : t('noGroupMembersYetMessage')}
             action={hasActiveFilters ? (
               <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+                {t('clearFilters')}
               </Button>
             ) : undefined}
           />
@@ -419,7 +407,7 @@ export function GroupMembersListClient({
 
         {/* Stats */}
         {stats.total > 0 && (
-          <ListStatsBar title="Group Members Overview" stats={statsList} />
+          <ListStatsBar title={t('groupMembersOverview')} stats={statsList} />
         )}
       </div>
     </PageContainer>

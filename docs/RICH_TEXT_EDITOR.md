@@ -5,7 +5,7 @@ The application uses a Tiptap-based WYSIWYG HTML editor for liturgical script co
 ## Location
 
 - **Component:** `src/components/tiptap-editor/`
-- **Used in:** Section content editing (`section-editor-dialog.tsx`)
+- **Used in:** Rich text content editing throughout the application
 
 ## Toolbar Features
 

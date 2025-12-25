@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SelectItem } from '@/components/ui/select'
+import { FormInput } from '@/components/form-input'
 import { FileText, Trash2 } from 'lucide-react'
 import { ContentCard } from '@/components/content-card'
 import { EmptyState } from '@/components/empty-state'
@@ -90,28 +90,30 @@ export function EventTemplatesList({
       {/* Search and Filter */}
       <ContentCard>
         <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Input
-              placeholder={t('settings.searchTemplates')}
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-          </div>
-          <div>
-            <Select value={eventTypeFilter} onValueChange={handleEventTypeChange}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('settings.filterByEventType')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('settings.allEventTypes')}</SelectItem>
-                {eventTypes.map((eventType) => (
-                  <SelectItem key={eventType.id} value={eventType.id}>
-                    {eventType.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FormInput
+            id="search-templates"
+            label={t('settings.searchTemplates')}
+            hideLabel
+            inputType="text"
+            placeholder={t('settings.searchTemplates')}
+            value={search}
+            onChange={handleSearchChange}
+          />
+          <FormInput
+            id="event-type-filter"
+            label={t('settings.filterByEventType')}
+            hideLabel
+            inputType="select"
+            value={eventTypeFilter}
+            onChange={handleEventTypeChange}
+          >
+            <SelectItem value="all">{t('settings.allEventTypes')}</SelectItem>
+            {eventTypes.map((eventType) => (
+              <SelectItem key={eventType.id} value={eventType.id}>
+                {eventType.name}
+              </SelectItem>
+            ))}
+          </FormInput>
         </div>
       </ContentCard>
 

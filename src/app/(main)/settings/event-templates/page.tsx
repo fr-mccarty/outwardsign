@@ -1,6 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { EventTemplatesList } from './event-templates-list'
+import { NewTemplateButton } from './new-template-button'
 import { getAllTemplates } from '@/lib/actions/master-event-templates'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
@@ -55,6 +56,7 @@ export default async function EventTemplatesPage({ searchParams }: PageProps) {
     <PageContainer
       title={t('settings.eventTemplates')}
       description={t('settings.eventTemplatesDescription')}
+      primaryAction={<NewTemplateButton />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventTemplatesList

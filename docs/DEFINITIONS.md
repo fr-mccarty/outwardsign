@@ -186,6 +186,16 @@ Documents are used for reference materials that should be attached to an event b
 
 ## Application Concepts
 
+### Mass Liturgy vs Mass
+
+In Outward Sign, these terms have distinct meanings:
+
+- **Mass Liturgy** - A grouping or planning record for Masses. A Mass Liturgy represents a recurring Mass celebration or a set of related Masses, such as "Sunday 10:00 AM Mass" or "Daily Mass." The Mass Liturgy stores shared settings like the presider rotation, music ministry assignments, and liturgical preferences that apply across multiple individual Mass occasions.
+
+- **Mass** - An individual occasion or calendar event when the Eucharist is celebrated. Each Mass is a specific instance with a date, time, location, and the actual ministers assigned for that celebration. Masses are linked to their parent Mass Liturgy but represent the concrete, scheduled occurrence.
+
+This distinction mirrors how parishes actually plan Masses: they establish recurring Mass "slots" (the liturgy) and then populate each week's calendar with specific Masses that inherit settings from their liturgy while allowing for individual variations.
+
 ### Parish
 
 The local Catholic faith community. In Outward Sign, all data is scoped to parishes—each record belongs to a specific parish and users can only access data for parishes they belong to. This multi-tenancy design ensures that each parish's data is completely separated and secure.
@@ -223,8 +233,9 @@ For implementation details, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 - **Input Field** - Data field definition belonging to an event type
 - **Key Person** - Designation for Person-type fields used in searching and list display
 - **Lector** - See Reader
-- **Mass** - Celebration of the Eucharist (sacrament)
+- **Mass** - Individual occasion or calendar event when the Eucharist is celebrated
 - **Mass Intention** - Prayer intention offered at a specific Mass
+- **Mass Liturgy** - Grouping or planning record for a recurring Mass (e.g., "Sunday 10:00 AM Mass")
 - **Minister** - Anyone serving in a liturgical capacity
 - **Occasion** - Date, time, and location entry attached to an event
 - **Parish** - Local Catholic faith community

@@ -102,7 +102,7 @@ function SortableEventTypeItem({
 
 export function EventsListClient({ initialData }: EventsListClientProps) {
   const router = useRouter()
-  const t = useTranslations('events')
+  const t = useTranslations('eventTypes')
   const [items, setItems] = useState<EventType[]>(initialData)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [eventTypeToDelete, setEventTypeToDelete] = useState<EventType | null>(null)
@@ -199,9 +199,9 @@ export function EventsListClient({ initialData }: EventsListClientProps) {
               ))}
               {items.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="font-medium mb-2">{t('noEvents')}</p>
+                  <p className="font-medium mb-2">{t('noEventTypes')}</p>
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                    {t('noEventsMessage')}
+                    {t('noEventTypesMessage')}
                   </p>
                   <Button asChild>
                     <Link href="/settings/events/create">

@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { createPersonSchema, type CreatePersonData } from "@/lib/schemas/people"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Sparkles, Loader2 } from "lucide-react"
 import { useTranslations } from 'next-intl'
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
@@ -308,26 +309,33 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
 
               {/* Generate Pronunciations Button - shown when name exists */}
               {(firstName || lastName) && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGeneratePronunciations}
-                  disabled={isGenerating || isSubmitting}
-                  className="mt-2"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('people.generating')}
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {t('people.generatePronunciations')}
-                    </>
-                  )}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGeneratePronunciations}
+                      disabled={isGenerating || isSubmitting}
+                      className="mt-2"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t('people.generating')}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          {t('people.generatePronunciations')}
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p>{t('people.generatePronunciationsTooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </>
           )}

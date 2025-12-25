@@ -1,6 +1,9 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface ModuleCreateButtonProps {
   moduleName: string
@@ -11,17 +14,19 @@ interface ModuleCreateButtonProps {
  * ModuleCreateButton
  *
  * Standardized create button for all module list pages.
- * Displays "New [ModuleName]" with a plus icon.
+ * Displays "Create [ModuleName]" with a plus icon.
  *
  * Usage:
  * <ModuleCreateButton moduleName="Wedding" href="/weddings/create" />
  */
 export function ModuleCreateButton({ moduleName, href }: ModuleCreateButtonProps) {
+  const t = useTranslations('common')
+
   return (
     <Button asChild>
       <Link href={href}>
         <Plus className="h-4 w-4 mr-2" />
-        New {moduleName}
+        {t('create')} {moduleName}
       </Link>
     </Button>
   )

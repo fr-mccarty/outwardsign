@@ -10,6 +10,7 @@ import { Plus, FileText, Edit } from "lucide-react"
 import { getPetitionTemplates, deletePetitionTemplate, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { Parish } from '@/lib/types'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import {
   DataTable,
   DataTableHeader,
@@ -29,6 +30,7 @@ export function ParishPetitionsSettingsClient({
   // parish available for future parish-specific filtering
   void _parish
   const router = useRouter()
+  const t = useTranslations('settings')
   const [petitionTemplates, setPetitionTemplates] = useState<PetitionContextTemplate[]>(initialPetitionTemplates)
   const [petitionSearchTerm, setPetitionSearchTerm] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -152,13 +154,13 @@ export function ParishPetitionsSettingsClient({
             keyExtractor={(template) => template.id}
             emptyState={{
               icon: <FileText className="h-12 w-12 text-muted-foreground" />,
-              title: petitionSearchTerm ? 'No templates found' : 'No templates yet',
+              title: petitionSearchTerm ? t('noPetitionTemplatesFound') : t('noPetitionTemplatesYet'),
               description: petitionSearchTerm
-                ? 'No templates found matching your search.'
-                : 'No templates yet. Create your first template!',
+                ? t('noPetitionTemplatesFoundMessage')
+                : t('noPetitionTemplatesYetMessage'),
               action: !petitionSearchTerm && (
                 <Button asChild>
-                  <Link href="/settings/petitions/create">Create Template</Link>
+                  <Link href="/settings/petitions/create">{t('createTemplate')}</Link>
                 </Button>
               ),
             }}
@@ -168,8 +170,8 @@ export function ParishPetitionsSettingsClient({
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleDeleteTemplate}
-            title="Delete Template"
-            itemName={petitionTemplates.find(t => t.id === templateToDelete)?.title}
+            title={t('deleteTemplate')}
+            itemName={petitionTemplates.find(template => template.id === templateToDelete)?.title}
           />
           </div>
         </div>

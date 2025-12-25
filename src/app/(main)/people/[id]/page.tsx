@@ -41,7 +41,7 @@ export default async function PersonDetailPage({ params }: PageProps) {
   return (
     <PageContainer
       title={title}
-      description="View person contact information."
+      description={t('people.viewDescription')}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PersonViewClient person={person} />

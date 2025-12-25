@@ -48,6 +48,7 @@
 | **Permission checks** | [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) | developer-agent |
 | **Event type config** | [EVENT_TYPE_CONFIGURATION.md](./docs/EVENT_TYPE_CONFIGURATION.md) | developer-agent |
 | **Use/create components** | [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) | developer-agent |
+| **Use dialogs** | [DIALOGS.md](./docs/DIALOGS.md) | developer-agent |
 
 **New to the project?** Start with [DEFINITIONS.md](./docs/DEFINITIONS.md) for liturgical terminology.
 
@@ -66,23 +67,27 @@
 | **test-writer** | `/tests/` | Test creation |
 | **test-runner-debugger** | N/A | Test execution & debugging |
 | **project-documentation-writer** | `/docs/` | Developer/AI documentation |
-| **code-review-agent** | N/A | Code review before commit |
+| **supervisor-agent** | `/supervisor/` | Codebase health audits |
+| **cleanup-agent** | N/A | Safe lint --fix in isolation |
 | **user-documentation-writer** | `/src/app/documentation/content/` | End-user guides |
 | **explorer-agent** | N/A | Codebase exploration |
 | **refactor-agent** | N/A | Code quality improvement |
 | **ui-agent** | N/A | Visual quality audits |
 | **ux-agent** | N/A | UX understanding audits |
-| **supervisor-agent** | `/supervisor/` | Codebase health audits |
 | **wisdom-agent** | N/A | Perspective when stuck |
+| **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits |
 
 ### Quick Decision Guide
 
-- **New feature?** → brainstorming → devils-advocate → requirements → developer → test-writer → test-runner-debugger → project-documentation-writer → code-review
-- **Bug fix?** → developer (or explorer if complex) → test-writer → test-runner-debugger → code-review
+- **New feature?** → brainstorming → devils-advocate → requirements → developer → test-writer → test-runner-debugger → project-documentation-writer
+- **Bug fix?** → developer (or explorer if complex) → test-writer → test-runner-debugger
 - **Understand code?** → explorer-agent
 - **Tests failing?** → test-runner-debugger
-- **Deploy?** → qa-specialist → code-review → release-agent
+- **Fix linting?** → cleanup-agent (runs lint --fix safely, in isolation)
+- **Health check?** → supervisor-agent → cleanup-agent (lint) or developer-agent (judgment fixes)
+- **Deploy?** → qa-specialist → release-agent
 - **Stuck?** → wisdom-agent
+- **Audit agents/settings?** → agent-audit-agent
 
 ---
 
@@ -294,6 +299,7 @@ When `npm run build` fails:
 - Custom components: anywhere in `src/components/` except `ui/`
 - `src/components/ui/` = shadcn/ui (NEVER edit)
 - Wrap shadcn components outside `ui/` if customization needed
+- **Dialogs:** NEVER import from `ui/dialog` in app code—use `ConfirmationDialog` or `InfoDialog` (see [DIALOGS.md](./docs/DIALOGS.md))
 
 ---
 

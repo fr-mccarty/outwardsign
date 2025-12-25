@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SelectItem } from '@/components/ui/select'
+import { FormInput } from '@/components/form-input'
 import { Printer, ArrowLeft } from 'lucide-react'
 import {
   getMassIntentions,
@@ -136,41 +135,35 @@ export function MassIntentionsPrint() {
             <CardTitle>Report Configuration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="format">Report Format</Label>
-              <Select value={printFormat} onValueChange={(value: PrintFormat) => setPrintFormat(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Mass Intentions</SelectItem>
-                  <SelectItem value="scheduled">Scheduled Only</SelectItem>
-                  <SelectItem value="unscheduled">Unscheduled Only</SelectItem>
-                  <SelectItem value="date-range">Date Range</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <FormInput
+              id="format"
+              label="Report Format"
+              inputType="select"
+              value={printFormat}
+              onChange={(value) => setPrintFormat(value as PrintFormat)}
+            >
+              <SelectItem value="all">All Mass Intentions</SelectItem>
+              <SelectItem value="scheduled">Scheduled Only</SelectItem>
+              <SelectItem value="unscheduled">Unscheduled Only</SelectItem>
+              <SelectItem value="date-range">Date Range</SelectItem>
+            </FormInput>
 
             {printFormat === 'date-range' && (
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start-date">Start Date</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end-date">End Date</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </div>
+                <FormInput
+                  id="start-date"
+                  label="Start Date"
+                  inputType="date"
+                  value={startDate}
+                  onChange={setStartDate}
+                />
+                <FormInput
+                  id="end-date"
+                  label="End Date"
+                  inputType="date"
+                  value={endDate}
+                  onChange={setEndDate}
+                />
               </div>
             )}
 

@@ -4,14 +4,7 @@ import { useState } from 'react'
 import type { MasterEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/form-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -147,52 +140,38 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       </div>
 
       {/* Save as Preset Dialog */}
-      <Dialog open={showSavePresetDialog} onOpenChange={setShowSavePresetDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Save as Preset</DialogTitle>
-            <DialogDescription>
-              Create a reusable preset from this {eventType.name.toLowerCase()}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="preset-name">Preset Name *</Label>
-              <Input
-                id="preset-name"
-                value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
-                placeholder={`${eventType.name} Preset`}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="preset-description">Description (optional)</Label>
-              <Textarea
-                id="preset-description"
-                value={presetDescription}
-                onChange={(e) => setPresetDescription(e.target.value)}
-                placeholder="Describe what this preset is for..."
-                rows={3}
-              />
-            </div>
+      <FormDialog
+        open={showSavePresetDialog}
+        onOpenChange={setShowSavePresetDialog}
+        title="Save as Preset"
+        description={`Create a reusable preset from this ${eventType.name.toLowerCase()}`}
+        onSubmit={handleSaveAsPreset}
+        isLoading={isSavingPreset}
+        submitLabel="Save Preset"
+        submitDisabled={!presetName.trim()}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="preset-name">Preset Name *</Label>
+            <Input
+              id="preset-name"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              placeholder={`${eventType.name} Preset`}
+            />
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowSavePresetDialog(false)}
-              disabled={isSavingPreset}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveAsPreset}
-              disabled={isSavingPreset || !presetName.trim()}
-            >
-              {isSavingPreset ? 'Saving...' : 'Save Preset'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label htmlFor="preset-description">Description (optional)</Label>
+            <Textarea
+              id="preset-description"
+              value={presetDescription}
+              onChange={(e) => setPresetDescription(e.target.value)}
+              placeholder="Describe what this preset is for..."
+              rows={3}
+            />
+          </div>
+        </div>
+      </FormDialog>
     </ModuleViewContainer>
   )
 }

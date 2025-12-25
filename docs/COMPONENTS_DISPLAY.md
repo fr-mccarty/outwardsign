@@ -880,19 +880,3 @@ The sidebar is organized into 4 sections:
 
 ---
 
-## Group Components
-
-### GroupFormDialog
-**Path:** `src/components/groups/group-form-dialog.tsx`
-
-**Purpose:** Dialog for creating/editing liturgical ministry groups.
-
-**Key Features:**
-- Inline group creation/editing
-- Group name and description
-- Role assignment
-- Member management
-- Used in Groups module (dialog-based architecture)
-
----
-

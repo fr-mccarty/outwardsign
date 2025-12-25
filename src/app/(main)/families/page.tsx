@@ -56,7 +56,7 @@ export default async function FamiliesPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Families"
+      title={t('nav.ourFamilies')}
       description="Manage family relationships between parishioners"
       primaryAction={<ModuleCreateButton moduleName="Family" href="/families/create" />}
     >

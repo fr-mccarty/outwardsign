@@ -80,7 +80,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:code.claude.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx dotenv:*)"
     ]
   },
   "hooks": {
@@ -208,6 +209,33 @@
           {
             "type": "prompt",
             "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a picker component. Before proceeding, you MUST read:\n- docs/PICKERS.md (navigation hub)\n- docs/pickers/ subdirectory (specific picker documentation)\n\nPicker components have complex patterns for selection, filtering, and form integration.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/components/pickers/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a picker component. Before proceeding, you MUST read:\n- docs/PICKERS.md (navigation hub)\n- docs/pickers/ subdirectory (specific picker documentation)\n\nPicker components have complex patterns for selection, filtering, and form integration.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/lib/validation/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a validation file. Before proceeding, you MUST read:\n- docs/VALIDATION.md (validation patterns)\n- docs/FORMS-CRITICAL.md (Zod validation requirements)\n\nKey rules:\n- Use Zod for all validation schemas\n- Follow existing validation patterns\n- Ensure bilingual error messages (en/es)\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/lib/validation/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a validation file. Before proceeding, you MUST read:\n- docs/VALIDATION.md (validation patterns)\n- docs/FORMS-CRITICAL.md (Zod validation requirements)\n\nKey rules:\n- Use Zod for all validation schemas\n- Follow existing validation patterns\n- Ensure bilingual error messages (en/es)\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
           }
         ]
       },

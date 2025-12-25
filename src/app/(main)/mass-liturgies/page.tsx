@@ -58,13 +58,13 @@ export default async function MassesPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Our Masses"
+      title={t('nav.ourMasses')}
       description="Celebrate the Eucharist and gather the community in worship."
       primaryAction={<ModuleCreateButton moduleName="Mass" href="/mass-liturgies/create" />}
       additionalActions={[
         {
           type: 'action',
-          label: 'Configure Mass Types',
+          label: t('masses.manageMassTypes'),
           icon: <Settings className="h-4 w-4" />,
           href: '/settings/mass-liturgies'
         }

@@ -83,6 +83,9 @@ These core design principles guide all development decisions in Outward Sign. Ev
 - Button text should clearly describe the action (e.g., "Save Wedding" not just "Save")
 - Error messages should explain what went wrong AND how to fix it
 - Labels should be concise but descriptive
+- **Use "Create" for new item buttons** (e.g., "Create Wedding", "Create Person") - never use "New" or "Add" for primary creation actions
+- **Use "Our" prefix for list page titles** (e.g., "Our Weddings", "Our People") to convey ownership and community
+- **Use "Manage" for settings/configuration links** (e.g., "Manage Event Types") - avoid technical terms like "Configure"
 
 ### Empty States
 - Never show a blank screen - always provide helpful guidance

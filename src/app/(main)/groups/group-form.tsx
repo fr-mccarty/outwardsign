@@ -7,8 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { FormDialog } from "@/components/form-dialog"
 import { createGroup, updateGroup, type GroupWithMembers, type GroupMember, addGroupMember, removeGroupMember } from "@/lib/actions/groups"
 import { getGroupRoles, type GroupRole } from "@/lib/actions/group-roles"
 import type { Person } from "@/lib/types"
@@ -277,63 +276,49 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
       {/* Add Member Dialog */}
       {isEditing && (
-        <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('groups.addMemberTo', { groupName: group?.name })}</DialogTitle>
-              <DialogDescription>
-                {t('groups.addMemberDescription')}
-              </DialogDescription>
-            </DialogHeader>
+        <FormDialog
+          open={addMemberDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) handleCancelAddMember()
+            else setAddMemberDialogOpen(open)
+          }}
+          title={t('groups.addMemberTo', { groupName: group?.name })}
+          description={t('groups.addMemberDescription')}
+          onSubmit={handleAddMember}
+          isLoading={isAddingMember}
+          submitLabel={t('groups.addMember')}
+          loadingLabel={t('groups.adding')}
+          submitDisabled={!selectedPerson}
+        >
+          <div className="space-y-4 py-4">
+            <PersonPickerField
+              label={t('groups.person')}
+              value={selectedPerson}
+              onValueChange={setSelectedPerson}
+              showPicker={showPersonPicker}
+              onShowPickerChange={setShowPersonPicker}
+              placeholder={t('groups.personPlaceholder')}
+              required
+              additionalVisibleFields={['email', 'phone_number', 'note']}
+            />
 
-            <div className="space-y-4 py-4">
-              <PersonPickerField
-                label={t('groups.person')}
-                value={selectedPerson}
-                onValueChange={setSelectedPerson}
-                showPicker={showPersonPicker}
-                onShowPickerChange={setShowPersonPicker}
-                placeholder={t('groups.personPlaceholder')}
-                required
-                additionalVisibleFields={['email', 'phone_number', 'note']}
-              />
-
-              <FormInput
-                id="group_role"
-                label={t('groups.groupRole')}
-                inputType="select"
-                value={selectedGroupRoleId}
-                onChange={setSelectedGroupRoleId}
-                placeholder={t('groups.groupRolePlaceholder')}
-                options={[
-                  { value: 'none', label: t('groups.noRole') },
-                  ...groupRoles.map((role) => ({
-                    value: role.id,
-                    label: role.name,
-                  })),
-                ]}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancelAddMember}
-                disabled={isAddingMember}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                type="button"
-                onClick={handleAddMember}
-                disabled={!selectedPerson || isAddingMember}
-              >
-                {isAddingMember ? t('groups.adding') : t('groups.addMember')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            <FormInput
+              id="group_role"
+              label={t('groups.groupRole')}
+              inputType="select"
+              value={selectedGroupRoleId}
+              onChange={setSelectedGroupRoleId}
+              placeholder={t('groups.groupRolePlaceholder')}
+              options={[
+                { value: 'none', label: t('groups.noRole') },
+                ...groupRoles.map((role) => ({
+                  value: role.id,
+                  label: role.name,
+                })),
+              ]}
+            />
+          </div>
+        </FormDialog>
       )}
 
     </>

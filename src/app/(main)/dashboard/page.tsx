@@ -110,48 +110,53 @@ export default async function DashboardPage() {
       >
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <Link href="/events" className="block hover:opacity-80 transition-opacity">
+        <Link href="/events" className="block">
           <MetricCard
             title={t('dashboard.totalEvents')}
             value={masterEvents.length}
             description={t('dashboard.eventsCreated')}
             icon={CalendarDays}
+            isClickable
           />
         </Link>
 
-        <Link href={`/calendar?view=month&date=${format(now, 'yyyy-MM-dd')}`} className="block hover:opacity-80 transition-opacity">
+        <Link href={`/calendar?view=month&date=${format(now, 'yyyy-MM-dd')}`} className="block">
           <MetricCard
             title={t('dashboard.scheduledThisMonth')}
             value={scheduledThisMonth}
             description={t('dashboard.ceremoniesThisMonth')}
             icon={TrendingUp}
+            isClickable
           />
         </Link>
 
-        <Link href="/people" className="block hover:opacity-80 transition-opacity">
+        <Link href="/people" className="block">
           <MetricCard
             title={t('dashboard.peopleDirectory')}
             value={people.length}
             description={t('dashboard.peopleInParish')}
             icon={Users}
+            isClickable
           />
         </Link>
 
-        <Link href="/locations" className="block hover:opacity-80 transition-opacity">
+        <Link href="/locations" className="block">
           <MetricCard
             title={t('dashboard.locations')}
             value={locations.length}
             description={t('dashboard.venuesRegistered')}
             icon={MapPin}
+            isClickable
           />
         </Link>
 
-        <Link href="/events" className="block hover:opacity-80 transition-opacity">
+        <Link href="/events" className="block">
           <MetricCard
             title={t('dashboard.thisWeek')}
             value={upcomingEventsCount}
             description={t('dashboard.eventsNextSevenDays')}
             icon={CalendarCheck}
+            isClickable
           />
         </Link>
       </div>
@@ -167,13 +172,14 @@ export default async function DashboardPage() {
               <Link
                 key={eventType.id}
                 href={`/special-liturgies/${slug}`}
-                className="block hover:opacity-80 transition-opacity"
+                className="block"
               >
                 <MetricCard
                   title={eventType.name}
                   value={count}
                   description={count === 1 ? t('dashboard.event') : t('dashboard.events')}
                   icon={Icon}
+                  isClickable
                 />
               </Link>
             )
