@@ -631,7 +631,7 @@ className="py-1 text-center text-sm text-muted-foreground"
 ```
 
 **Related:**
-- [INFINITE_SCROLLING.md](./INFINITE_SCROLLING.md) - Complete infinite scroll pattern
+- [PAGINATION.md](./PAGINATION.md) - Pagination and infinite scroll patterns
 - [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) - List page implementation
 
 ---

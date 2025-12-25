@@ -1,6 +1,10 @@
-# List View Patterns
+# List View Catalog
 
-This document catalogs the three main list view patterns used throughout the application and identifies which modules use each pattern.
+> **Purpose:** Catalogs the three main list view patterns and which modules use each.
+>
+> **For Implementation Details:** See [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) for code examples, checklists, and best practices.
+
+This document provides a quick reference for which pattern to use and where each is currently implemented.
 
 ---
 
