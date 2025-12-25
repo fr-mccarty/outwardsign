@@ -118,8 +118,8 @@ html {
   }
   
   @page {
-    margin: 2.5cm 2cm;
-    size: A4;
+    margin: 1in 0.75in;
+    size: letter;
   }
   
   .hide-on-print {
@@ -135,21 +135,13 @@ html {
     color: black !important;
   }
 
-  .print-container {
-    max-width: 21cm;
+  /* Unified print page content wrapper */
+  .print-page-content {
+    max-width: 8.5in;
     margin: 0 auto;
     background: white !important;
     color: black !important;
-    padding: 2.5cm 2cm;
-    font-family: inherit;
-  }
-
-  .script-print-content {
-    max-width: 21cm;
-    margin: 0 auto;
-    background: white !important;
-    color: black !important;
-    padding: 2.5cm 2cm;
+    padding: 1in 0.75in;
     font-family: inherit;
   }
 
@@ -173,7 +165,7 @@ html {
   .petitions-print-content {
     font-family: inherit;
   }
-  
+
   .print-preview-notice {
     background: #e3f2fd;
     border: 1px solid #2196f3;

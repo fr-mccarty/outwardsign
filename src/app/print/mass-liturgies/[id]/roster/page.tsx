@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { buildMassRosterContent } from '@/lib/content-builders/mass-liturgy-roster'
 import { renderHTML } from '@/lib/renderers/html-renderer'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -32,11 +32,8 @@ export default async function PrintMassRosterPage({ params }: PageProps) {
   const content = renderHTML(rosterDocument, true)
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
-      <div className="mass-roster-print-content">
-        {content}
-      </div>
-    </>
+    <PrintPageWrapper>
+      {content}
+    </PrintPageWrapper>
   )
 }

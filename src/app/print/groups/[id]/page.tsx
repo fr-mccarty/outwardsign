@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getGroup } from '@/lib/actions/groups'
 import { buildGroupMembersReport } from '@/lib/content-builders/group'
 import { renderHTML } from '@/lib/renderers/html-renderer'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -32,11 +32,8 @@ export default async function PrintGroupPage({ params }: PageProps) {
   const content = renderHTML(reportDocument, true)
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
-      <div className="group-print-content">
-        {content}
-      </div>
-    </>
+    <PrintPageWrapper>
+      {content}
+    </PrintPageWrapper>
   )
 }

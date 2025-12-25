@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getWeekendSummaryData } from '@/lib/actions/weekend-summary'
 import { buildWeekendSummary } from '@/lib/content-builders/weekend-summary'
 import { renderHTML } from '@/lib/renderers/html-renderer'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   searchParams: Promise<{
@@ -48,11 +48,8 @@ export default async function PrintWeekendSummaryPage({ searchParams }: PageProp
   const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
-      <div className="weekend-summary-print-content">
-        {liturgyContent}
-      </div>
-    </>
+    <PrintPageWrapper>
+      {liturgyContent}
+    </PrintPageWrapper>
   )
 }

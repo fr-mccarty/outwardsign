@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getMassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { buildMassIntentionLiturgy } from '@/lib/content-builders/mass-intention'
 import { renderHTML } from '@/lib/renderers/html-renderer'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -33,11 +33,8 @@ export default async function PrintMassIntentionPage({ params }: PageProps) {
   const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
-      <div className="mass-intention-print-content">
-        {liturgyContent}
-      </div>
-    </>
+    <PrintPageWrapper>
+      {liturgyContent}
+    </PrintPageWrapper>
   )
 }

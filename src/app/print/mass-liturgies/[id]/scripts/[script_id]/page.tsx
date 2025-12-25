@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getMassWithRelations } from '@/lib/actions/mass-liturgies'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   params: Promise<{
@@ -80,11 +81,8 @@ export default async function PrintMassScriptPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background print:bg-white">
-      <div className="max-w-4xl mx-auto p-8">
-        {/* Use the existing DynamicScriptViewer component */}
-        <DynamicScriptViewer script={script} event={eventForProcessing} />
-      </div>
-    </div>
+    <PrintPageWrapper>
+      <DynamicScriptViewer script={script} event={eventForProcessing} />
+    </PrintPageWrapper>
   )
 }

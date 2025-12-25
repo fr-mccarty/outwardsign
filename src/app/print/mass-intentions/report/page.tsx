@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getMassIntentionsReport } from '@/lib/actions/mass-intentions'
 import { formatDatePretty } from '@/lib/utils/formatters'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
 import { buildMassIntentionReport, REPORT_STYLES } from '@/lib/report-builders'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   searchParams: Promise<{ startDate?: string; endDate?: string }>
@@ -49,9 +49,6 @@ export default async function PrintMassIntentionsReportPage({ searchParams }: Pa
   })
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: `${PRINT_PAGE_STYLES}\n${REPORT_STYLES}` }} />
-      <div dangerouslySetInnerHTML={{ __html: reportHTML }} />
-    </>
+    <PrintPageWrapper additionalStyles={REPORT_STYLES} htmlContent={reportHTML} />
   )
 }

@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { processScriptForRendering } from '@/lib/utils/content-processor'
-import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { PrintPageWrapper } from '@/components/print/print-page-wrapper'
 
 interface PageProps {
   params: Promise<{
@@ -50,30 +50,27 @@ export default async function PrintScriptPage({ params }: PageProps) {
   const processedSections = processScriptForRendering(script, event)
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
-      <div className="script-print-content">
-        {/* Script Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-black">{script.name}</h1>
-        </div>
-
-        {/* Sections */}
-        {processedSections.map((section) => (
-          <div
-            key={section.id}
-            className={`reading-section ${section.pageBreakAfter ? 'page-break' : ''}`}
-          >
-            {section.name && (
-              <div className="reading-title text-black">{section.name}</div>
-            )}
-            <div
-              className="reading-text text-black prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: section.htmlContent }}
-            />
-          </div>
-        ))}
+    <PrintPageWrapper>
+      {/* Script Title */}
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-black">{script.name}</h1>
       </div>
-    </>
+
+      {/* Sections */}
+      {processedSections.map((section) => (
+        <div
+          key={section.id}
+          className={`reading-section ${section.pageBreakAfter ? 'page-break' : ''}`}
+        >
+          {section.name && (
+            <div className="reading-title text-black">{section.name}</div>
+          )}
+          <div
+            className="reading-text text-black prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: section.htmlContent }}
+          />
+        </div>
+      ))}
+    </PrintPageWrapper>
   )
 }
