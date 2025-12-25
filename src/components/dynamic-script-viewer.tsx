@@ -44,9 +44,9 @@ export function DynamicScriptViewer({ script, event }: DynamicScriptViewerProps)
               dangerouslySetInnerHTML={{ __html: section.htmlContent }}
             />
 
-            {/* Page break indicator (visual only, not printed) */}
+            {/* Page break indicator (screen only - hidden in print/PDF/Word) */}
             {section.pageBreakAfter && index < processedSections.length - 1 && (
-              <div className="my-8 border-t-2 border-dashed border-muted-foreground/20 print:hidden" />
+              <div className="my-8 border-t-2 border-dashed border-muted-foreground/50 print:hidden" />
             )}
           </div>
         ))}

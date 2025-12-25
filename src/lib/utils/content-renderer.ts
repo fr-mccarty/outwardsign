@@ -538,13 +538,17 @@ export function renderContentToText(
   content: string,
   options: RenderContentOptions
 ): string {
-  // Step 1: Replace {{Field Name}} placeholders with actual values
+  // Step 1: Replace {{Field Name}} placeholders with actual values (first pass)
   let processedContent = replacePlaceholders(content, options)
 
-  // Step 2: Strip HTML tags for plain text output
+  // Step 2: Replace any placeholders that were inside content bodies (second pass)
+  // This allows content to include placeholders like {{first_reader.full_name}}
+  processedContent = replacePlaceholders(processedContent, options)
+
+  // Step 3: Strip HTML tags for plain text output
   processedContent = processedContent.replace(/<[^>]*>/g, '')
 
-  // Step 3: Decode HTML entities
+  // Step 4: Decode HTML entities
   processedContent = processedContent
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')

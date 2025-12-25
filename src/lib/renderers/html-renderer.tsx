@@ -364,14 +364,14 @@ function renderSection(
   return (
     <React.Fragment key={section.id || index}>
       {section.pageBreakBefore && (
-        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
+        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/50" />
       )}
       <div className={className}>
         {section.elements.map((element, elemIndex) => renderElement(element, elemIndex, isPrintMode))}
       </div>
-      {/* Only show pageBreakAfter indicator if this is not the last section */}
+      {/* Page break indicator (screen only - hidden in print/PDF/Word) */}
       {section.pageBreakAfter && !isLastSection && (
-        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
+        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/50" />
       )}
     </React.Fragment>
   )

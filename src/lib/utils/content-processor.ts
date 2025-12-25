@@ -361,11 +361,15 @@ export function processScriptSection(
   sectionContent: string,
   event: MasterEventWithRelations
 ): string {
-  // Step 1: Replace field placeholders
-  const replacedContent = replaceFieldPlaceholders(sectionContent, event)
+  // Step 1: Replace field placeholders (first pass)
+  const firstPass = replaceFieldPlaceholders(sectionContent, event)
 
-  // Step 2: Sanitize HTML
-  const htmlContent = parseContentToHTML(replacedContent)
+  // Step 2: Replace any placeholders that were inside content bodies (second pass)
+  // This allows content to include placeholders like {{first_reader.full_name}}
+  const secondPass = replaceFieldPlaceholders(firstPass, event)
+
+  // Step 3: Sanitize HTML
+  const htmlContent = parseContentToHTML(secondPass)
 
   return htmlContent
 }

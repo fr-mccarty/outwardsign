@@ -414,9 +414,11 @@ const PRESENTATION_CONTENT: SeedContent[] = [
 const FIRST_READINGS: SeedContent[] = [
   {
     title: 'Genesis 1:26-28, 31a',
-    body: `<div style="text-align: right; font-style: italic;">Genesis 1:26-28, 31a</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>FIRST READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Genesis 1:26-28, 31a</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of Genesis</strong></p>
 
@@ -435,9 +437,11 @@ const FIRST_READINGS: SeedContent[] = [
   },
   {
     title: 'Ecclesiastes 3:1-8',
-    body: `<div style="text-align: right; font-style: italic;">Ecclesiastes 3:1-8</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>FIRST READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Ecclesiastes 3:1-8</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of Ecclesiastes</strong></p>
 
@@ -464,9 +468,11 @@ A time of war, and a time of peace.</p>
   },
   {
     title: 'Isaiah 25:6-9',
-    body: `<div style="text-align: right; font-style: italic;">Isaiah 25:6-9</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>FIRST READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Isaiah 25:6-9</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of the Prophet Isaiah</strong></p>
 
@@ -485,9 +491,11 @@ A time of war, and a time of peace.</p>
   },
   {
     title: 'Sirach 26:1-4, 13-16',
-    body: `<div style="text-align: right; font-style: italic;">Sirach 26:1-4, 13-16</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>FIRST READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Sirach 26:1-4, 13-16</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of Sirach</strong></p>
 
@@ -514,9 +522,11 @@ A time of war, and a time of peace.</p>
   },
   {
     title: 'Lamentations 3:17-26',
-    body: `<div style="text-align: right; font-style: italic;">Lamentations 3:17-26</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>FIRST READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">FIRST READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Lamentations 3:17-26</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of Lamentations</strong></p>
 
@@ -551,9 +561,11 @@ A time of war, and a time of peace.</p>
 const SECOND_READINGS: SeedContent[] = [
   {
     title: 'Romans 8:31b-35, 37-39',
-    body: `<div style="text-align: right; font-style: italic;">Romans 8:31b-35, 37-39</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>SECOND READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Romans 8:31b-35, 37-39</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{second_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Letter of Saint Paul to the Romans</strong></p>
 
@@ -578,9 +590,11 @@ const SECOND_READINGS: SeedContent[] = [
   },
   {
     title: '1 Corinthians 12:31-13:8a',
-    body: `<div style="text-align: right; font-style: italic;">1 Corinthians 12:31-13:8a</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>SECOND READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>1 Corinthians 12:31-13:8a</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{second_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the first Letter of Saint Paul to the Corinthians</strong></p>
 
@@ -609,9 +623,11 @@ const SECOND_READINGS: SeedContent[] = [
   },
   {
     title: 'Colossians 3:12-17',
-    body: `<div style="text-align: right; font-style: italic;">Colossians 3:12-17</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>SECOND READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Colossians 3:12-17</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{second_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Letter of Saint Paul to the Colossians</strong></p>
 
@@ -634,9 +650,11 @@ const SECOND_READINGS: SeedContent[] = [
   },
   {
     title: '1 John 3:14-16',
-    body: `<div style="text-align: right; font-style: italic;">1 John 3:14-16</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>SECOND READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>1 John 3:14-16</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{second_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the first Letter of Saint John</strong></p>
 
@@ -653,9 +671,11 @@ const SECOND_READINGS: SeedContent[] = [
   },
   {
     title: 'Revelation 21:1-5a, 6b-7',
-    body: `<div style="text-align: right; font-style: italic;">Revelation 21:1-5a, 6b-7</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>SECOND READING</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">SECOND READING</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Revelation 21:1-5a, 6b-7</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{second_reader.full_name}}</strong></p>
 
 <p><strong>A reading from the Book of Revelation</strong></p>
 
@@ -684,9 +704,9 @@ const SECOND_READINGS: SeedContent[] = [
 const GOSPELS: SeedContent[] = [
   {
     title: 'Matthew 5:1-12a',
-    body: `<div style="text-align: right; font-style: italic;">Matthew 5:1-12a</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>GOSPEL</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Matthew 5:1-12a</strong></p>
 
 <p><strong>A reading from the holy Gospel according to Matthew</strong></p>
 
@@ -721,9 +741,9 @@ const GOSPELS: SeedContent[] = [
   },
   {
     title: 'Matthew 19:3-6',
-    body: `<div style="text-align: right; font-style: italic;">Matthew 19:3-6</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>GOSPEL</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Matthew 19:3-6</strong></p>
 
 <p><strong>A reading from the holy Gospel according to Matthew</strong></p>
 
@@ -742,9 +762,9 @@ const GOSPELS: SeedContent[] = [
   },
   {
     title: 'John 11:21-27',
-    body: `<div style="text-align: right; font-style: italic;">John 11:21-27</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>GOSPEL</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
+<p style="text-align: right; color: #c41e3a;"><strong>John 11:21-27</strong></p>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -769,9 +789,9 @@ const GOSPELS: SeedContent[] = [
   },
   {
     title: 'John 15:9-12',
-    body: `<div style="text-align: right; font-style: italic;">John 15:9-12</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>GOSPEL</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
+<p style="text-align: right; color: #c41e3a;"><strong>John 15:9-12</strong></p>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -790,9 +810,9 @@ const GOSPELS: SeedContent[] = [
   },
   {
     title: 'John 14:1-6',
-    body: `<div style="text-align: right; font-style: italic;">John 14:1-6</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>GOSPEL</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">GOSPEL</div>
+<p style="text-align: right; color: #c41e3a;"><strong>John 14:1-6</strong></p>
 
 <p><strong>A reading from the holy Gospel according to John</strong></p>
 
@@ -819,9 +839,11 @@ const GOSPELS: SeedContent[] = [
 const PSALMS: SeedContent[] = [
   {
     title: 'Psalm 23:1-6',
-    body: `<div style="text-align: right; font-style: italic;">Psalm 23:1-6</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>RESPONSORIAL PSALM</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Psalm 23:1-6</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is my shepherd; there is nothing I shall want.</p>
 
@@ -859,9 +881,11 @@ for years to come.</p>
   },
   {
     title: 'Psalm 33:12, 18-22',
-    body: `<div style="text-align: right; font-style: italic;">Psalm 33:12, 18-22</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>RESPONSORIAL PSALM</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Psalm 33:12, 18-22</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The earth is full of the goodness of the Lord.</p>
 
@@ -893,9 +917,11 @@ who have put our hope in you.</p>
   },
   {
     title: 'Psalm 103:1-4, 8, 10, 13-18',
-    body: `<div style="text-align: right; font-style: italic;">Psalm 103:1-4, 8, 10, 13-18</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>RESPONSORIAL PSALM</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Psalm 103:1-4, 8, 10, 13-18</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is kind and merciful.</p>
 
@@ -934,9 +960,11 @@ he remembers that we are dust.</p>
   },
   {
     title: 'Psalm 128:1-5',
-    body: `<div style="text-align: right; font-style: italic;">Psalm 128:1-5</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>RESPONSORIAL PSALM</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Psalm 128:1-5</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> Blessed are those who fear the Lord.</p>
 
@@ -969,9 +997,11 @@ all the days of your life.</p>
   },
   {
     title: 'Psalm 27:1, 4, 7-9, 13-14',
-    body: `<div style="text-align: right; font-style: italic;">Psalm 27:1, 4, 7-9, 13-14</div>
+    body: `<p style="text-align: right; color: #c41e3a;"><strong>RESPONSORIAL PSALM</strong></p>
 
-<div style="text-align: right; color: #c41e3a;">RESPONSORIAL PSALM</div>
+<p style="text-align: right; color: #c41e3a;"><strong>Psalm 27:1, 4, 7-9, 13-14</strong></p>
+
+<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is my light and my salvation.</p>
 

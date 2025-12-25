@@ -181,63 +181,51 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
   const weddingEnglishSections = [
     {
       name: 'Welcome',
-      content: `# Wedding Ceremony
-
-Please join us in celebrating the marriage of
-
-**{{bride.full_name}}** and **{{groom.full_name}}**
-
-{{wedding_ceremony}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Wedding Ceremony</strong></span></p>
+<p style="text-align: center">Please join us in celebrating the marriage of</p>
+<p style="text-align: center"><strong>{{bride.full_name}}</strong> and <strong>{{groom.full_name}}</strong></p>
+<p style="text-align: center">{{wedding_ceremony}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Order of Service',
-      content: `## Order of Service
-
-1. Processional
-2. Opening Prayer
-3. Liturgy of the Word
-4. Exchange of Consent
-5. Blessing and Exchange of Rings
-6. Prayer of the Faithful
-7. Nuptial Blessing
-8. Sign of Peace
-9. Recessional`,
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Service</strong></span></p>
+<p>1. Processional<br>2. Opening Prayer<br>3. Liturgy of the Word<br>4. Exchange of Consent<br>5. Blessing and Exchange of Rings<br>6. Prayer of the Faithful<br>7. Nuptial Blessing<br>8. Sign of Peace<br>9. Recessional</p>`,
       page_break_after: false,
       order: 1
     },
     {
-      name: 'Readings',
-      content: `## Readings
-
-### First Reading
-**Reader:** {{first_reader.full_name}}
-
-{{first_reading}}
-
-### Responsorial Psalm
-{{psalm}}
-
-### Second Reading
-**Reader:** {{second_reader.full_name}}
-
-{{second_reading}}
-
-### Gospel
-{{gospel_reading}}`,
-      page_break_after: false,
+      name: 'First Reading',
+      content: `{{first_reading}}`,
+      page_break_after: true,
       order: 2
     },
     {
-      name: 'Reception',
-      content: `## Reception
-
-Please join us for a reception following the ceremony at:
-
-{{reception_location.name}}`,
-      page_break_after: false,
+      name: 'Responsorial Psalm',
+      content: `{{psalm}}`,
+      page_break_after: true,
       order: 3
+    },
+    {
+      name: 'Second Reading',
+      content: `{{second_reading}}`,
+      page_break_after: true,
+      order: 4
+    },
+    {
+      name: 'Gospel',
+      content: `{{gospel_reading}}`,
+      page_break_after: true,
+      order: 5
+    },
+    {
+      name: 'Reception',
+      content: `<p><span style="font-size: 1.25em"><strong>Reception</strong></span></p>
+<p>Please join us for a reception following the ceremony at:</p>
+<p>{{reception_location.name}}</p>`,
+      page_break_after: false,
+      order: 6
     }
   ]
 
@@ -274,63 +262,51 @@ Please join us for a reception following the ceremony at:
   const weddingSpanishSections = [
     {
       name: 'Bienvenida',
-      content: `# Ceremonia de Matrimonio
-
-Por favor, acompáñenos a celebrar el matrimonio de
-
-**{{bride.full_name}}** y **{{groom.full_name}}**
-
-{{wedding_ceremony}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Ceremonia de Matrimonio</strong></span></p>
+<p style="text-align: center">Por favor, acompáñenos a celebrar el matrimonio de</p>
+<p style="text-align: center"><strong>{{bride.full_name}}</strong> y <strong>{{groom.full_name}}</strong></p>
+<p style="text-align: center">{{wedding_ceremony}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Orden del Servicio',
-      content: `## Orden del Servicio
-
-1. Procesión
-2. Oración Inicial
-3. Liturgia de la Palabra
-4. Intercambio de Consentimientos
-5. Bendición e Intercambio de Anillos
-6. Oración de los Fieles
-7. Bendición Nupcial
-8. Signo de la Paz
-9. Recesión`,
+      content: `<p><span style="font-size: 1.25em"><strong>Orden del Servicio</strong></span></p>
+<p>1. Procesión<br>2. Oración Inicial<br>3. Liturgia de la Palabra<br>4. Intercambio de Consentimientos<br>5. Bendición e Intercambio de Anillos<br>6. Oración de los Fieles<br>7. Bendición Nupcial<br>8. Signo de la Paz<br>9. Recesión</p>`,
       page_break_after: false,
       order: 1
     },
     {
-      name: 'Lecturas',
-      content: `## Lecturas
-
-### Primera Lectura
-**Lector:** {{first_reader.full_name}}
-
-{{first_reading}}
-
-### Salmo Responsorial
-{{psalm}}
-
-### Segunda Lectura
-**Lector:** {{second_reader.full_name}}
-
-{{second_reading}}
-
-### Evangelio
-{{gospel_reading}}`,
-      page_break_after: false,
+      name: 'Primera Lectura',
+      content: `{{first_reading}}`,
+      page_break_after: true,
       order: 2
     },
     {
-      name: 'Recepción',
-      content: `## Recepción
-
-Por favor, acompáñenos para una recepción después de la ceremonia en:
-
-{{reception_location.name}}`,
-      page_break_after: false,
+      name: 'Salmo Responsorial',
+      content: `{{psalm}}`,
+      page_break_after: true,
       order: 3
+    },
+    {
+      name: 'Segunda Lectura',
+      content: `{{second_reading}}`,
+      page_break_after: true,
+      order: 4
+    },
+    {
+      name: 'Evangelio',
+      content: `{{gospel_reading}}`,
+      page_break_after: true,
+      order: 5
+    },
+    {
+      name: 'Recepción',
+      content: `<p><span style="font-size: 1.25em"><strong>Recepción</strong></span></p>
+<p>Por favor, acompáñenos para una recepción después de la ceremonia en:</p>
+<p>{{reception_location.name}}</p>`,
+      page_break_after: false,
+      order: 6
     }
   ]
 
@@ -368,76 +344,40 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
   const weddingWorshipAidSections = [
     {
       name: 'Cover',
-      content: `# The Celebration of Marriage
-
-**{{bride.full_name}}**
-&
-**{{groom.full_name}}**
-
-{{wedding_ceremony}}
-
-{{parish.name}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>The Celebration of Marriage</strong></span></p>
+<p style="text-align: center"><strong>{{bride.full_name}}</strong><br>&amp;<br><strong>{{groom.full_name}}</strong></p>
+<p style="text-align: center">{{wedding_ceremony}}</p>
+<p style="text-align: center">{{parish.name}}</p>`,
       page_break_after: true,
       order: 0
     },
     {
       name: 'Order of Celebration',
-      content: `## Order of Celebration
-
-**Entrance Procession**
-{{opening_song}}
-
-**Greeting**
-
-**Collect (Opening Prayer)**
-
----
-
-### Liturgy of the Word
-
-**First Reading**
-
-**Responsorial Psalm**
-
-**Gospel**
-
-**Homily**
-
----
-
-### Celebration of Matrimony
-
-**Questions Before Consent**
-
-**Exchange of Consent**
-
-**Blessing and Exchange of Rings**
-
----
-
-### Universal Prayer (Prayer of the Faithful)
-
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Celebration</strong></span></p>
+<p><strong>Entrance Procession</strong><br>{{opening_song}}</p>
+<p><strong>Greeting</strong></p>
+<p><strong>Collect (Opening Prayer)</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Liturgy of the Word</strong></span></p>
+<p><strong>First Reading</strong></p>
+<p><strong>Responsorial Psalm</strong></p>
+<p><strong>Gospel</strong></p>
+<p><strong>Homily</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Celebration of Matrimony</strong></span></p>
+<p><strong>Questions Before Consent</strong></p>
+<p><strong>Exchange of Consent</strong></p>
+<p><strong>Blessing and Exchange of Rings</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Universal Prayer</strong></span></p>
 {{prayers_of_the_faithful}}
-
----
-
-### Nuptial Blessing
-
----
-
-### Conclusion
-
-**Final Blessing**
-
-**Recessional**`,
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Nuptial Blessing</strong></span></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Conclusion</strong></span></p>
+<p><strong>Final Blessing</strong></p>
+<p><strong>Recessional</strong></p>`,
       page_break_after: true,
       order: 1
     },
     {
       name: 'First Reading',
-      content: `<p><strong>Reader:</strong> {{first_reader.full_name}}</p>
-
-{{first_reading}}`,
+      content: `{{first_reading}}`,
       page_break_after: true,
       order: 2
     },
@@ -449,9 +389,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     },
     {
       name: 'Second Reading',
-      content: `<p><strong>Reader:</strong> {{second_reader.full_name}}</p>
-
-{{second_reading}}`,
+      content: `{{second_reading}}`,
       page_break_after: true,
       order: 4
     },
@@ -463,13 +401,9 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     },
     {
       name: 'Music',
-      content: `## Music for the Celebration
-
-**Entrance Procession:** {{opening_song}}
-
----
-
-*Please join in singing the hymns as able.*`,
+      content: `<p><span style="font-size: 1.25em"><strong>Music for the Celebration</strong></span></p>
+<p><strong>Entrance Procession:</strong> {{opening_song}}</p>
+<p><em>Please join in singing the hymns as able.</em></p>`,
       page_break_after: false,
       order: 6
     }
@@ -617,70 +551,58 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
   const funeralProgramSections = [
     {
       name: 'In Loving Memory',
-      content: `# In Loving Memory
-
-**{{deceased.full_name}}**
-
-{{date_of_death}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>In Loving Memory</strong></span></p>
+<p style="text-align: center"><strong>{{deceased.full_name}}</strong></p>
+<p style="text-align: center">{{date_of_death}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Service Details',
-      content: `## Funeral Mass
-
-{{funeral_mass}}
-
-Presider: {{presider.full_name}}`,
+      content: `<p><span style="font-size: 1.25em"><strong>Funeral Mass</strong></span></p>
+<p>{{funeral_mass}}</p>
+<p>Presider: {{presider.full_name}}</p>`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Order of Service',
-      content: `## Order of Service
-
-1. Gathering Song
-2. Opening Prayer
-3. Liturgy of the Word
-4. Homily
-5. Prayer of the Faithful
-6. Liturgy of the Eucharist
-7. Final Commendation
-8. Recessional`,
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Service</strong></span></p>
+<p>1. Gathering Song<br>2. Opening Prayer<br>3. Liturgy of the Word<br>4. Homily<br>5. Prayer of the Faithful<br>6. Liturgy of the Eucharist<br>7. Final Commendation<br>8. Recessional</p>`,
       page_break_after: false,
       order: 2
     },
     {
-      name: 'Readings',
-      content: `## Readings
-
-### First Reading
-**Reader:** {{first_reader.full_name}}
-
-{{first_reading}}
-
-### Responsorial Psalm
-{{psalm}}
-
-### Second Reading
-**Reader:** {{second_reader.full_name}}
-
-{{second_reading}}
-
-### Gospel
-{{gospel_reading}}`,
-      page_break_after: false,
+      name: 'First Reading',
+      content: `{{first_reading}}`,
+      page_break_after: true,
       order: 3
     },
     {
-      name: 'Burial',
-      content: `## Burial
-
-Burial will take place at:
-
-{{burial_location.name}}`,
-      page_break_after: false,
+      name: 'Responsorial Psalm',
+      content: `{{psalm}}`,
+      page_break_after: true,
       order: 4
+    },
+    {
+      name: 'Second Reading',
+      content: `{{second_reading}}`,
+      page_break_after: true,
+      order: 5
+    },
+    {
+      name: 'Gospel',
+      content: `{{gospel_reading}}`,
+      page_break_after: true,
+      order: 6
+    },
+    {
+      name: 'Burial',
+      content: `<p><span style="font-size: 1.25em"><strong>Burial</strong></span></p>
+<p>Burial will take place at:</p>
+<p>{{burial_location.name}}</p>`,
+      page_break_after: false,
+      order: 7
     }
   ]
 
@@ -717,11 +639,9 @@ Burial will take place at:
   const funeralBulletinSections = [
     {
       name: 'Notice',
-      content: `Please pray for the repose of the soul of **{{deceased.full_name}}**, who passed away on {{date_of_death}}.
-
-Funeral Mass will be celebrated at {{funeral_mass}}.
-
-May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpetual light shine upon {{deceased.sex | him | her}}. May {{deceased.sex | he | she}} rest in peace. Amen.`,
+      content: `<p>Please pray for the repose of the soul of <strong>{{deceased.full_name}}</strong>, who passed away on {{date_of_death}}.</p>
+<p>Funeral Mass will be celebrated at {{funeral_mass}}.</p>
+<p>May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpetual light shine upon {{deceased.sex | him | her}}. May {{deceased.sex | he | she}} rest in peace. Amen.</p>`,
       page_break_after: false,
       order: 0
     }
@@ -761,90 +681,49 @@ May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpet
   const funeralWorshipAidSections = [
     {
       name: 'Cover',
-      content: `# Funeral Mass
-
-**{{deceased.full_name}}**
-
-{{funeral_mass}}
-
-{{parish.name}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Funeral Mass</strong></span></p>
+<p style="text-align: center"><strong>{{deceased.full_name}}</strong></p>
+<p style="text-align: center">{{funeral_mass}}</p>
+<p style="text-align: center">{{parish.name}}</p>`,
       page_break_after: true,
       order: 0
     },
     {
       name: 'Order of Mass',
-      content: `## Order of Mass
-
-### Introductory Rites
-
-**Greeting of the Body**
-
-**Entrance Procession**
-{{opening_song}}
-
-**Sprinkling with Holy Water**
-
-**Placing of the Pall**
-
-**Entrance into the Church**
-
-**Collect (Opening Prayer)**
-
----
-
-### Liturgy of the Word
-
-**First Reading**
-
-**Responsorial Psalm**
-
-**Gospel**
-
-**Homily**
-
----
-
-### Universal Prayer (Prayer of the Faithful)
-
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Mass</strong></span></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Introductory Rites</strong></span></p>
+<p><strong>Greeting of the Body</strong></p>
+<p><strong>Entrance Procession</strong><br>{{opening_song}}</p>
+<p><strong>Sprinkling with Holy Water</strong></p>
+<p><strong>Placing of the Pall</strong></p>
+<p><strong>Entrance into the Church</strong></p>
+<p><strong>Collect (Opening Prayer)</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Liturgy of the Word</strong></span></p>
+<p><strong>First Reading</strong></p>
+<p><strong>Responsorial Psalm</strong></p>
+<p><strong>Gospel</strong></p>
+<p><strong>Homily</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Universal Prayer</strong></span></p>
 {{prayers_of_the_faithful}}
-
----
-
-### Liturgy of the Eucharist
-
-**Preparation of the Gifts**
-
-**Eucharistic Prayer**
-
-**Lord's Prayer**
-
-**Sign of Peace**
-
-**Communion**
-
----
-
-### Final Commendation
-
-**Invitation to Prayer**
-
-**Silence**
-
-**Signs of Farewell**
-
-**Song of Farewell**
-
-**Prayer of Commendation**
-
-**Procession to the Place of Committal**`,
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Liturgy of the Eucharist</strong></span></p>
+<p><strong>Preparation of the Gifts</strong></p>
+<p><strong>Eucharistic Prayer</strong></p>
+<p><strong>Lord's Prayer</strong></p>
+<p><strong>Sign of Peace</strong></p>
+<p><strong>Communion</strong></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Final Commendation</strong></span></p>
+<p><strong>Invitation to Prayer</strong></p>
+<p><strong>Silence</strong></p>
+<p><strong>Signs of Farewell</strong></p>
+<p><strong>Song of Farewell</strong></p>
+<p><strong>Prayer of Commendation</strong></p>
+<p><strong>Procession to the Place of Committal</strong></p>`,
       page_break_after: true,
       order: 1
     },
     {
       name: 'First Reading',
-      content: `<p><strong>Reader:</strong> {{first_reader.full_name}}</p>
-
-{{first_reading}}`,
+      content: `{{first_reading}}`,
       page_break_after: true,
       order: 2
     },
@@ -856,9 +735,7 @@ May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpet
     },
     {
       name: 'Second Reading',
-      content: `<p><strong>Reader:</strong> {{second_reader.full_name}}</p>
-
-{{second_reading}}`,
+      content: `{{second_reading}}`,
       page_break_after: true,
       order: 4
     },
@@ -876,21 +753,12 @@ May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpet
     },
     {
       name: 'Music',
-      content: `## Music for the Liturgy
-
-**Entrance Hymn:** {{opening_song}}
-
----
-
-*Please join in singing the hymns as able.*
-
----
-
-### Committal
-
-Burial will take place at:
-
-{{burial_location.name}}`,
+      content: `<p><span style="font-size: 1.25em"><strong>Music for the Liturgy</strong></span></p>
+<p><strong>Entrance Hymn:</strong> {{opening_song}}</p>
+<p><em>Please join in singing the hymns as able.</em></p>
+<p style="margin-top: 1em"><span style="font-size: 1.25em"><strong>Committal</strong></span></p>
+<p>Burial will take place at:</p>
+<p>{{burial_location.name}}</p>`,
       page_break_after: false,
       order: 7
     }
@@ -982,42 +850,25 @@ Burial will take place at:
   const baptismProgramSections = [
     {
       name: 'Welcome',
-      content: `# Baptism
-
-Please join us in celebrating the Baptism of
-
-**{{child.full_name}}**
-
-{{baptism}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Baptism</strong></span></p>
+<p style="text-align: center">Please join us in celebrating the Baptism of</p>
+<p style="text-align: center"><strong>{{child.full_name}}</strong></p>
+<p style="text-align: center">{{baptism}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Family',
-      content: `## Family
-
-**Parents:** {{mother.full_name}} and {{father.full_name}}
-
-**Godparents:** {{godmother.full_name}} and {{godfather.full_name}}`,
+      content: `<p><span style="font-size: 1.25em"><strong>Family</strong></span></p>
+<p><strong>Parents:</strong> {{mother.full_name}} and {{father.full_name}}</p>
+<p><strong>Godparents:</strong> {{godmother.full_name}} and {{godfather.full_name}}</p>`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Order of Service',
-      content: `## Order of Service
-
-1. Reception of the Child
-2. Celebration of God's Word
-3. Celebration of the Sacrament
-   - Prayer over the Water
-   - Renunciation of Sin and Profession of Faith
-   - Baptism
-   - Anointing with Chrism
-   - Clothing with White Garment
-   - Lighted Candle
-4. Conclusion of the Rite
-   - Lord's Prayer
-   - Blessing`,
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Service</strong></span></p>
+<p>1. Reception of the Child<br>2. Celebration of God's Word<br>3. Celebration of the Sacrament<br>&nbsp;&nbsp;&nbsp;• Prayer over the Water<br>&nbsp;&nbsp;&nbsp;• Renunciation of Sin and Profession of Faith<br>&nbsp;&nbsp;&nbsp;• Baptism<br>&nbsp;&nbsp;&nbsp;• Anointing with Chrism<br>&nbsp;&nbsp;&nbsp;• Clothing with White Garment<br>&nbsp;&nbsp;&nbsp;• Lighted Candle<br>4. Conclusion of the Rite<br>&nbsp;&nbsp;&nbsp;• Lord's Prayer<br>&nbsp;&nbsp;&nbsp;• Blessing</p>`,
       page_break_after: false,
       order: 2
     }
@@ -1109,46 +960,32 @@ Please join us in celebrating the Baptism of
   const quinceaneraProgramSections = [
     {
       name: 'Welcome',
-      content: `# Quinceañera
-
-Please join us in celebrating the Quinceañera of
-
-**{{quinceanera.full_name}}**
-
-{{quinceanera_mass}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Quinceañera</strong></span></p>
+<p style="text-align: center">Please join us in celebrating the Quinceañera of</p>
+<p style="text-align: center"><strong>{{quinceanera.full_name}}</strong></p>
+<p style="text-align: center">{{quinceanera_mass}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Order of Service',
-      content: `## Order of Service
-
-1. Processional
-2. Opening Prayer
-3. Liturgy of the Word
-4. Renewal of Baptismal Promises
-5. Presentation of Gifts
-6. Blessing
-7. Prayer of Thanksgiving
-8. Recessional`,
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Service</strong></span></p>
+<p>1. Processional<br>2. Opening Prayer<br>3. Liturgy of the Word<br>4. Renewal of Baptismal Promises<br>5. Presentation of Gifts<br>6. Blessing<br>7. Prayer of Thanksgiving<br>8. Recessional</p>`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Prayer',
-      content: `## Prayer for Quinceañera
-
-Lord God, you who are our Father and Creator, we thank you for the gift of life and for the blessing of family. Today we celebrate {{quinceanera.first_name}} as she marks her fifteenth birthday. We ask your blessing upon her as she continues her journey of faith. Guide her steps, strengthen her resolve, and fill her heart with your love. May she always know that she is your beloved daughter. We ask this through Christ our Lord. Amen.`,
+      content: `<p><span style="font-size: 1.25em"><strong>Prayer for Quinceañera</strong></span></p>
+<p>Lord God, you who are our Father and Creator, we thank you for the gift of life and for the blessing of family. Today we celebrate {{quinceanera.first_name}} as she marks her fifteenth birthday. We ask your blessing upon her as she continues her journey of faith. Guide her steps, strengthen her resolve, and fill her heart with your love. May she always know that she is your beloved daughter. We ask this through Christ our Lord. Amen.</p>`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Reception',
-      content: `## Reception
-
-Please join us for a reception following the ceremony at:
-
-{{reception_location.name}}`,
+      content: `<p><span style="font-size: 1.25em"><strong>Reception</strong></span></p>
+<p>Please join us for a reception following the ceremony at:</p>
+<p>{{reception_location.name}}</p>`,
       page_break_after: false,
       order: 3
     }
@@ -1240,46 +1077,32 @@ Please join us for a reception following the ceremony at:
   const presentationProgramSections = [
     {
       name: 'Welcome',
-      content: `# Presentation of the Child
-
-Please join us in celebrating the Presentation of
-
-**{{child.full_name}}**
-
-{{presentation}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Presentation of the Child</strong></span></p>
+<p style="text-align: center">Please join us in celebrating the Presentation of</p>
+<p style="text-align: center"><strong>{{child.full_name}}</strong></p>
+<p style="text-align: center">{{presentation}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Family',
-      content: `## Family
-
-**Parents:** {{mother.full_name}} and {{father.full_name}}
-
-**Godparents:** {{godmother.full_name}} and {{godfather.full_name}}`,
+      content: `<p><span style="font-size: 1.25em"><strong>Family</strong></span></p>
+<p><strong>Parents:</strong> {{mother.full_name}} and {{father.full_name}}</p>
+<p><strong>Godparents:</strong> {{godmother.full_name}} and {{godfather.full_name}}</p>`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Order of Service',
-      content: `## Order of Service
-
-1. Gathering
-2. Opening Prayer
-3. Reading from Scripture
-4. Presentation of the Child
-5. Blessing of Parents and Godparents
-6. Blessing of the Child
-7. Lord's Prayer
-8. Final Blessing`,
+      content: `<p><span style="font-size: 1.25em"><strong>Order of Service</strong></span></p>
+<p>1. Gathering<br>2. Opening Prayer<br>3. Reading from Scripture<br>4. Presentation of the Child<br>5. Blessing of Parents and Godparents<br>6. Blessing of the Child<br>7. Lord's Prayer<br>8. Final Blessing</p>`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Prayer',
-      content: `## Prayer for the Child
-
-Lord God, we present this child to you in thanksgiving for the gift of life. Bless {{child.first_name}} and watch over {{child.sex | him | her}}. Guide the parents {{mother.first_name}} and {{father.first_name}} as they raise their child in faith. May the godparents {{godmother.first_name}} and {{godfather.first_name}} support them on this journey. We ask this through Christ our Lord. Amen.`,
+      content: `<p><span style="font-size: 1.25em"><strong>Prayer for the Child</strong></span></p>
+<p>Lord God, we present this child to you in thanksgiving for the gift of life. Bless {{child.first_name}} and watch over {{child.sex | him | her}}. Guide the parents {{mother.first_name}} and {{father.first_name}} as they raise their child in faith. May the godparents {{godmother.first_name}} and {{godfather.first_name}} support them on this journey. We ask this through Christ our Lord. Amen.</p>`,
       page_break_after: false,
       order: 3
     }
@@ -1369,43 +1192,33 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   const bibleStudyScriptSections = [
     {
       name: 'Session Information',
-      content: `# Bible Study Session
-
-{{parish.name}}
-
-**Date:** {{session}}
-
-**Leader:** {{discussion_leader.full_name}}
-
-**Topic:** {{topic}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Bible Study Session</strong></span></p>
+<p style="text-align: center">{{parish.name}}</p>
+<p><strong>Date:</strong> {{session}}</p>
+<p><strong>Leader:</strong> {{discussion_leader.full_name}}</p>
+<p><strong>Topic:</strong> {{topic}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Scripture',
-      content: `## Scripture Passage
-
+      content: `<p><span style="font-size: 1.25em"><strong>Scripture Passage</strong></span></p>
 {{scripture_passage}}`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Discussion Questions',
-      content: `## Discussion Questions
-
+      content: `<p><span style="font-size: 1.25em"><strong>Discussion Questions</strong></span></p>
 {{discussion_questions}}`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Notes',
-      content: `## Session Notes
-
+      content: `<p><span style="font-size: 1.25em"><strong>Session Notes</strong></span></p>
 {{notes}}
-
----
-
-**Expected Attendance:** {{expected_attendance}}`,
+<p><strong>Expected Attendance:</strong> {{expected_attendance}}</p>`,
       page_break_after: false,
       order: 3
     }
@@ -1494,38 +1307,38 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   const fundraiserScriptSections = [
     {
       name: 'Event Information',
-      content: '# Fundraiser Event\n\n{{parish.name}}\n\n**Date:** {{event_date}}\n\n**Coordinator:** {{event_coordinator.full_name}}\n\n**Fundraising Goal:** ${{fundraising_goal}}',
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Fundraiser Event</strong></span></p>
+<p style="text-align: center">{{parish.name}}</p>
+<p><strong>Date:</strong> {{event_date}}</p>
+<p><strong>Coordinator:</strong> {{event_coordinator.full_name}}</p>
+<p><strong>Fundraising Goal:</strong> $` + `{{fundraising_goal}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Event Description',
-      content: `## Event Description
-
+      content: `<p><span style="font-size: 1.25em"><strong>Event Description</strong></span></p>
 {{event_description}}`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Volunteer Needs',
-      content: `## Volunteer Needs
-
+      content: `<p><span style="font-size: 1.25em"><strong>Volunteer Needs</strong></span></p>
 {{volunteer_needs}}`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Setup',
-      content: `## Setup Notes
-
+      content: `<p><span style="font-size: 1.25em"><strong>Setup Notes</strong></span></p>
 {{setup_notes}}`,
       page_break_after: false,
       order: 3
     },
     {
       name: 'Cleanup',
-      content: `## Cleanup Notes
-
+      content: `<p><span style="font-size: 1.25em"><strong>Cleanup Notes</strong></span></p>
 {{cleanup_notes}}`,
       page_break_after: false,
       order: 4
@@ -1615,40 +1428,32 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   const religiousEdScriptSections = [
     {
       name: 'Class Information',
-      content: `# Religious Education Lesson Plan
-
-{{parish.name}}
-
-**Date:** {{class_session}}
-
-**Catechist:** {{catechist.full_name}}
-
-**Grade Level:** {{grade_level}}
-
-**Topic:** {{lesson_topic}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Religious Education Lesson Plan</strong></span></p>
+<p style="text-align: center">{{parish.name}}</p>
+<p><strong>Date:</strong> {{class_session}}</p>
+<p><strong>Catechist:</strong> {{catechist.full_name}}</p>
+<p><strong>Grade Level:</strong> {{grade_level}}</p>
+<p><strong>Topic:</strong> {{lesson_topic}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Lesson Plan',
-      content: `## Lesson Plan
-
+      content: `<p><span style="font-size: 1.25em"><strong>Lesson Plan</strong></span></p>
 {{lesson_plan}}`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Materials',
-      content: `## Materials Needed
-
+      content: `<p><span style="font-size: 1.25em"><strong>Materials Needed</strong></span></p>
 {{materials_needed}}`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Homework',
-      content: `## Homework Assignment
-
+      content: `<p><span style="font-size: 1.25em"><strong>Homework Assignment</strong></span></p>
 {{homework_assignment}}`,
       page_break_after: false,
       order: 3
@@ -1737,36 +1542,30 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   const staffMeetingScriptSections = [
     {
       name: 'Meeting Information',
-      content: `# Staff Meeting
-
-{{parish.name}}
-
-**Date:** {{meeting_date}}
-
-**Leader:** {{meeting_leader.full_name}}`,
+      content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Staff Meeting</strong></span></p>
+<p style="text-align: center">{{parish.name}}</p>
+<p><strong>Date:</strong> {{meeting_date}}</p>
+<p><strong>Leader:</strong> {{meeting_leader.full_name}}</p>`,
       page_break_after: false,
       order: 0
     },
     {
       name: 'Agenda',
-      content: `## Agenda
-
+      content: `<p><span style="font-size: 1.25em"><strong>Agenda</strong></span></p>
 {{agenda}}`,
       page_break_after: false,
       order: 1
     },
     {
       name: 'Minutes',
-      content: `## Meeting Minutes
-
+      content: `<p><span style="font-size: 1.25em"><strong>Meeting Minutes</strong></span></p>
 {{meeting_minutes}}`,
       page_break_after: false,
       order: 2
     },
     {
       name: 'Action Items',
-      content: `## Action Items
-
+      content: `<p><span style="font-size: 1.25em"><strong>Action Items</strong></span></p>
 {{action_items}}`,
       page_break_after: false,
       order: 3
