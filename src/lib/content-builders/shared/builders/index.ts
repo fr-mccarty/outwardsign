@@ -11,9 +11,6 @@ export { gendered, getStatusLabel } from '../helpers'
 // Cover Page Builder
 export { buildCoverPage, type CoverPageSection, type CoverPageRow } from './cover-page'
 
-// Psalm Builder
-export { buildPsalmSection } from './psalm'
-
 // Petitions Builder
 export { buildPetitionsSection } from './petitions'
 

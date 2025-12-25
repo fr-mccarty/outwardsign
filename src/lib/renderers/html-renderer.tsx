@@ -154,29 +154,6 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
       ) : null
     }
 
-    case 'psalm': {
-      const responseStyle = resolveElementStyle('psalm-response')
-      const verseStyle = resolveElementStyle('psalm-verse')
-
-      if (!responseStyle || !verseStyle) return null
-
-      return (
-        <div key={index}>
-          {/* Verses with response after each */}
-          {element.verses.map((verse, verseIndex) => (
-            <div key={verseIndex}>
-              <div className={getColorClassName(verseStyle.color)} style={applyResolvedStyle(verseStyle, isPrintMode)}>
-                <strong>Reader:</strong> {verse}
-              </div>
-              <div className={getColorClassName(responseStyle.color)} style={applyResolvedStyle(responseStyle, isPrintMode)}>
-                <strong>People:</strong> {element.response}
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-
     case 'response-dialogue': {
       const containerStyle = resolveElementStyle('response-dialogue')
       const labelStyle = resolveElementStyle('response-dialogue-label')

@@ -932,4 +932,3 @@ St. Vincent de Paul Society in lieu of flowers.
 - **[DRAG_AND_DROP.md](./DRAG_AND_DROP.md)** - Drag-and-drop implementation
 - **[MODULE_REGISTRY.md](./MODULE_REGISTRY.md)** - All routes and modules
 - **[SCRIPT_TEMPLATING.md](./SCRIPT_TEMPLATING.md)** - Placeholder syntax, security considerations, resolution strategy
-- **[WEDDING_EVENT_TYPE.md](./WEDDING_EVENT_TYPE.md)** - Example event type with inputs, outputs, and field values

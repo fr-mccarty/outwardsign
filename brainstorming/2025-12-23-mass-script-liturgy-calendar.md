@@ -1,8 +1,9 @@
 # Mass Script: Liturgy Calendar & Role Assignments
 
 **Created:** 2025-12-23
-**Status:** Ready for Requirements (devils-advocate review complete)
+**Status:** Processed → Requirements created, Phase 1 implemented
 **Agents:** brainstorming-agent, devils-advocate-agent
+**Note:** See `/requirements/2025-12-23-mass-script-liturgy-calendar.md` for current status
 
 ## Feature Overview
 Generate printable mass scripts that combine liturgy template inputs with role assignments for scheduled masses, enabling parish staff to prepare comprehensive scripts for presiders and ministers.

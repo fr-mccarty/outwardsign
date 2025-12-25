@@ -10,12 +10,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import PdfPrinter from 'pdfmake'
 import { TDocumentDefinitions, Content } from 'pdfmake/interfaces'
-import { replacePlaceholders } from '@/lib/utils/markdown-renderer'
-import type { RenderMarkdownOptions } from '@/lib/utils/markdown-renderer'
+import { replacePlaceholders, type RenderMarkdownOptions } from '@/lib/utils/content-renderer'
 import { getMassWithRelations } from '@/lib/actions/mass-liturgies'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
-import { marked } from 'marked'
 
 // Define fonts for pdfmake
 const fonts = {
@@ -33,21 +31,18 @@ const printer = new PdfPrinter(fonts)
 const RED_COLOR = '#c41e3a'
 
 /**
- * Converts markdown to pdfmake content array
- * Handles {red}text{/red} syntax and standard markdown
+ * Converts HTML content to pdfmake content array
+ * Handles {red}text{/red} syntax and standard HTML tags
  */
-async function markdownToPdfContent(
-  markdown: string,
+function htmlToPdfContent(
+  html: string,
   options: RenderMarkdownOptions
-): Promise<Content[]> {
+): Content[] {
   // Step 1: Replace {{Field Name}} placeholders
-  const content = replacePlaceholders(markdown, options)
+  const content = replacePlaceholders(html, options)
 
-  // Step 2: Parse markdown to HTML first
-  const html = await marked.parse(content)
-
-  // Step 3: Convert HTML to pdfmake content
-  const lines = html.split('\n').filter(line => line.trim())
+  // Step 2: Convert HTML to pdfmake content
+  const lines = content.split('\n').filter(line => line.trim())
   const pdfContent: Content[] = []
 
   for (const line of lines) {
@@ -285,8 +280,8 @@ export async function GET(
         })
       }
 
-      // Convert section content (markdown) to PDF content
-      const sectionContent = await markdownToPdfContent(section.content, {
+      // Convert section content (HTML) to PDF content
+      const sectionContent = htmlToPdfContent(section.content, {
         fieldValues: mass.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,

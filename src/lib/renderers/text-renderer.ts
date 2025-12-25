@@ -72,15 +72,6 @@ function renderElement(element: ContentElement): string {
     case 'conclusion':
       return '\n' + element.text + '\n'
 
-    case 'psalm': {
-      let psalmText = ''
-      element.verses.forEach((verse) => {
-        psalmText += `Reader: ${verse}\n`
-        psalmText += `People: ${element.response}\n\n`
-      })
-      return psalmText
-    }
-
     case 'response-dialogue':
       return `${element.label} ${element.text}\n`
 

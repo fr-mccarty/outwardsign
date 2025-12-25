@@ -1,8 +1,9 @@
 # Mass Script: Liturgy Calendar & Role Assignments
 
 **Created:** 2025-12-23
-**Status:** Ready for Development
+**Status:** Phase 1 Complete, Phase 2 Pending
 **Agents:** brainstorming-agent, devils-advocate-agent, requirements-agent
+**Updated:** 2025-12-24 - Phase 1 (Foundation) implemented
 
 ## Feature Overview
 Generate printable mass scripts that combine liturgy template inputs with role assignments for scheduled masses, enabling parish staff to prepare comprehensive scripts for presiders and ministers.
@@ -25,12 +26,15 @@ Parish staff need a way to prepare complete mass scripts that presiders can pick
 
 ## Success Criteria
 What does "done" look like?
-- [ ] System type values updated ('mass' → 'mass-liturgy', 'event' → 'parish-event')
-- [ ] UI labels updated throughout application
-- [ ] **mass_roles capability data migrated to groups system**
-- [ ] **input_filter_tags configured for group-based PersonPicker filtering**
-- [ ] Legacy mass_roles system completely removed
-- [ ] Staff can assign ministers via people_event_assignments
+
+**Phase 1 (Complete):**
+- [x] System type values updated ('mass' → 'mass-liturgy', 'event' → 'parish-event')
+- [x] UI labels updated throughout application
+- [x] Legacy mass_roles system completely removed
+- [x] `people_event_assignments` table created for unified role storage
+
+**Phase 2 (Pending):**
+- [ ] Staff can assign ministers via people_event_assignments UI
 - [ ] **PersonPicker shows suggested people based on ministry groups**
 - [ ] System can generate roster-style printable scripts
 - [ ] Script shows ALL mass times for one liturgical day with role assignments

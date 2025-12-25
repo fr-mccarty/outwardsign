@@ -1,8 +1,10 @@
 /**
- * Markdown Renderer for User-Defined Event Types
+ * Content Renderer for User-Defined Event Types
  *
- * Parses markdown content with custom syntax and replaces field placeholders
- * with actual values from event data.
+ * Processes HTML script content and replaces field placeholders with actual values
+ * from event data. All content is HTML-only with sanitization for security.
+ *
+ * Content format: HTML with inline styles (e.g., <div style="color: red;">)
  *
  * FIELD MATCHING:
  * - Placeholders use `property_name` (lowercase, underscores) for reliable matching
@@ -36,12 +38,55 @@
  * OTHER:
  * - {red}text{/red} - Red text (liturgical color #c41e3a)
  *
- * This uses marked.js for markdown parsing.
+ * Security: All HTML content is sanitized to prevent XSS attacks.
  */
 
-import { marked } from 'marked'
 import type { InputFieldDefinition, InputFieldType } from '@/lib/types/event-types'
 import type { Person, Content } from '@/lib/types'
+
+/**
+ * Sanitize HTML content to prevent XSS attacks
+ *
+ * Removes:
+ * - Script tags and their content
+ * - Event handlers (onclick, onerror, onload, etc.)
+ * - javascript: URLs
+ * - Dangerous tags (iframe, object, embed, link, style)
+ *
+ * Allows:
+ * - Basic formatting: div, p, span, strong, em, b, i, u, br, hr
+ * - Lists: ul, ol, li
+ * - Safe inline styles (preserved)
+ *
+ * @param html - Raw HTML content
+ * @returns Sanitized HTML content
+ */
+function sanitizeHTML(html: string): string {
+  // Remove script tags and their content
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+
+  // Remove dangerous tags (but preserve content)
+  sanitized = sanitized.replace(/<(iframe|object|embed|link|form|input|button|select|textarea)\b[^>]*>/gi, '')
+  sanitized = sanitized.replace(/<\/(iframe|object|embed|link|form|input|button|select|textarea)>/gi, '')
+
+  // Remove style tags and their content (we allow inline styles but not style blocks)
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+
+  // Remove event handlers (on*)
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
+
+  // Remove javascript: URLs
+  sanitized = sanitized.replace(/javascript\s*:/gi, '')
+
+  // Remove data: URLs (can be used for XSS)
+  sanitized = sanitized.replace(/data\s*:/gi, '')
+
+  // Remove vbscript: URLs
+  sanitized = sanitized.replace(/vbscript\s*:/gi, '')
+
+  return sanitized
+}
 
 /**
  * Resolved field value with type information
@@ -62,9 +107,9 @@ export interface ParishInfo {
 }
 
 /**
- * Options for rendering markdown
+ * Options for rendering content
  */
-export interface RenderMarkdownOptions {
+export interface RenderContentOptions {
   /** Field values from the event (JSON object) */
   fieldValues: Record<string, any>
   /** Input field definitions for the event type */
@@ -86,10 +131,18 @@ export interface RenderMarkdownOptions {
   language?: 'en' | 'es'
 }
 
+// Legacy alias for backward compatibility
+export type RenderMarkdownOptions = RenderContentOptions
+
 /**
  * Valid person property names for dot notation access
  */
 type PersonProperty = 'full_name' | 'first_name' | 'last_name' | 'sex'
+
+/**
+ * Valid content property names for dot notation access
+ */
+type ContentProperty = 'title' | 'body'
 
 /**
  * Internationalized text for unassigned fields
@@ -178,19 +231,25 @@ function resolveParishPlaceholder(
  *   "first_reader.full_name" -> { propertyName: "first_reader", property: "full_name" }
  *   "petition_reader" -> { propertyName: "petition_reader", property: undefined }
  */
-function parseFieldReference(fieldRef: string): { fieldName: string; property?: PersonProperty } {
+function parseFieldReference(fieldRef: string): { fieldName: string; property?: PersonProperty | ContentProperty } {
   const dotIndex = fieldRef.indexOf('.')
   if (dotIndex === -1) {
     return { fieldName: fieldRef }
   }
 
   const fieldName = fieldRef.substring(0, dotIndex)
-  const property = fieldRef.substring(dotIndex + 1) as PersonProperty
+  const property = fieldRef.substring(dotIndex + 1)
 
-  // Validate property name
-  const validProperties: PersonProperty[] = ['full_name', 'first_name', 'last_name', 'sex']
-  if (validProperties.includes(property)) {
-    return { fieldName, property }
+  // Validate property name - accept both person and content properties
+  const validPersonProperties: PersonProperty[] = ['full_name', 'first_name', 'last_name', 'sex']
+  const validContentProperties: ContentProperty[] = ['title', 'body']
+
+  if (validPersonProperties.includes(property as PersonProperty)) {
+    return { fieldName, property: property as PersonProperty }
+  }
+
+  if (validContentProperties.includes(property as ContentProperty)) {
+    return { fieldName, property: property as ContentProperty }
   }
 
   // Invalid property - return just the field name
@@ -210,7 +269,7 @@ function parseFieldReference(fieldRef: string): { fieldName: string; property?: 
  */
 export function replacePlaceholders(
   content: string,
-  options: RenderMarkdownOptions
+  options: RenderContentOptions
 ): string {
   const { fieldValues, inputFieldDefinitions, resolvedEntities, parish, language = 'en' } = options
 
@@ -283,7 +342,7 @@ function resolveGenderedText(
   femaleText: string,
   fieldValues: Record<string, any>,
   inputFieldDefinitions: InputFieldDefinition[],
-  resolvedEntities?: RenderMarkdownOptions['resolvedEntities']
+  resolvedEntities?: RenderContentOptions['resolvedEntities']
 ): string {
   // Extract the base property_name (before any dot notation)
   const propertyName = fieldRef.split('.')[0]
@@ -341,8 +400,8 @@ function resolveGenderedText(
 function getDisplayValue(
   rawValue: any,
   fieldDef: InputFieldDefinition,
-  resolvedEntities?: RenderMarkdownOptions['resolvedEntities'],
-  property?: PersonProperty,
+  resolvedEntities?: RenderContentOptions['resolvedEntities'],
+  property?: PersonProperty | ContentProperty,
   language: 'en' | 'es' = 'en'
 ): string {
   switch (fieldDef.type) {
@@ -399,7 +458,17 @@ function getDisplayValue(
       if (isUUID(rawValue)) {
         // New content reference - fetch from resolvedEntities
         const content = resolvedEntities?.contents?.[rawValue]
-        return content?.body || ''
+
+        if (!content) return ''
+
+        // Return the requested property, defaulting to body
+        switch (property as ContentProperty) {
+          case 'title':
+            return content.title || ''
+          case 'body':
+          default:
+            return content.body || ''
+        }
       } else {
         // Legacy text value - use as-is
         return String(rawValue || '')
@@ -467,53 +536,67 @@ function getDisplayValue(
 }
 
 /**
- * Renders markdown to HTML with custom syntax support
+ * Renders HTML content with custom syntax support and sanitization
  *
- * @param markdown - The markdown content with custom syntax
+ * @param content - The HTML content with custom syntax
  * @param options - Rendering options including field values and definitions
- * @returns HTML string
+ * @returns Sanitized HTML string
  */
-export async function renderMarkdownToHTML(
-  markdown: string,
-  options: RenderMarkdownOptions
+export async function renderContentToHTML(
+  content: string,
+  options: RenderContentOptions
 ): Promise<string> {
   // Step 1: Replace {{Field Name}} placeholders with actual values
-  let content = replacePlaceholders(markdown, options)
+  let processedContent = replacePlaceholders(content, options)
 
   // Step 2: Parse {red}text{/red} syntax to HTML
-  content = parseRedText(content, 'html')
+  processedContent = parseRedText(processedContent, 'html')
 
-  // Step 3: Convert standard markdown to HTML using marked
-  const html = await marked.parse(content)
-
-  return html
+  // Step 3: Sanitize HTML to prevent XSS
+  return sanitizeHTML(processedContent)
 }
 
+// Legacy alias for backward compatibility
+export const renderMarkdownToHTML = renderContentToHTML
+
 /**
- * Renders markdown to plain text (for text export)
- * Strips all markdown formatting and custom syntax
+ * Renders content to plain text (for text export)
+ * Strips all HTML tags and custom syntax
  *
- * @param markdown - The markdown content with custom syntax
+ * @param content - The HTML content with custom syntax
  * @param options - Rendering options including field values and definitions
  * @returns Plain text string
  */
-export function renderMarkdownToText(
-  markdown: string,
-  options: RenderMarkdownOptions
+export function renderContentToText(
+  content: string,
+  options: RenderContentOptions
 ): string {
   // Step 1: Replace {{Field Name}} placeholders with actual values
-  let content = replacePlaceholders(markdown, options)
+  let processedContent = replacePlaceholders(content, options)
 
   // Step 2: Remove {red} tags
-  content = parseRedText(content, 'text')
+  processedContent = parseRedText(processedContent, 'text')
 
-  // Step 3: Keep markdown as-is (don't convert to HTML)
-  // For text export, we preserve the markdown formatting
-  return content
+  // Step 3: Strip HTML tags for plain text output
+  processedContent = processedContent.replace(/<[^>]*>/g, '')
+
+  // Step 4: Decode HTML entities
+  processedContent = processedContent
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+
+  return processedContent
 }
 
+// Legacy alias for backward compatibility
+export const renderMarkdownToText = renderContentToText
+
 /**
- * Extracts red text spans from markdown for PDF/Word rendering
+ * Extracts red text spans from content for PDF/Word rendering
  * Returns array of text segments with color information
  *
  * This is used by PDF and Word renderers to apply color formatting

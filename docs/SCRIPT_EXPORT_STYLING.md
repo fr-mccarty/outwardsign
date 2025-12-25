@@ -4,15 +4,37 @@ This document explains how styling from script content in the database is transf
 
 ## Overview
 
-Scripts are stored in the database as Markdown content with custom syntax extensions. When rendered or exported, this content goes through a processing pipeline that:
+Scripts are stored in the database as content in the `sections.content` column. The content processor supports two formats:
+
+- **HTML (modern):** Content with inline styles (e.g., `<div style="color: red;">`) - auto-detected and passed through
+- **Markdown (legacy):** Converted to HTML using marked.js
+
+When rendered or exported, this content goes through a processing pipeline that:
 
 1. Replaces placeholders (`{{Field Name}}`) with actual event data
-2. Converts Markdown to the target format
-3. Applies consistent styling across all outputs
+2. Processes custom syntax (`{red}text{/red}`)
+3. For HTML content: passes through as-is
+4. For markdown content: converts to HTML using marked.js
+5. Applies consistent styling across all outputs
 
 ## Source Content (Database)
 
-Script section content is stored as Markdown in the `sections.content` column with these supported formats:
+Script section content is stored in the `sections.content` column. The processor auto-detects the format:
+
+### HTML Content (Modern)
+
+For structured content like readings, use HTML with inline styles:
+
+| Source Syntax | Description | Example |
+|---------------|-------------|---------|
+| `<div style="text-align: right;">` | Right-aligned text | `<div style="text-align: right; font-style: italic;">Citation</div>` |
+| `<div style="color: red;">` | Red text | `<div style="text-align: right; color: red;">FIRST READING</div>` |
+| `<p><strong>text</strong></p>` | Bold text | `<p><strong>A reading from...</strong></p>` |
+| `<p>text</p>` | Paragraph | `<p>The word of the Lord.</p>` |
+
+### Markdown Content (Legacy)
+
+For simpler content, markdown is still supported:
 
 | Source Syntax | Description | Example |
 |---------------|-------------|---------|
@@ -165,7 +187,7 @@ This is the content with Michael Chen and Lisa Brown mentioned.
 ## Processing Pipeline
 
 ```
-Database (Markdown)
+Database (HTML or Markdown)
        │
        ▼
 ┌─────────────────────────────────────────┐
@@ -183,9 +205,9 @@ Database (Markdown)
        │
        ▼
 ┌─────────────────────────────────────────┐
-│  3. Convert Markdown                    │
-│     - marked.parse() → HTML             │
-│     - Then convert to target format     │
+│  3. Format Detection & Conversion       │
+│     - If HTML detected → pass through   │
+│     - If markdown → marked.parse()      │
 └─────────────────────────────────────────┘
        │
        ├──► HTML View: dangerouslySetInnerHTML
@@ -201,8 +223,8 @@ Database (Markdown)
 
 | File | Purpose |
 |------|---------|
-| `src/lib/utils/markdown-processor.ts` | Shared processor for HTML/Print views |
-| `src/lib/utils/markdown-renderer.ts` | Placeholder replacement, text rendering |
+| `src/lib/utils/markdown-processor.ts` | Content processor for HTML/Print views (auto-detects HTML vs markdown) |
+| `src/lib/utils/markdown-renderer.ts` | Placeholder replacement, text rendering (auto-detects HTML vs markdown) |
 | `src/components/dynamic-script-viewer.tsx` | HTML view component |
 | `src/app/print/events/.../page.tsx` | Print view page |
 | `src/app/print/print.css` | Print/screen styles for print views |

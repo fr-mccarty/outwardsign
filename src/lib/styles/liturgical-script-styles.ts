@@ -136,31 +136,6 @@ export const ELEMENT_STYLES = {
     preserveLineBreaks: false,
   },
 
-  // Psalm-specific styles
-  'psalm-response': {
-    fontSize: 11,
-    bold: true,
-    italic: true,
-    color: 'black',
-    alignment: 'left',
-    marginTop: 3,
-    marginBottom: 3,
-    lineHeight: 1.4,
-    preserveLineBreaks: false,
-  },
-
-  'psalm-verse': {
-    fontSize: 11,
-    bold: false,
-    italic: false,
-    color: 'black',
-    alignment: 'left',
-    marginTop: 2,
-    marginBottom: 0,
-    lineHeight: 1.4,
-    preserveLineBreaks: false,
-  },
-
   'response-dialogue': {
     fontSize: 11,
     bold: false,

@@ -10,13 +10,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, PageBreak, AlignmentType } from 'docx'
-import { replacePlaceholders } from '@/lib/utils/markdown-renderer'
-import type { RenderMarkdownOptions } from '@/lib/utils/markdown-renderer'
+import { replacePlaceholders, type RenderMarkdownOptions } from '@/lib/utils/content-renderer'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
-import { marked } from 'marked'
 
 // Liturgical red color (without # prefix for Word)
 const RED_COLOR = 'c41e3a'
@@ -29,21 +27,18 @@ const POINT_TO_HALF_POINT = 2 // Word uses half-points for font size
 const POINT_TO_TWIP = 20 // Word uses twips (1/20 point) for spacing
 
 /**
- * Converts markdown to Word paragraphs
- * Handles {red}text{/red} syntax and standard markdown
+ * Converts HTML content to Word paragraphs
+ * Handles {red}text{/red} syntax and standard HTML tags
  */
-async function markdownToWordParagraphs(
-  markdown: string,
+function htmlToWordParagraphs(
+  html: string,
   options: RenderMarkdownOptions
-): Promise<Paragraph[]> {
+): Paragraph[] {
   // Step 1: Replace {{Field Name}} placeholders
-  const content = replacePlaceholders(markdown, options)
+  const content = replacePlaceholders(html, options)
 
-  // Step 2: Parse markdown to HTML first
-  const html = await marked.parse(content)
-
-  // Step 3: Convert HTML to Word paragraphs
-  const lines = html.split('\n').filter(line => line.trim())
+  // Step 2: Convert HTML to Word paragraphs
+  const lines = content.split('\n').filter(line => line.trim())
   const paragraphs: Paragraph[] = []
 
   for (const line of lines) {
@@ -371,8 +366,8 @@ export async function GET(
         )
       }
 
-      // Convert section content (markdown) to Word paragraphs
-      const sectionParagraphs = await markdownToWordParagraphs(section.content, {
+      // Convert section content (HTML) to Word paragraphs
+      const sectionParagraphs = htmlToWordParagraphs(section.content, {
         fieldValues: event.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,

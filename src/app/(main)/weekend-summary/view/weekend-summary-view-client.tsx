@@ -95,7 +95,7 @@ export function WeekendSummaryViewClient({
         <ul className="text-sm text-muted-foreground mt-1 space-y-1">
           {params.includeSacraments && <li>• Sacraments</li>}
           {params.includeMasses && <li>• Masses</li>}
-          {params.includeMassRoles && <li>• Mass Roles</li>}
+          {params.includeMassRoles && <li>• Ministry Assignments</li>}
         </ul>
       </div>
 

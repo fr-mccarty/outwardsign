@@ -2,23 +2,23 @@
  * Script Template Content Builder
  *
  * Generates printable scripts for special liturgies using database script templates.
- * This builder expands placeholders in script sections using the markdown processor.
+ * This builder expands placeholders in script sections using the content processor.
  *
  * System Types:
  * - 'mass': Uses simple-event-script builder (code-based)
  * - 'event': Uses simple-event-script builder (code-based)
  * - 'special-liturgy': Uses this builder (database template-based)
  *
- * NOTE: This builder is currently just a wrapper around the markdown processor
+ * NOTE: This builder is currently just a wrapper around the content processor
  * (processScriptForRendering). The print page directly uses processScriptForRendering
  * to generate HTML. This file exists to provide a content-builder interface for
- * consistency with other modules, but the actual work is done by the markdown processor.
+ * consistency with other modules, but the actual work is done by the content processor.
  */
 
 import { MasterEventWithRelations } from '@/lib/types'
 import { ScriptWithSections } from '@/lib/types/event-types'
 import { LiturgyDocument, ContentSection, TextElement } from '@/lib/types/liturgy-content'
-import { processScriptSection } from '@/lib/utils/markdown-processor'
+import { processScriptSection } from '@/lib/utils/content-processor'
 
 /**
  * Build liturgy document from script template

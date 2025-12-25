@@ -10,11 +10,11 @@ import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, linkMassIntention, unlinkMassIntention } from "@/lib/actions/mass-liturgies"
 import { getMasterEventAssignments, createPeopleEventAssignment, deletePeopleEventAssignment, type PeopleEventAssignmentWithPerson } from "@/lib/actions/people-event-assignments"
 import type { MassWithRelations } from "@/lib/schemas/mass-liturgies"
-import type { Person, Event, Location, ContentWithTags, Petition, Document } from "@/lib/types"
+import type { Person, Event, Location, ContentWithTags, Petition, Document, InputFieldDefinition } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import type { LiturgicalCalendarEvent } from "@/lib/actions/liturgical-calendar"
 import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
-import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
+import type { EventTypeWithRelations } from "@/lib/types/event-types"
 import { getEventTypeWithRelations } from "@/lib/actions/event-types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -47,6 +47,8 @@ import { createMassSchema, type CreateMassData } from "@/lib/schemas/mass-liturg
 import { useState } from "react"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
+import { PeopleEventAssignmentSection } from "@/components/people-event-assignment-section"
+import { CalendarEventAssignmentSection } from "@/components/calendar-event-assignment-section"
 
 interface MassLiturgyFormProps {
   mass?: MassWithRelations
@@ -655,9 +657,73 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
         </FormSectionCard>
       )}
 
-      {/* Ministers - Now handled via people_event_assignments */}
-      {/* TODO: Add PeopleEventAssignmentSection component here for template-level assignments */}
-      {/* TODO: Add CalendarEventAssignmentSection component for occurrence-level assignments */}
+      {/* Ministers - Template-level assignments */}
+      {isEditing && mass?.id && (() => {
+        // Filter to person-type fields that are template-level (is_per_calendar_event = false)
+        const templateLevelPersonFields = inputFieldDefinitions.filter(
+          field => field.type === 'person' && !field.is_per_calendar_event
+        )
+
+        if (templateLevelPersonFields.length === 0) return null
+
+        // Filter assignments to template-level only (calendar_event_id = null)
+        const templateLevelAssignments = assignments.filter(a => !a.calendar_event_id)
+
+        return (
+          <FormSectionCard
+            title="Ministers (Template-level)"
+            description="Assign people to roles that apply to this mass liturgy template"
+          >
+            <PeopleEventAssignmentSection
+              masterEventId={mass.id}
+              eventTypeId={eventTypeId || ''}
+              currentAssignments={templateLevelAssignments}
+              fieldDefinitions={templateLevelPersonFields}
+              onAssignmentChange={loadAssignments}
+            />
+          </FormSectionCard>
+        )
+      })()}
+
+      {/* Ministers - Occurrence-level assignments */}
+      {isEditing && mass?.id && mass?.calendar_events && (() => {
+        // Filter to person-type fields that are occurrence-level (is_per_calendar_event = true)
+        const occurrenceLevelPersonFields = inputFieldDefinitions.filter(
+          field => field.type === 'person' && field.is_per_calendar_event
+        )
+
+        if (occurrenceLevelPersonFields.length === 0 || mass.calendar_events.length === 0) return null
+
+        return (
+          <FormSectionCard
+            title="Ministers (By Mass Time)"
+            description="Assign people to roles for specific mass times"
+          >
+            <div className="space-y-6">
+              {mass.calendar_events.map((calendarEvent) => {
+                // Filter assignments for this specific calendar event
+                const occurrenceAssignments = assignments.filter(
+                  a => a.calendar_event_id === calendarEvent.id
+                )
+
+                return (
+                  <div key={calendarEvent.id} className="border rounded-lg p-4">
+                    <CalendarEventAssignmentSection
+                      masterEventId={mass.id}
+                      calendarEventId={calendarEvent.id}
+                      calendarEventDateTime={calendarEvent.start_datetime}
+                      eventTypeId={eventTypeId || ''}
+                      currentAssignments={occurrenceAssignments}
+                      fieldDefinitions={occurrenceLevelPersonFields}
+                      onAssignmentChange={loadAssignments}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </FormSectionCard>
+        )
+      })()}
 
       {/* Mass Intention */}
       {isEditing && mass?.id && (

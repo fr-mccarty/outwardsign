@@ -21,7 +21,7 @@ import {
   Users,
   Church,
 } from 'lucide-react'
-import { PARISH_PLACEHOLDERS } from '@/lib/utils/markdown-processor'
+import { PARISH_PLACEHOLDERS } from '@/lib/utils/content-processor'
 import {
   DropdownMenu,
   DropdownMenuContent,

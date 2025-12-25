@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { renderMarkdownToText } from '@/lib/utils/markdown-renderer'
+import { renderMarkdownToText } from '@/lib/utils/content-renderer'
 import { getMassWithRelations } from '@/lib/actions/mass-liturgies'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'

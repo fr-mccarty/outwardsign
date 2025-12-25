@@ -2,8 +2,19 @@
  * Content Library Seed Data
  *
  * Seeds sample content items for development and new parishes.
- * Only includes public domain content (prayers, ceremony instructions, announcements).
- * Scripture readings are NOT included due to copyright considerations.
+ * Includes public domain content: prayers, ceremony instructions, announcements,
+ * and scripture readings (using public domain Douay-Rheims translation).
+ *
+ * SCRIPTURE READING FORMAT:
+ * -------------------------
+ * - First/Second Readings: *Introduction* (italic) + body text + *conclusion* (italic)
+ *   - Example: *A reading from the Book of Genesis* ... *The word of the Lord.*
+ * - Gospels: *Introduction* (italic) + body text + *conclusion* (italic)
+ *   - Example: *A reading from the holy Gospel according to Matthew* ... *The Gospel of the Lord.*
+ * - Psalms: **Reader:** (bold black) + verses + {red}*People: response*{/red} (red italic)
+ *
+ * NOTE: Reader names and page breaks are configured in SCRIPT TEMPLATES, not here.
+ * The script template section should include: **Reader:** {{First_Reading_Reader}}
  *
  * HOW CONTENT IS TAGGED:
  * ======================
@@ -654,6 +665,610 @@ Amén.`,
   }
 ]
 
+// =====================================================
+// Scripture Readings (Public Domain - Douay-Rheims)
+// =====================================================
+
+// First Readings
+const FIRST_READINGS: SeedContent[] = [
+  {
+    title: 'Genesis 1:26-28, 31a',
+    body: `<div style="text-align: right; font-style: italic;">Genesis 1:26-28, 31a</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of Genesis</strong></p>
+
+<p>God said: "Let us make man to our image and likeness: and let him have dominion over the fishes of the sea, and the fowls of the air, and the beasts, and the whole earth, and every creeping creature that moveth upon the earth."</p>
+
+<p>And God created man to his own image: to the image of God he created him: male and female he created them.</p>
+
+<p>And God blessed them, saying: "Increase and multiply, and fill the earth, and subdue it, and rule over the fishes of the sea, and the fowls of the air, and all living creatures that move upon the earth."</p>
+
+<p>And God saw all the things that he had made, and they were very good.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding first reading about creation of man and woman',
+    tags: ['wedding', 'first-reading', 'old-testament']
+  },
+  {
+    title: 'Ecclesiastes 3:1-8',
+    body: `<div style="text-align: right; font-style: italic;">Ecclesiastes 3:1-8</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of Ecclesiastes</strong></p>
+
+<p>All things have their season, and in their times all things pass under heaven.</p>
+
+<p>A time to be born and a time to die.<br>
+A time to plant, and a time to pluck up that which is planted.<br>
+A time to destroy, and a time to build.<br>
+A time to weep, and a time to laugh.<br>
+A time to mourn, and a time to dance.<br>
+A time to scatter stones, and a time to gather.<br>
+A time to embrace, and a time to be far from embraces.<br>
+A time to get, and a time to lose.<br>
+A time to keep, and a time to cast away.<br>
+A time to rend, and a time to sew.<br>
+A time to keep silence, and a time to speak.<br>
+A time of love, and a time of hatred.<br>
+A time of war, and a time of peace.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about seasons of life',
+    tags: ['funeral', 'first-reading', 'old-testament', 'comfort']
+  },
+  {
+    title: 'Isaiah 25:6-9',
+    body: `<div style="text-align: right; font-style: italic;">Isaiah 25:6-9</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of the Prophet Isaiah</strong></p>
+
+<p>The Lord of hosts shall make unto all peoples in this mountain a feast of fat things, a feast of wine, of fat things full of marrow, of wine purified from the lees.</p>
+
+<p>And he shall destroy in this mountain the face of the bond with which all peoples were tied, and the web that he began over all nations.</p>
+
+<p>He shall cast death down headlong for ever: and the Lord God shall wipe away tears from every face, and the reproach of his people he shall take away from off the whole earth: for the Lord hath spoken it.</p>
+
+<p>And they shall say in that day: Lo, this is our God, we have waited for him, and he will save us: this is the Lord, we have patiently waited for him, we shall rejoice and be joyful in his salvation.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about God wiping away tears',
+    tags: ['funeral', 'first-reading', 'old-testament', 'hope']
+  },
+  {
+    title: 'Sirach 26:1-4, 13-16',
+    body: `<div style="text-align: right; font-style: italic;">Sirach 26:1-4, 13-16</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of Sirach</strong></p>
+
+<p>Happy is the husband of a good wife: for the number of his years is double.</p>
+
+<p>A virtuous woman rejoiceth her husband: and shall fulfil the years of his life in peace.</p>
+
+<p>A good wife is a good portion, she shall be given in the portion of them that fear God, to a man for his good deeds.</p>
+
+<p>Rich or poor, if his heart is good, his countenance shall be cheerful at all times.</p>
+
+<p>The grace of a diligent woman shall delight her husband, and shall fat his bones.</p>
+
+<p>Her discipline is the gift of God.</p>
+
+<p>Such is a wise and silent woman, and there is nothing so much worth as a well instructed soul.</p>
+
+<p>A holy and shamefaced woman is grace upon grace.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding reading about a good wife',
+    tags: ['wedding', 'first-reading', 'old-testament']
+  },
+  {
+    title: 'Lamentations 3:17-26',
+    body: `<div style="text-align: right; font-style: italic;">Lamentations 3:17-26</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of Lamentations</strong></p>
+
+<p>And my soul is removed far off from peace, I have forgotten good things.</p>
+
+<p>And I said: My end and my hope is perished from the Lord.</p>
+
+<p>Remember my poverty, and my transgression, the wormwood, and the gall.</p>
+
+<p>I will be mindful and remember, and my soul shall languish within me.</p>
+
+<p>These things I shall think over in my heart, therefore will I hope.</p>
+
+<p>The mercies of the Lord that we are not consumed: because his commiserations have not failed.</p>
+
+<p>They are new every morning, great is thy faithfulness.</p>
+
+<p>The Lord is my portion, said my soul: therefore will I wait for him.</p>
+
+<p>The Lord is good to them that hope in him, to the soul that seeketh him.</p>
+
+<p>It is good to wait with silence for the salvation of God.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about hope in suffering',
+    tags: ['funeral', 'first-reading', 'old-testament', 'hope', 'comfort']
+  }
+]
+
+// Second Readings
+const SECOND_READINGS: SeedContent[] = [
+  {
+    title: 'Romans 8:31b-35, 37-39',
+    body: `<div style="text-align: right; font-style: italic;">Romans 8:31b-35, 37-39</div>
+
+<div style="text-align: right; color: red;">SECOND READING</div>
+
+<p><strong>A reading from the Letter of Saint Paul to the Romans</strong></p>
+
+<p>Brothers and sisters: If God be for us, who is against us?</p>
+
+<p>He that spared not even his own Son, but delivered him up for us all, how hath he not also, with him, given us all things?</p>
+
+<p>Who shall accuse against the elect of God? God that justifieth.</p>
+
+<p>Who is he that shall condemn? Christ Jesus that died, yea that is risen also again; who is at the right hand of God, who also maketh intercession for us.</p>
+
+<p>Who then shall separate us from the love of Christ? Shall tribulation? or distress? or famine? or nakedness? or danger? or persecution? or the sword?</p>
+
+<p>But in all these things we overcome, because of him that hath loved us.</p>
+
+<p>For I am sure that neither death, nor life, nor angels, nor principalities, nor powers, nor things present, nor things to come, nor might, nor height, nor depth, nor any other creature, shall be able to separate us from the love of God, which is in Christ Jesus our Lord.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about God\'s unbreakable love',
+    tags: ['funeral', 'second-reading', 'new-testament', 'hope', 'comfort']
+  },
+  {
+    title: '1 Corinthians 12:31-13:8a',
+    body: `<div style="text-align: right; font-style: italic;">1 Corinthians 12:31-13:8a</div>
+
+<div style="text-align: right; color: red;">SECOND READING</div>
+
+<p><strong>A reading from the first Letter of Saint Paul to the Corinthians</strong></p>
+
+<p>Brothers and sisters: Be zealous for the better gifts. And I shew unto you yet a more excellent way.</p>
+
+<p>If I speak with the tongues of men, and of angels, and have not charity, I am become as sounding brass, or a tinkling cymbal.</p>
+
+<p>And if I should have prophecy and should know all mysteries, and all knowledge, and if I should have all faith, so that I could remove mountains, and have not charity, I am nothing.</p>
+
+<p>And if I should distribute all my goods to feed the poor, and if I should deliver my body to be burned, and have not charity, it profiteth me nothing.</p>
+
+<p>Charity is patient, is kind: charity envieth not, dealeth not perversely; is not puffed up;</p>
+
+<p>Is not ambitious, seeketh not her own, is not provoked to anger, thinketh no evil;</p>
+
+<p>Rejoiceth not in iniquity, but rejoiceth with the truth;</p>
+
+<p>Beareth all things, believeth all things, hopeth all things, endureth all things.</p>
+
+<p>Charity never falleth away.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding reading about love (charity)',
+    tags: ['wedding', 'second-reading', 'new-testament', 'love']
+  },
+  {
+    title: 'Colossians 3:12-17',
+    body: `<div style="text-align: right; font-style: italic;">Colossians 3:12-17</div>
+
+<div style="text-align: right; color: red;">SECOND READING</div>
+
+<p><strong>A reading from the Letter of Saint Paul to the Colossians</strong></p>
+
+<p>Brothers and sisters: Put ye on therefore, as the elect of God, holy, and beloved, the bowels of mercy, benignity, humility, modesty, patience:</p>
+
+<p>Bearing with one another, and forgiving one another, if any have a complaint against another: even as the Lord hath forgiven you, so do you also.</p>
+
+<p>But above all these things have charity, which is the bond of perfection:</p>
+
+<p>And let the peace of Christ rejoice in your hearts, wherein also you are called in one body: and be ye thankful.</p>
+
+<p>Let the word of Christ dwell in you abundantly, in all wisdom: teaching and admonishing one another in psalms, hymns, and spiritual canticles, singing in grace in your hearts to God.</p>
+
+<p>All whatsoever you do in word or in work, do all in the name of the Lord Jesus Christ, giving thanks to God and the Father by him.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding reading about virtues and love',
+    tags: ['wedding', 'second-reading', 'new-testament', 'love']
+  },
+  {
+    title: '1 John 3:14-16',
+    body: `<div style="text-align: right; font-style: italic;">1 John 3:14-16</div>
+
+<div style="text-align: right; color: red;">SECOND READING</div>
+
+<p><strong>A reading from the first Letter of Saint John</strong></p>
+
+<p>Beloved: We know that we have passed from death to life, because we love the brethren. He that loveth not, abideth in death.</p>
+
+<p>Whosoever hateth his brother is a murderer. And you know that no murderer hath eternal life abiding in himself.</p>
+
+<p>In this we have known the charity of God, because he hath laid down his life for us: and we ought to lay down our lives for the brethren.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about passing from death to life',
+    tags: ['funeral', 'second-reading', 'new-testament', 'love', 'eternal-life']
+  },
+  {
+    title: 'Revelation 21:1-5a, 6b-7',
+    body: `<div style="text-align: right; font-style: italic;">Revelation 21:1-5a, 6b-7</div>
+
+<div style="text-align: right; color: red;">SECOND READING</div>
+
+<p><strong>A reading from the Book of Revelation</strong></p>
+
+<p>I, John, saw a new heaven and a new earth. For the first heaven and the first earth was gone, and the sea is now no more.</p>
+
+<p>And I John saw the holy city, the new Jerusalem, coming down out of heaven from God, prepared as a bride adorned for her husband.</p>
+
+<p>And I heard a great voice from the throne, saying: Behold the tabernacle of God with men, and he will dwell with them. And they shall be his people; and God himself with them shall be their God.</p>
+
+<p>And God shall wipe away all tears from their eyes: and death shall be no more, nor mourning, nor crying, nor sorrow shall be any more, for the former things are passed away.</p>
+
+<p>And he that sat on the throne, said: Behold, I make all things new.</p>
+
+<p>I am Alpha and Omega; the beginning and the end. To him that thirsteth, I will give of the fountain of the water of life, freely.</p>
+
+<p>He that shall overcome shall possess these things, and I will be his God; and he shall be my son.</p>
+
+<p>The word of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral reading about the new heaven and new earth',
+    tags: ['funeral', 'second-reading', 'new-testament', 'hope', 'eternal-life']
+  }
+]
+
+// Gospel Readings
+const GOSPELS: SeedContent[] = [
+  {
+    title: 'Matthew 5:1-12a',
+    body: `<div style="text-align: right; font-style: italic;">Matthew 5:1-12a</div>
+
+<div style="text-align: right; color: red;">GOSPEL</div>
+
+<p><strong>A reading from the holy Gospel according to Matthew</strong></p>
+
+<p>At that time: Jesus seeing the multitudes, went up into a mountain, and when he was set down, his disciples came unto him.</p>
+
+<p>And opening his mouth, he taught them, saying:</p>
+
+<p>Blessed are the poor in spirit: for theirs is the kingdom of heaven.</p>
+
+<p>Blessed are the meek: for they shall possess the land.</p>
+
+<p>Blessed are they that mourn: for they shall be comforted.</p>
+
+<p>Blessed are they that hunger and thirst after justice: for they shall have their fill.</p>
+
+<p>Blessed are the merciful: for they shall obtain mercy.</p>
+
+<p>Blessed are the clean of heart: for they shall see God.</p>
+
+<p>Blessed are the peacemakers: for they shall be called children of God.</p>
+
+<p>Blessed are they that suffer persecution for justice' sake: for theirs is the kingdom of heaven.</p>
+
+<p>Blessed are ye when they shall revile you, and persecute you, and speak all that is evil against you, untruly, for my sake:</p>
+
+<p>Be glad and rejoice, for your reward is very great in heaven.</p>
+
+<p>The Gospel of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral Gospel - The Beatitudes',
+    tags: ['funeral', 'gospel', 'new-testament', 'hope']
+  },
+  {
+    title: 'Matthew 19:3-6',
+    body: `<div style="text-align: right; font-style: italic;">Matthew 19:3-6</div>
+
+<div style="text-align: right; color: red;">GOSPEL</div>
+
+<p><strong>A reading from the holy Gospel according to Matthew</strong></p>
+
+<p>At that time: There came to Jesus the Pharisees tempting him, and saying: Is it lawful for a man to put away his wife for every cause?</p>
+
+<p>Who answering, said to them: Have ye not read, that he who made man from the beginning, made them male and female? And he said:</p>
+
+<p>For this cause shall a man leave father and mother, and shall cleave to his wife, and they two shall be in one flesh.</p>
+
+<p>Therefore now they are not two, but one flesh. What therefore God hath joined together, let no man put asunder.</p>
+
+<p>The Gospel of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding Gospel - What God has joined together',
+    tags: ['wedding', 'gospel', 'new-testament', 'love']
+  },
+  {
+    title: 'John 11:21-27',
+    body: `<div style="text-align: right; font-style: italic;">John 11:21-27</div>
+
+<div style="text-align: right; color: red;">GOSPEL</div>
+
+<p><strong>A reading from the holy Gospel according to John</strong></p>
+
+<p>At that time: Martha said to Jesus: Lord, if thou hadst been here, my brother had not died.</p>
+
+<p>But now also I know that whatsoever thou wilt ask of God, God will give it thee.</p>
+
+<p>Jesus saith to her: Thy brother shall rise again.</p>
+
+<p>Martha saith to him: I know that he shall rise again, in the resurrection at the last day.</p>
+
+<p>Jesus said to her: I am the resurrection and the life: he that believeth in me, although he be dead, shall live:</p>
+
+<p>And every one that liveth, and believeth in me, shall not die for ever. Believest thou this?</p>
+
+<p>She saith to him: Yea, Lord, I have believed that thou art Christ the Son of the living God, who art come into this world.</p>
+
+<p>The Gospel of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral Gospel - I am the resurrection and the life',
+    tags: ['funeral', 'gospel', 'new-testament', 'hope', 'eternal-life']
+  },
+  {
+    title: 'John 15:9-12',
+    body: `<div style="text-align: right; font-style: italic;">John 15:9-12</div>
+
+<div style="text-align: right; color: red;">GOSPEL</div>
+
+<p><strong>A reading from the holy Gospel according to John</strong></p>
+
+<p>At that time: Jesus said to his disciples: As the Father hath loved me, I also have loved you. Abide in my love.</p>
+
+<p>If you keep my commandments, you shall abide in my love; as I also have kept my Father's commandments, and do abide in his love.</p>
+
+<p>These things I have spoken to you, that my joy may be in you, and your joy may be filled.</p>
+
+<p>This is my commandment, that you love one another, as I have loved you.</p>
+
+<p>The Gospel of the Lord.</p>`,
+    language: 'en',
+    description: 'Wedding Gospel - Love one another',
+    tags: ['wedding', 'gospel', 'new-testament', 'love']
+  },
+  {
+    title: 'John 14:1-6',
+    body: `<div style="text-align: right; font-style: italic;">John 14:1-6</div>
+
+<div style="text-align: right; color: red;">GOSPEL</div>
+
+<p><strong>A reading from the holy Gospel according to John</strong></p>
+
+<p>At that time: Jesus said to his disciples: Let not your heart be troubled. You believe in God, believe also in me.</p>
+
+<p>In my Father's house there are many mansions. If not, I would have told you: because I go to prepare a place for you.</p>
+
+<p>And if I shall go, and prepare a place for you, I will come again, and will take you to myself; that where I am, you also may be.</p>
+
+<p>And whither I go you know, and the way you know.</p>
+
+<p>Thomas saith to him: Lord, we know not whither thou goest; and how can we know the way?</p>
+
+<p>Jesus saith to him: I am the way, and the truth, and the life. No man cometh to the Father, but by me.</p>
+
+<p>The Gospel of the Lord.</p>`,
+    language: 'en',
+    description: 'Funeral Gospel - I am the way, the truth, and the life',
+    tags: ['funeral', 'gospel', 'new-testament', 'hope', 'comfort']
+  }
+]
+
+// Responsorial Psalms
+const PSALMS: SeedContent[] = [
+  {
+    title: 'Psalm 23:1-6',
+    body: `<div style="text-align: right; font-style: italic;">Psalm 23:1-6</div>
+
+<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+
+<p><strong>Reader:</strong> The Lord is my shepherd; there is nothing I shall want.</p>
+
+<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+
+<p><strong>Reader:</strong> The Lord is my shepherd; I shall not want.<br>
+In verdant pastures he gives me repose;<br>
+Beside restful waters he leads me;<br>
+he refreshes my soul.<br>
+He guides me in right paths for his name's sake.</p>
+
+<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+
+<p><strong>Reader:</strong> Even though I walk in the dark valley I fear no evil;<br>
+for you are at my side with your rod and your staff<br>
+that give me courage.</p>
+
+<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+
+<p><strong>Reader:</strong> You spread the table before me in the sight of my foes;<br>
+You anoint my head with oil;<br>
+my cup overflows.</p>
+
+<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>
+
+<p><strong>Reader:</strong> Only goodness and kindness follow me<br>
+all the days of my life;<br>
+And I shall dwell in the house of the Lord<br>
+for years to come.</p>
+
+<p style="color: red;"><em>People: The Lord is my shepherd; there is nothing I shall want.</em></p>`,
+    language: 'en',
+    description: 'Responsorial Psalm',
+    tags: ['funeral', 'psalm', 'old-testament', 'comfort']
+  },
+  {
+    title: 'Psalm 33:12, 18-22',
+    body: `<div style="text-align: right; font-style: italic;">Psalm 33:12, 18-22</div>
+
+<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+
+<p><strong>Reader:</strong> The earth is full of the goodness of the Lord.</p>
+
+<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+
+<p><strong>Reader:</strong> Blessed the nation whose God is the Lord,<br>
+the people he has chosen for his own inheritance.<br>
+See, the eyes of the Lord are upon those who fear him,<br>
+upon those who hope for his kindness.</p>
+
+<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+
+<p><strong>Reader:</strong> To deliver them from death<br>
+and preserve them in spite of famine.<br>
+Our soul waits for the Lord,<br>
+who is our help and our shield.</p>
+
+<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>
+
+<p><strong>Reader:</strong> For in him our hearts rejoice;<br>
+in his holy name we trust.<br>
+May your kindness, O Lord, be upon us<br>
+who have put our hope in you.</p>
+
+<p style="color: red;"><em>People: The earth is full of the goodness of the Lord.</em></p>`,
+    language: 'en',
+    description: 'Responsorial Psalm',
+    tags: ['wedding', 'psalm', 'old-testament', 'joy']
+  },
+  {
+    title: 'Psalm 103:1-4, 8, 10, 13-18',
+    body: `<div style="text-align: right; font-style: italic;">Psalm 103:1-4, 8, 10, 13-18</div>
+
+<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+
+<p><strong>Reader:</strong> The Lord is kind and merciful.</p>
+
+<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+
+<p><strong>Reader:</strong> Bless the Lord, O my soul;<br>
+and all my being, bless his holy name.<br>
+Bless the Lord, O my soul,<br>
+and forget not all his benefits.</p>
+
+<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+
+<p><strong>Reader:</strong> He pardons all your iniquities,<br>
+heals all your ills,<br>
+He redeems your life from destruction,<br>
+crowns you with kindness and compassion.</p>
+
+<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+
+<p><strong>Reader:</strong> Merciful and gracious is the Lord,<br>
+slow to anger and abounding in kindness.<br>
+Not according to our sins does he deal with us,<br>
+nor does he requite us according to our crimes.</p>
+
+<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>
+
+<p><strong>Reader:</strong> As a father has compassion on his children,<br>
+so the Lord has compassion on those who fear him,<br>
+For he knows how we are formed;<br>
+he remembers that we are dust.</p>
+
+<p style="color: red;"><em>People: The Lord is kind and merciful.</em></p>`,
+    language: 'en',
+    description: 'Responsorial Psalm',
+    tags: ['funeral', 'psalm', 'old-testament', 'comfort', 'hope']
+  },
+  {
+    title: 'Psalm 128:1-5',
+    body: `<div style="text-align: right; font-style: italic;">Psalm 128:1-5</div>
+
+<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+
+<p><strong>Reader:</strong> Blessed are those who fear the Lord.</p>
+
+<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+
+<p><strong>Reader:</strong> Blessed are you who fear the Lord,<br>
+who walk in his ways!<br>
+For you shall eat the fruit of your handiwork;<br>
+blessed shall you be, and favored.</p>
+
+<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+
+<p><strong>Reader:</strong> Your wife shall be like a fruitful vine<br>
+in the recesses of your home;<br>
+Your children like olive plants<br>
+around your table.</p>
+
+<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>
+
+<p><strong>Reader:</strong> Behold, thus is the man blessed<br>
+who fears the Lord.<br>
+The Lord bless you from Zion:<br>
+may you see the prosperity of Jerusalem<br>
+all the days of your life.</p>
+
+<p style="color: red;"><em>People: Blessed are those who fear the Lord.</em></p>`,
+    language: 'en',
+    description: 'Responsorial Psalm',
+    tags: ['wedding', 'psalm', 'old-testament', 'family']
+  },
+  {
+    title: 'Psalm 27:1, 4, 7-9, 13-14',
+    body: `<div style="text-align: right; font-style: italic;">Psalm 27:1, 4, 7-9, 13-14</div>
+
+<div style="text-align: right; color: red;">RESPONSORIAL PSALM</div>
+
+<p><strong>Reader:</strong> The Lord is my light and my salvation.</p>
+
+<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+
+<p><strong>Reader:</strong> The Lord is my light and my salvation;<br>
+whom should I fear?<br>
+The Lord is my life's refuge;<br>
+of whom should I be afraid?</p>
+
+<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+
+<p><strong>Reader:</strong> One thing I ask of the Lord; this I seek:<br>
+To dwell in the house of the Lord<br>
+all the days of my life,<br>
+That I may gaze on the loveliness of the Lord<br>
+and contemplate his temple.</p>
+
+<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+
+<p><strong>Reader:</strong> Hear, O Lord, the sound of my call;<br>
+have pity on me, and answer me.<br>
+Of you my heart speaks; you my glance seeks.</p>
+
+<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>
+
+<p><strong>Reader:</strong> I believe that I shall see the bounty of the Lord<br>
+in the land of the living.<br>
+Wait for the Lord with courage;<br>
+be stouthearted, and wait for the Lord.</p>
+
+<p style="color: red;"><em>People: The Lord is my light and my salvation.</em></p>`,
+    language: 'en',
+    description: 'Responsorial Psalm',
+    tags: ['funeral', 'psalm', 'old-testament', 'hope', 'comfort']
+  }
+]
+
 // Combine all content
 const ALL_SEED_CONTENT: SeedContent[] = [
   ...OPENING_PRAYERS,
@@ -662,7 +1277,11 @@ const ALL_SEED_CONTENT: SeedContent[] = [
   ...CEREMONY_INSTRUCTIONS,
   ...ANNOUNCEMENTS,
   ...QUINCEANERA_CONTENT,
-  ...PRESENTATION_CONTENT
+  ...PRESENTATION_CONTENT,
+  ...FIRST_READINGS,
+  ...SECOND_READINGS,
+  ...GOSPELS,
+  ...PSALMS
 ]
 
 /**
@@ -767,5 +1386,9 @@ export const SEED_CONTENT_DATA = {
   ANNOUNCEMENTS,
   QUINCEANERA_CONTENT,
   PRESENTATION_CONTENT,
+  FIRST_READINGS,
+  SECOND_READINGS,
+  GOSPELS,
+  PSALMS,
   ALL_SEED_CONTENT
 }

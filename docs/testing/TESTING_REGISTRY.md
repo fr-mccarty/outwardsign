@@ -272,6 +272,18 @@ This document provides a complete reference of all test files and individual tes
 | should export mass liturgy roster to PDF | Validates PDF export endpoint returns valid PDF content type |
 | should export mass liturgy roster to Word | Confirms Word export endpoint returns valid Word document content type |
 
+#### `tests/people-event-assignments.spec.ts` (5 tests)
+
+**Module:** People Event Assignments (Unified Assignment System)
+
+| Test | Description |
+|------|-------------|
+| should assign template-level role and view on mass liturgy | Verifies template-level role assignment workflow and view page display |
+| should prevent duplicate assignment to same role | Validates duplicate prevention for same person/role combination |
+| should display empty state when no assignments exist | Confirms view page renders correctly with no role assignments |
+| should navigate to edit page from view page | Verifies Edit button navigation from view to edit page works |
+| should display mass liturgy role assignment section on edit page | Validates role assignment UI section appears on edit page for saved masses |
+
 ### Mass Intentions
 
 #### `tests/mass-intentions.spec.ts` (9 tests)

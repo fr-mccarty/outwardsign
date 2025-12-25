@@ -1,13 +1,60 @@
 /**
- * Markdown Processing Utility for Dynamic Events Scripts
+ * Content Processing Utility for Dynamic Events Scripts
  *
- * This module provides utilities for processing markdown content from dynamic event scripts,
- * including field placeholder replacement and markdown-to-HTML conversion.
+ * This module provides utilities for processing HTML script content from dynamic events,
+ * including field placeholder replacement, content rendering, and HTML sanitization.
+ *
+ * Content format: HTML with inline styles (e.g., <div style="color: red;">)
+ *
+ * Security: All HTML content is sanitized to prevent XSS attacks.
  */
 
-import { marked } from 'marked'
 import type { MasterEventWithRelations, ResolvedFieldValue } from '@/lib/types'
 import { formatDatePretty } from '@/lib/utils/formatters'
+
+/**
+ * Sanitize HTML content to prevent XSS attacks
+ *
+ * Removes:
+ * - Script tags and their content
+ * - Event handlers (onclick, onerror, onload, etc.)
+ * - javascript: URLs
+ * - Dangerous tags (iframe, object, embed, link, style)
+ *
+ * Allows:
+ * - Basic formatting: div, p, span, strong, em, b, i, u, br, hr
+ * - Lists: ul, ol, li
+ * - Safe inline styles (preserved)
+ *
+ * @param html - Raw HTML content
+ * @returns Sanitized HTML content
+ */
+function sanitizeHTML(html: string): string {
+  // Remove script tags and their content
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+
+  // Remove dangerous tags (but preserve content)
+  sanitized = sanitized.replace(/<(iframe|object|embed|link|form|input|button|select|textarea)\b[^>]*>/gi, '')
+  sanitized = sanitized.replace(/<\/(iframe|object|embed|link|form|input|button|select|textarea)>/gi, '')
+
+  // Remove style tags and their content (we allow inline styles but not style blocks)
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+
+  // Remove event handlers (on*)
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
+
+  // Remove javascript: URLs
+  sanitized = sanitized.replace(/javascript\s*:/gi, '')
+
+  // Remove data: URLs (can be used for XSS)
+  sanitized = sanitized.replace(/data\s*:/gi, '')
+
+  // Remove vbscript: URLs
+  sanitized = sanitized.replace(/vbscript\s*:/gi, '')
+
+  return sanitized
+}
 
 /**
  * Parish placeholder fields available in templates
@@ -30,7 +77,7 @@ export const PARISH_PLACEHOLDERS = [
  *   - If unknown → outputs "male_text/female_text"
  * - {{parish.name}}, {{parish.city}}, {{parish.state}}, {{parish.city_state}} - Parish info
  *
- * @param content - Markdown content with placeholders
+ * @param content - HTML content with placeholders
  * @param event - Event with resolved field values
  * @returns Content with all placeholders replaced
  */
@@ -288,37 +335,26 @@ function resolveGenderedText(
 }
 
 /**
- * Parse markdown content to HTML
+ * Process HTML content by replacing custom syntax and sanitizing
  *
- * Supports standard markdown plus custom syntax:
- * - {red}text{/red} for liturgical red text
- *
- * @param content - Markdown content
- * @returns HTML string
+ * @param content - HTML content
+ * @returns Sanitized HTML string
  */
-export function parseMarkdownToHTML(content: string): string {
-  // Configure marked options
-  marked.setOptions({
-    breaks: true,  // Convert \n to <br>
-    gfm: true,     // GitHub Flavored Markdown
-  })
-
-  // Parse markdown to HTML
-  const html = marked.parse(content) as string
-
-  // Post-process to handle custom {red}{/red} syntax
-  const processedHtml = html.replace(
+export function parseContentToHTML(content: string): string {
+  // Process custom {red}{/red} syntax
+  const processed = content.replace(
     /\{red\}(.*?)\{\/red\}/g,
     '<span style="color: #c41e3a">$1</span>'
   )
 
-  return processedHtml
+  // Sanitize HTML to prevent XSS
+  return sanitizeHTML(processed)
 }
 
 /**
- * Process a script section by replacing placeholders and converting to HTML
+ * Process a script section by replacing placeholders
  *
- * @param sectionContent - Markdown content from section
+ * @param sectionContent - HTML content from section
  * @param event - Event with resolved field values
  * @returns HTML content with placeholders replaced
  */
@@ -329,8 +365,8 @@ export function processScriptSection(
   // Step 1: Replace field placeholders
   const replacedContent = replaceFieldPlaceholders(sectionContent, event)
 
-  // Step 2: Parse markdown to HTML
-  const htmlContent = parseMarkdownToHTML(replacedContent)
+  // Step 2: Process {red} syntax
+  const htmlContent = parseContentToHTML(replacedContent)
 
   return htmlContent
 }
@@ -377,8 +413,8 @@ function getPetitionContent(event: MasterEventWithRelations): string {
       const petition = field.resolved_value as { text?: string }
       const petitionText = petition.text
       if (petitionText) {
-        // Parse the petition text as markdown to HTML
-        return parseMarkdownToHTML(petitionText)
+        // Process the petition text (already HTML)
+        return parseContentToHTML(petitionText)
       }
     }
   }

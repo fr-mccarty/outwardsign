@@ -75,5 +75,6 @@ export default defineConfig({
     command: 'NEXT_DISABLE_OVERLAY=1 npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 180000, // 3 minutes for dev server to start
   },
 });

@@ -738,20 +738,10 @@ const normalizeTime = (time: string): string => {
 
 ## Related Documentation
 
-**Mass Module Specific:**
-- **[MASSES.md](./MASSES.md)** - Complete Mass module overview including role system and architecture
-
-**Algorithm Details:**
-- **[MASS_ASSIGNMENT_LOGIC.md](./MASS_ASSIGNMENT_LOGIC.md)** - Auto-assignment algorithm specifications
-- **[MASS_SCHEDULING_ALGORITHMS.md](./MASS_SCHEDULING_ALGORITHMS.md)** - Advanced scheduling algorithms
-
-**UI Documentation:**
-- **[MASS_SCHEDULING_UI.md](./MASS_SCHEDULING_UI.md)** - Future vision for calendar-based drag-and-drop interface (not implemented)
-
 **General Patterns:**
-- [WIZARD_COMPONENT.md](./WIZARD_COMPONENT.md) - Reusable wizard component documentation
 - [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md) - Reusable components (pickers, form components)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture and server actions patterns
+- [DATABASE.md](./DATABASE.md) - Current database schema including `people_event_assignments`
 
 ---
 

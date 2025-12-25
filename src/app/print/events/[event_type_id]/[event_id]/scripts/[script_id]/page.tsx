@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
-import { processScriptForRendering } from '@/lib/utils/markdown-processor'
+import { processScriptForRendering } from '@/lib/utils/content-processor'
 import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
 
 interface PageProps {

@@ -331,7 +331,7 @@ When rendering to HTML (view and print), content uses `dangerouslySetInnerHTML`:
 **Mitigations:**
 - Templates are admin-created (RLS-enforced), not user-submitted
 - Field values resolve to display strings (names, dates), not arbitrary HTML
-- Markdown parser (`marked`) doesn't allow raw HTML by default
+- Content is either pre-formatted HTML (from trusted seeding) or markdown converted to HTML
 - No `<script>` tags can be injected through field values
 
 **Potential risk:** If an admin creates a template with malicious content, it would render. This is acceptable because:
@@ -393,8 +393,8 @@ Even if an attacker obtained a UUID from another parish:
 
 | File | Purpose |
 |------|---------|
-| `src/lib/utils/markdown-processor.ts` | `replaceFieldPlaceholders()` - Main replacement logic |
-| `src/lib/utils/markdown-renderer.ts` | `replacePlaceholders()` - Alternative renderer for exports |
+| `src/lib/utils/markdown-processor.ts` | Content processor - placeholder replacement, auto-detects HTML vs markdown |
+| `src/lib/utils/markdown-renderer.ts` | Content renderer for exports - placeholder replacement, auto-detects HTML vs markdown |
 | `src/lib/actions/dynamic-events.ts` | `getEventWithRelations()` - Resolves field values |
 | `src/lib/utils/resolve-field-entities.ts` | Entity resolution helpers |
 | `src/lib/types/event-types.ts` | Type definitions for resolved fields |
@@ -403,7 +403,29 @@ Even if an attacker obtained a UUID from another parish:
 
 ## Examples
 
-### Wedding Script Template
+### Reading Content (HTML Format - Modern)
+
+```html
+<div style="text-align: right; font-style: italic;">Genesis 1:26-28, 31a</div>
+
+<div style="text-align: right; color: red;">FIRST READING</div>
+
+<p><strong>A reading from the Book of Genesis</strong></p>
+
+<p>God said: "Let us make man in our image, after our likeness..."</p>
+
+<p>The word of the Lord.</p>
+```
+
+### Script Template (References Content)
+
+```html
+<p><strong>Reader:</strong> {{first_reader.full_name}}</p>
+
+{{first_reading}}
+```
+
+### Wedding Script Template (Markdown Format - Legacy)
 
 ```markdown
 # Wedding Ceremony
@@ -427,23 +449,16 @@ spouse for as long as you both shall live?
 
 ### Rendered Output
 
-```markdown
-# Wedding Ceremony
+```
+FIRST READING
 
-## The Couple
+Reader: Sarah Johnson
 
-**Maria Garcia** and **Michael Chen** have come together today at
-St. Mary Catholic Church in Austin, TX to celebrate their marriage.
-
-Priest: Maria and Michael, have you come here freely and without
-reservation to give yourselves to each other in marriage?
-
-**Both:** We have.
-
-Priest: Will you honor him as your spouse for as long as you both
-shall live?
-
-**Maria:** I will.
+<Right-aligned italic citation>
+<Right-aligned red section header>
+<Bold introduction>
+<Reading text>
+<Conclusion>
 ```
 
 ---
@@ -462,3 +477,14 @@ if (cleanFieldName === 'today') {
   return formatDatePretty(new Date().toISOString())
 }
 ```
+
+## Content Format Notes
+
+The content processor (`markdown-processor.ts` and `markdown-renderer.ts`) auto-detects the content format:
+
+- **HTML content:** Detected by presence of HTML tags (`<div>`, `<p>`, `<span>`, etc.) or inline styles. Passed through as-is without markdown parsing.
+- **Markdown content (legacy):** Converted to HTML using marked.js
+
+This allows for:
+- Modern HTML content with precise styling control (readings, structured content)
+- Legacy markdown for simpler content (notes, basic text)

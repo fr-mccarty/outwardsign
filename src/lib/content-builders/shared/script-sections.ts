@@ -8,8 +8,6 @@
 // Re-export all builders
 export { buildCoverPage, type CoverPageSection, type CoverPageRow } from './builders/cover-page'
 
-export { buildPsalmSection } from './builders/psalm'
-
 export { buildPetitionsSection } from './builders/petitions'
 
 export { buildCeremonySection } from './builders/ceremony'

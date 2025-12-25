@@ -100,7 +100,7 @@ export function WeekendSummarySetup() {
                 htmlFor="mass-roles"
                 className="text-sm font-normal cursor-pointer"
               >
-                Mass Roles (Lectors, Servers, Musicians, etc.)
+                Ministry Assignments (Lectors, Servers, Musicians, etc.)
               </Label>
             </div>
           </div>

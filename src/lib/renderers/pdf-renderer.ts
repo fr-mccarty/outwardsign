@@ -118,35 +118,6 @@ function renderElement(element: ContentElement): Content {
       } : { text: '' }
     }
 
-    case 'psalm': {
-      const responseStyle = resolveElementStyle('psalm-response')
-      const verseStyle = resolveElementStyle('psalm-verse')
-
-      if (!responseStyle || !verseStyle) return { text: '' }
-
-      const psalmContent: any[] = []
-
-      // Verses with response after each
-      element.verses.forEach((verse) => {
-        psalmContent.push({
-          text: [
-            { text: 'Reader: ', bold: true },
-            { text: verse }
-          ],
-          ...applyResolvedStyle(verseStyle),
-        })
-        psalmContent.push({
-          text: [
-            { text: 'People: ', bold: true },
-            { text: element.response }
-          ],
-          ...applyResolvedStyle(responseStyle),
-        })
-      })
-
-      return psalmContent
-    }
-
     case 'response-dialogue': {
       const containerStyle = resolveElementStyle('response-dialogue')
       const labelStyle = resolveElementStyle('response-dialogue-label')

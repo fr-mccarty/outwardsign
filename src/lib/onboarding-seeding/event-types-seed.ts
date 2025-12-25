@@ -133,11 +133,16 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['wedding', 'opening-prayer'], order: 9 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, input_filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'first-reading'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'gospel'], order: 13 },
-    { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 14 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
+    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 11 },
+    { name: 'First Reader', property_name: 'first_reader', type: 'person', required: false, order: 12 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'first-reading'], order: 13 },
+    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['wedding', 'psalm'], order: 14 },
+    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 15 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'second-reading'], order: 16 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'gospel'], order: 17 },
+    { name: '---', property_name: 'spacer_4', type: 'spacer', required: false, order: 18 },
+    { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 19 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 20 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -207,9 +212,16 @@ Please join us in celebrating the marriage of
       content: `## Readings
 
 ### First Reading
+**Reader:** {{first_reader.full_name}}
+
 {{first_reading}}
 
+### Responsorial Psalm
+{{psalm}}
+
 ### Second Reading
+**Reader:** {{second_reader.full_name}}
+
 {{second_reading}}
 
 ### Gospel
@@ -293,9 +305,16 @@ Por favor, acompáñenos a celebrar el matrimonio de
       content: `## Lecturas
 
 ### Primera Lectura
+**Lector:** {{first_reader.full_name}}
+
 {{first_reading}}
 
+### Salmo Responsorial
+{{psalm}}
+
 ### Segunda Lectura
+**Lector:** {{second_reader.full_name}}
+
 {{second_reading}}
 
 ### Evangelio
@@ -415,23 +434,32 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       order: 1
     },
     {
-      name: 'Readings',
-      content: `## Readings
+      name: 'First Reading',
+      content: `<p><strong>Reader:</strong> {{first_reader.full_name}}</p>
 
-### First Reading
-{{first_reading}}
-
----
-
-### Second Reading
-{{second_reading}}
-
----
-
-### Gospel
-{{gospel_reading}}`,
+{{first_reading}}`,
       page_break_after: true,
       order: 2
+    },
+    {
+      name: 'Responsorial Psalm',
+      content: `{{psalm}}`,
+      page_break_after: true,
+      order: 3
+    },
+    {
+      name: 'Second Reading',
+      content: `<p><strong>Reader:</strong> {{second_reader.full_name}}</p>
+
+{{second_reading}}`,
+      page_break_after: true,
+      order: 4
+    },
+    {
+      name: 'Gospel',
+      content: `{{gospel_reading}}`,
+      page_break_after: true,
+      order: 5
     },
     {
       name: 'Music',
@@ -443,7 +471,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
 
 *Please join in singing the hymns as able.*`,
       page_break_after: false,
-      order: 3
+      order: 6
     }
   ]
 
@@ -541,12 +569,16 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['funeral', 'opening-prayer'], order: 8 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, input_filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'first-reading'], order: 10 },
-    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['funeral', 'psalm'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'gospel'], order: 13 },
-    { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 14 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
+    { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 10 },
+    { name: 'First Reader', property_name: 'first_reader', type: 'person', required: false, order: 11 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'first-reading'], order: 12 },
+    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['funeral', 'psalm'], order: 13 },
+    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 14 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'second-reading'], order: 15 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'gospel'], order: 16 },
+    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 17 },
+    { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 18 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 19 }
   ]
 
   const { error: funeralFieldsError } = await supabase
@@ -623,12 +655,16 @@ Presider: {{presider.full_name}}`,
       content: `## Readings
 
 ### First Reading
+**Reader:** {{first_reader.full_name}}
+
 {{first_reading}}
 
 ### Responsorial Psalm
 {{psalm}}
 
 ### Second Reading
+**Reader:** {{second_reader.full_name}}
+
 {{second_reading}}
 
 ### Gospel
@@ -805,70 +841,38 @@ May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpet
       order: 1
     },
     {
-      name: 'Readings',
-      content: `## Readings
+      name: 'First Reading',
+      content: `<p><strong>Reader:</strong> {{first_reader.full_name}}</p>
 
-### First Reading
-{{first_reading}}
-
----
-
-### Responsorial Psalm
-{{psalm}}
-
----
-
-### Second Reading
-{{second_reading}}
-
----
-
-### Gospel
-{{gospel_reading}}`,
+{{first_reading}}`,
       page_break_after: true,
       order: 2
     },
     {
-      name: 'Responses',
-      content: `## Responses
-
-### Responsorial Psalm Response
-*The Lord is my shepherd; there is nothing I shall want.*
-
----
-
-### Gospel Acclamation
-*Alleluia, alleluia.*
-*I am the resurrection and the life, says the Lord;*
-*whoever believes in me, even if he dies, will live.*
-*Alleluia.*
-
----
-
-### Memorial Acclamation
-*We proclaim your Death, O Lord,*
-*and profess your Resurrection*
-*until you come again.*
-
----
-
-### The Lord's Prayer
-*Our Father, who art in heaven,*
-*hallowed be thy name;*
-*thy kingdom come,*
-*thy will be done*
-*on earth as it is in heaven.*
-*Give us this day our daily bread,*
-*and forgive us our trespasses,*
-*as we forgive those who trespass against us;*
-*and lead us not into temptation,*
-*but deliver us from evil.*
-
-*For thine is the kingdom,*
-*and the power, and the glory,*
-*for ever and ever. Amen.*`,
+      name: 'Responsorial Psalm',
+      content: `{{psalm}}`,
       page_break_after: true,
       order: 3
+    },
+    {
+      name: 'Second Reading',
+      content: `<p><strong>Reader:</strong> {{second_reader.full_name}}</p>
+
+{{second_reading}}`,
+      page_break_after: true,
+      order: 4
+    },
+    {
+      name: 'Gospel',
+      content: `{{gospel_reading}}`,
+      page_break_after: true,
+      order: 5
+    },
+    {
+      name: 'Petitions',
+      content: `{{prayers_of_the_faithful}}`,
+      page_break_after: true,
+      order: 6
     },
     {
       name: 'Music',
@@ -888,7 +892,7 @@ Burial will take place at:
 
 {{burial_location}}`,
       page_break_after: false,
-      order: 4
+      order: 7
     }
   ]
 

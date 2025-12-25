@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { renderMarkdownToText } from '@/lib/utils/markdown-renderer'
+import { renderMarkdownToText } from '@/lib/utils/content-renderer'
 import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
