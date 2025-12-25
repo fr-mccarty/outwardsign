@@ -235,7 +235,7 @@ Please join us in celebrating the marriage of
 
 Please join us for a reception following the ceremony at:
 
-{{reception_location}}`,
+{{reception_location.name}}`,
       page_break_after: false,
       order: 3
     }
@@ -328,7 +328,7 @@ Por favor, acompáñenos a celebrar el matrimonio de
 
 Por favor, acompáñenos para una recepción después de la ceremonia en:
 
-{{reception_location}}`,
+{{reception_location.name}}`,
       page_break_after: false,
       order: 3
     }
@@ -678,7 +678,7 @@ Presider: {{presider.full_name}}`,
 
 Burial will take place at:
 
-{{burial_location}}`,
+{{burial_location.name}}`,
       page_break_after: false,
       order: 4
     }
@@ -890,7 +890,7 @@ May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpet
 
 Burial will take place at:
 
-{{burial_location}}`,
+{{burial_location.name}}`,
       page_break_after: false,
       order: 7
     }
@@ -1148,7 +1148,7 @@ Lord God, you who are our Father and Creator, we thank you for the gift of life 
 
 Please join us for a reception following the ceremony at:
 
-{{reception_location}}`,
+{{reception_location.name}}`,
       page_break_after: false,
       order: 3
     }

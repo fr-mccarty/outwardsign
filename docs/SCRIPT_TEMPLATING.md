@@ -11,20 +11,26 @@ Scripts use a Mustache-like placeholder syntax (`{{Field Name}}`) that gets repl
 ### Simple Field Placeholders
 
 ```
-{{Field Name}}
+{{property_name}}
+{{property_name.property}}
 ```
 
-Replaced with the resolved value of the field from the event's `field_values`.
+Replaced with the resolved value of the field from the event's `field_values`. The `property_name` must match the `property_name` defined in `input_field_definitions` for the event type.
+
+**Important:** Related records (person, location, group) require dot notation to access properties.
 
 **Examples:**
-- `{{Bride}}` → "Maria Garcia"
-- `{{Wedding Date}}` → "July 15, 2025"
-- `{{Ceremony Location}}` → "St. Mary's Cathedral"
+- `{{bride.full_name}}` → "Maria Garcia" (person field)
+- `{{groom.first_name}}` → "John" (person field property)
+- `{{reception_location.name}}` → "St. Mary's Cathedral" (location field)
+- `{{burial_location.name}}` → "Holy Cross Cemetery" (location field)
+- `{{unity_candle}}` → "Yes" (boolean field)
+- `{{special_instructions}}` → Rich text content (text field)
 
 ### Gendered Text Placeholders
 
 ```
-{{Field Name | male_text | female_text}}
+{{property_name.sex | male_text | female_text}}
 ```
 
 Outputs different text based on the person's gender (from the `sex` column in the `people` table).
@@ -35,18 +41,9 @@ Outputs different text based on the person's gender (from the `sex` column in th
 - If sex is unknown/null → outputs `male_text/female_text` (both options)
 
 **Examples:**
-- `{{Bride | him | her}}` → "her" (if Bride is female)
-- `{{Deceased | his | her}}` → "his" (if Deceased is male)
-- `{{Godparent | he | she}}` → "he/she" (if gender unknown)
-
-**Dot Notation for Nested Properties:**
-```
-{{Field.property | male_text | female_text}}
-```
-
-Uses the base field name (before the dot) to look up gender.
-
-- `{{Bride.full_name | él | ella}}` → Uses Bride's gender, outputs "ella" if female
+- `{{bride.sex | him | her}}` → "her" (if bride is female)
+- `{{deceased.sex | his | her}}` → "his" (if deceased is male)
+- `{{child.sex | he | she}}` → "he/she" (if gender unknown)
 
 ### Parish Placeholders
 
@@ -105,9 +102,24 @@ When a field resolves to a person, these properties are available via dot notati
 | `phone` | Phone number | "(512) 555-1234" |
 
 **Usage:**
-- `{{Bride}}` → Uses `full_name` by default
-- `{{Bride.first_name}}` → "Maria"
-- `{{Bride.email}}` → "maria@example.com"
+- `{{bride.full_name}}` → "Maria Garcia"
+- `{{bride.first_name}}` → "Maria"
+- `{{bride.email}}` → "maria@example.com"
+
+### Location Field Properties
+
+When a field resolves to a location, these properties are available:
+
+| Property | Description | Example |
+|----------|-------------|---------|
+| `name` | Location name | "St. Mary's Cathedral" |
+| `street` | Street address | "123 Main St" |
+| `city` | City | "Austin" |
+| `state` | State | "TX" |
+
+**Usage:**
+- `{{reception_location.name}}` → "St. Mary's Cathedral"
+- `{{burial_location.name}}` → "Holy Cross Cemetery"
 
 ### Parish Properties
 
@@ -425,26 +437,26 @@ Even if an attacker obtained a UUID from another parish:
 {{first_reading}}
 ```
 
-### Wedding Script Template (Markdown Format - Legacy)
+### Wedding Script Template (HTML Format)
 
-```markdown
-# Wedding Ceremony
+```html
+<h1>Wedding Ceremony</h1>
 
-## The Couple
+<h2>The Couple</h2>
 
-**{{Bride}}** and **{{Groom}}** have come together today at
-{{parish.name}} in {{parish.city_state}} to celebrate their marriage.
+<p><strong>{{bride.full_name}}</strong> and <strong>{{groom.full_name}}</strong> have come together today at
+{{parish.name}} in {{parish.city_state}} to celebrate their marriage.</p>
 
-{red}Priest:{/red} {{Bride.first_name}} and {{Groom.first_name}},
+<p><span style="color: #c41e3a">Priest:</span> {{bride.first_name}} and {{groom.first_name}},
 have you come here freely and without reservation to give yourselves
-to each other in marriage?
+to each other in marriage?</p>
 
-**Both:** We have.
+<p><strong>Both:</strong> We have.</p>
 
-{red}Priest:{/red} Will you honor {{Groom | him | her}} as your
-spouse for as long as you both shall live?
+<p><span style="color: #c41e3a">Priest:</span> Will you honor {{groom.sex | him | her}} as your
+spouse for as long as you both shall live?</p>
 
-**{{Bride.first_name}}:** I will.
+<p><strong>{{bride.first_name}}:</strong> I will.</p>
 ```
 
 ### Rendered Output
