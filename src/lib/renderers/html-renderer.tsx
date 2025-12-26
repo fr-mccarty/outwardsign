@@ -17,6 +17,7 @@ import {
   resolveSpacerSize,
   type ResolvedStyle,
 } from '@/lib/styles/liturgical-script-styles'
+import { sanitizeHTML } from '@/lib/utils/content-processor'
 
 // ============================================================================
 // STYLE HELPERS
@@ -260,7 +261,7 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
               ...applyResolvedStyle(valueStyle, isPrintMode),
               whiteSpace: 'pre-wrap'
             }}
-            dangerouslySetInnerHTML={{ __html: element.value }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHTML(element.value) }}
           />
         </div>
       ) : null
