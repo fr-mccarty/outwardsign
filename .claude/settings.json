@@ -8,17 +8,11 @@
       "Bash(npm run db:fresh:*)"
     ],
     "allow": [
-      "Bash(find:*)",
       "Bash(mv:*)",
       "Bash(wc:*)",
       "Bash(ls:*)",
-      "Bash(grep:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
       "Bash(file:*)",
       "Bash(diff:*)",
-      "Bash(sed:*)",
       "Bash(xargs:*)",
       "Bash(tree:*)",
       "Bash(pwd:*)",
@@ -31,12 +25,9 @@
       "Bash(uniq:*)",
       "Bash(cut:*)",
       "Bash(tr:*)",
-      "Bash(awk:*)",
       "Bash(paste:*)",
       "Bash(jq:*)",
       "Bash(tee:*)",
-      "Bash(echo:*)",
-      "Bash(printf:*)",
       "Bash(for file:*)",
       "Bash(for table:*)",
       "Bash(do echo:*)",
@@ -272,6 +263,42 @@
           {
             "type": "prompt",
             "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a documentation file. Before proceeding, you MUST read docs/README.md.\n\nThis file contains documentation standards including:\n- File size limit (1000 lines max)\n- Future-oriented documentation (current patterns only)\n- Scannable structure with clear headings and TOC\n- Agent-friendly linking and cross-references\n- Code examples should be commented and runnable\n\nKey rules:\n- Add new docs to CLAUDE.md and relevant registry files\n- Link related documentation throughout the project\n- Keep files focused on one topic\n- Use descriptive filenames for easy discovery\n\nHave you read docs/README.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/components/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a component file. Before proceeding, read:\n- docs/STYLES-CRITICAL.md (NEVER hardcode colors, always pair bg/foreground)\n- docs/COMPONENT_REGISTRY.md (check for existing components before creating new ones)\n- docs/DIALOGS.md (NEVER import from ui/dialog - use ConfirmationDialog or InfoDialog)\n\nKey rules:\n- NEVER edit files in src/components/ui/ (shadcn/ui managed)\n- Use semantic color tokens (bg-background, text-foreground, bg-card text-card-foreground)\n- No dark: utility classes - CSS variables handle dark mode\n- Check COMPONENT_REGISTRY.md for existing patterns before implementing\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/components/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a component file. Before proceeding, read:\n- docs/STYLES-CRITICAL.md (NEVER hardcode colors, always pair bg/foreground)\n- docs/COMPONENT_REGISTRY.md (check for existing components before creating new ones)\n- docs/DIALOGS.md (NEVER import from ui/dialog - use ConfirmationDialog or InfoDialog)\n\nKey rules:\n- NEVER create files in src/components/ui/ (shadcn/ui managed)\n- Check COMPONENT_REGISTRY.md - a similar component may already exist\n- Use semantic color tokens (bg-background, text-foreground, bg-card text-card-foreground)\n- No dark: utility classes - CSS variables handle dark mode\n- For dialogs, wrap shadcn Dialog outside ui/ directory\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/app/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "STYLING REMINDER:\n\nYou are editing an app file. Key styling rules from docs/STYLES-CRITICAL.md:\n- NEVER hardcode colors (bg-white, text-gray-900, hex values)\n- ALWAYS pair backgrounds with foregrounds (bg-card text-card-foreground)\n- Use semantic tokens: bg-background, text-foreground, bg-muted, text-muted-foreground\n- No dark: utility classes - CSS variables handle dark mode automatically\n- Print views (app/print/) are exempt from these rules\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/app/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "STYLING REMINDER:\n\nYou are creating an app file. Key styling rules from docs/STYLES-CRITICAL.md:\n- NEVER hardcode colors (bg-white, text-gray-900, hex values)\n- ALWAYS pair backgrounds with foregrounds (bg-card text-card-foreground)\n- Use semantic tokens: bg-background, text-foreground, bg-muted, text-muted-foreground\n- No dark: utility classes - CSS variables handle dark mode automatically\n- Print views (app/print/) are exempt from these rules\n\nTool being used: $ARGUMENTS"
           }
         ]
       }
