@@ -76,6 +76,7 @@
 | **ux-agent** | N/A | UX understanding audits |
 | **wisdom-agent** | N/A | Perspective when stuck |
 | **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits |
+| **branch-merge-agent** | N/A | Evaluate and merge Claude branches |
 
 ### Quick Decision Guide
 
@@ -88,6 +89,7 @@
 - **Deploy?** → qa-specialist → release-agent
 - **Stuck?** → wisdom-agent
 - **Audit agents/settings?** → agent-audit-agent
+- **Merge Claude branches?** → branch-merge-agent
 
 ---
 
@@ -128,6 +130,10 @@ Plan, communicate, and celebrate sacraments (Weddings, Funerals, Baptisms, Quinc
 - **NEVER use `git add` or `git commit`** - you don't have permission
 - Only read-only commands: `git status`, `git log`, `git show`, `git diff`, `git branch`, `git remote`
 - Instruct user to run staging/commit commands manually
+
+**Exception - branch-merge-agent:** Has extended git permissions for merging and cleanup:
+- `git fetch`, `git checkout`, `git merge`
+- `git branch -d`, `git push origin --delete`, `git reset`
 
 ---
 

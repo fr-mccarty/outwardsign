@@ -37,7 +37,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 
 ## Agent Inventory
 
-### Complete Agent List (17 agents)
+### Complete Agent List (18 agents)
 
 | Agent | Folder | Role | Phase |
 |-------|--------|------|-------|
@@ -59,6 +59,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
 | **wisdom-agent** | N/A (read-only) | Perspective and encouragement | As-needed |
 | **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits | As-needed |
+| **branch-merge-agent** | N/A | Evaluate and merge Claude branches | As-needed |
 
 ---
 
@@ -87,6 +88,7 @@ Each agent "owns" a specific folder where it creates and manages files:
 - ui-agent (audits visual styling)
 - ux-agent (audits user understanding)
 - wisdom-agent (provides perspective and encouragement)
+- branch-merge-agent (manages git branches - has extended git permissions)
 
 ---
 
@@ -149,8 +151,11 @@ USER REQUEST
     ├─ "Fix linting errors" or "run lint fix"
     │   └─ cleanup-agent (runs lint --fix in isolation, verifies build)
     │
-    └─ "Audit agents/settings/hooks"
-        └─ agent-audit-agent → produces report → DONE (user decides next steps)
+    ├─ "Audit agents/settings/hooks"
+    │   └─ agent-audit-agent → produces report → DONE (user decides next steps)
+    │
+    └─ "Merge Claude branches" or "Clean up Claude branches"
+        └─ branch-merge-agent → fetch → evaluate → merge → cleanup
 ```
 
 ---
@@ -569,3 +574,4 @@ Each agent enforces specific quality gates before passing work to the next agent
 - New features: brainstorming → devils-advocate → requirements → developer → test-writer → test-runner → docs
 - Lint fixes: cleanup-agent (always in isolation, always verify build)
 - Health checks: supervisor-agent → cleanup-agent (lint) or developer-agent (judgment)
+- Branch cleanup: branch-merge-agent (fetch → evaluate → merge → cleanup)
