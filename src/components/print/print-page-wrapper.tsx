@@ -28,6 +28,7 @@
  */
 
 import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
+import { sanitizeHTML } from '@/lib/utils/content-processor'
 
 interface PrintPageWrapperProps {
   /** React children to render inside the wrapper */
@@ -52,7 +53,7 @@ export function PrintPageWrapper({
       <style dangerouslySetInnerHTML={{ __html: combinedStyles }} />
       <div className="print-page-content">
         {htmlContent ? (
-          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(htmlContent) }} />
         ) : (
           children
         )}

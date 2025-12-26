@@ -34,7 +34,7 @@ import { formatDatePretty } from '@/lib/utils/formatters'
  * @param html - Raw HTML content
  * @returns Sanitized HTML content
  */
-function sanitizeHTML(html: string): string {
+export function sanitizeHTML(html: string): string {
   // Remove script tags and their content
   let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
 
