@@ -8,6 +8,8 @@ import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { FormInput } from '@/components/form-input'
 import { FormBottomActions } from '@/components/form-bottom-actions'
 import { FormSectionCard } from '@/components/form-section-card'
+import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { createCategoryTag, updateCategoryTag } from '@/lib/actions/category-tags'
 import type { CategoryTag, CreateCategoryTagData, UpdateCategoryTagData } from '@/lib/types'
 import { toast } from 'sonner'
@@ -35,6 +37,9 @@ export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
       slug: tag?.slug || '',
     },
   })
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && form.formState.isDirty })
 
   return (
     <ModuleFormWrapper
@@ -93,6 +98,14 @@ export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
               isLoading={isLoading}
               cancelHref="/settings/category-tags"
               moduleName="Tag"
+              isDirty={isEditing && form.formState.isDirty}
+              onNavigate={unsavedChanges.handleNavigation}
+            />
+
+            <UnsavedChangesDialog
+              open={unsavedChanges.showDialog}
+              onConfirm={unsavedChanges.confirmNavigation}
+              onCancel={unsavedChanges.cancelNavigation}
             />
           </form>
         )

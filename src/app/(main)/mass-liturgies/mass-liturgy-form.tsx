@@ -50,6 +50,8 @@ import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 import { useTranslations } from "next-intl"
 import { PeopleEventAssignmentSection } from "@/components/people-event-assignment-section"
 import { CalendarEventAssignmentSection } from "@/components/calendar-event-assignment-section"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 
 interface MassLiturgyFormProps {
   mass?: MassWithRelations
@@ -66,7 +68,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
   // Initialize React Hook Form
   // Note: In the new data model, many fields are stored in field_values JSONB column
   const initialFieldValues = mass?.field_values || {}
-  const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<CreateMassData>({
+  const { handleSubmit, formState: { errors, isSubmitting, isDirty }, setValue, watch } = useForm<CreateMassData>({
     resolver: zodResolver(createMassSchema),
     defaultValues: {
       status: mass?.status || "ACTIVE",
@@ -84,6 +86,9 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
   useEffect(() => {
     onLoadingChange?.(isSubmitting)
   }, [isSubmitting, onLoadingChange])
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && isDirty })
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
@@ -961,6 +966,14 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
         isLoading={isSubmitting}
         cancelHref={isEditing ? `/mass-liturgies/${mass.id}` : '/mass-liturgies'}
         moduleName="Mass"
+        isDirty={isEditing && isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
 
       {/* Mass Intention Picker Modal */}

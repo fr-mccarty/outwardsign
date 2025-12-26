@@ -11,6 +11,8 @@ import type { Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { useTranslations } from 'next-intl'
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
@@ -27,7 +29,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
 
   const {
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
     setValue,
     watch,
   } = useForm<CreateLocationData>({
@@ -42,6 +44,9 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
       phone_number: location?.phone_number || "",
     },
   })
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && isDirty })
 
   // Watch all form values for FormInput onChange callbacks
   const name = watch("name")
@@ -179,6 +184,14 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         cancelHref="/locations"
         isLoading={isSubmitting}
         moduleName={t('title')}
+        isDirty={isEditing && isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
     </form>
   )

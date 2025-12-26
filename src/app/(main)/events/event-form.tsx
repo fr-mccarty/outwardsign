@@ -28,6 +28,8 @@ import { CalendarEventField } from "@/components/calendar-event-field"
 import { EventTypeSelectField } from "@/components/event-type-select-field"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { UnsavedChangesDialog } from "@/components/unsaved-changes-dialog"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
@@ -59,7 +61,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
 
   // Initialize React Hook Form
   // Note: status, liturgical_event_id, and note are form-only fields not yet in MasterEvent type
-  const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<EventFormData>({
+  const { handleSubmit, formState: { errors, isSubmitting, isDirty }, setValue, watch } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       status: "ACTIVE",
@@ -74,6 +76,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   useEffect(() => {
     onLoadingChange?.(isSubmitting)
   }, [isSubmitting, onLoadingChange])
+
+  // Unsaved changes warning
+  const unsavedChanges = useUnsavedChanges({ isDirty: isEditing && isDirty })
 
   // Picker states using usePickerState hook
   const liturgicalEvent = usePickerState<LiturgicalCalendarEvent>()
@@ -630,6 +635,14 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
         isLoading={isSubmitting}
         cancelHref={event ? `/events/${event.id}` : '/events'}
         moduleName="event"
+        isDirty={isEditing && isDirty}
+        onNavigate={unsavedChanges.handleNavigation}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedChanges.showDialog}
+        onConfirm={unsavedChanges.confirmNavigation}
+        onCancel={unsavedChanges.cancelNavigation}
       />
     </form>
   )
