@@ -26,7 +26,6 @@ test.describe('Wedding Script Formatting', () => {
 
     const readerFirstName = `TestReader`;
     const readerLastName = `${testId}`;
-    const readerFullName = `${readerFirstName} ${readerLastName}`;
 
     await page.getByLabel('First Name').fill(readerFirstName);
     await page.getByLabel('Last Name').fill(readerLastName);
