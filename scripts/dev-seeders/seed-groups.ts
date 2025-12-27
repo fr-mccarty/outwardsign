@@ -1,61 +1,12 @@
 /**
- * Dev Seeder: Sample Groups
+ * Dev Seeder: Group Memberships
  *
- * Creates sample groups and group memberships for development/testing.
+ * Adds sample people to groups created by the onboarding seeder.
+ * Groups are created by onboarding - this seeder only creates memberships.
  */
 
 import type { DevSeederContext } from './types'
 import { logSuccess, logWarning, logInfo } from '../../src/lib/utils/console'
-
-export async function seedGroups(ctx: DevSeederContext) {
-  const { supabase, parishId } = ctx
-
-  logInfo('Creating sample groups...')
-
-  const { data: groups, error: groupsError } = await supabase
-    .from('groups')
-    .insert([
-      {
-        parish_id: parishId,
-        name: 'Parish Council',
-        description: 'Advisory body for parish leadership and planning',
-        is_active: true
-      },
-      {
-        parish_id: parishId,
-        name: 'Finance Council',
-        description: 'Oversight of parish finances and budgeting',
-        is_active: true
-      },
-      {
-        parish_id: parishId,
-        name: 'Zumba',
-        description: 'Exercise and community group',
-        is_active: true
-      },
-      {
-        parish_id: parishId,
-        name: 'Maintenance Committee',
-        description: 'Care and upkeep of parish facilities',
-        is_active: true
-      },
-      {
-        parish_id: parishId,
-        name: 'PLT',
-        description: 'Parish Leadership Team',
-        is_active: true
-      },
-    ])
-    .select()
-
-  if (groupsError) {
-    logWarning(`Error creating groups: ${groupsError.message}`)
-    return { success: false, groups: null }
-  }
-
-  logSuccess(`${groups?.length || 0} groups created`)
-  return { success: true, groups }
-}
 
 export async function seedGroupMemberships(
   ctx: DevSeederContext,

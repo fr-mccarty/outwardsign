@@ -174,7 +174,7 @@ export async function seedMasses(
     }
 
     // Create master_event
-    const { data: newMasterEvent, error: masterEventError } = await supabase
+    const { data: newParishEvent, error: masterEventError } = await supabase
       .from('master_events')
       .insert({
         parish_id: parishId,
@@ -197,7 +197,7 @@ export async function seedMasses(
       .from('calendar_events')
       .insert({
         parish_id: parishId,
-        master_event_id: newMasterEvent.id,
+        master_event_id: newParishEvent.id,
         input_field_definition_id: primaryCalendarEventField.id,
         start_datetime: startDatetime,
         location_id: churchLocation.id,
@@ -210,7 +210,7 @@ export async function seedMasses(
     if (calendarEventError || !newCalendarEvent) {
       logError(`Error creating calendar_event for ${massData.date}: ${calendarEventError?.message}`)
       // Clean up the orphaned master_event
-      await supabase.from('master_events').delete().eq('id', newMasterEvent.id)
+      await supabase.from('master_events').delete().eq('id', newParishEvent.id)
       continue
     }
 
@@ -230,7 +230,7 @@ export async function seedMasses(
       const person = getRandomPerson(massesCreatedCount, fieldIndex)
 
       assignments.push({
-        master_event_id: newMasterEvent.id,
+        master_event_id: newParishEvent.id,
         // Template-level (presider, homilist) = NULL, Occurrence-level = calendar_event_id
         calendar_event_id: field.is_per_calendar_event ? newCalendarEvent.id : null,
         field_definition_id: field.id,

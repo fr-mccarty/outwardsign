@@ -24,10 +24,10 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { toLocalDateString } from '@/lib/utils/formatters'
-import { createEvent, updateEvent } from '@/lib/actions/master-events'
+import { createEvent, updateEvent } from '@/lib/actions/parish-events'
 import type {
   EventTypeWithRelations,
-  MasterEventWithRelations,
+  ParishEventWithRelations,
   InputFieldDefinition,
   Person,
   Location,
@@ -36,20 +36,20 @@ import type {
   Petition,
   Document,
   CreateCalendarEventData,
-  MasterEventStatus
+  ParishEventStatus
 } from '@/lib/types'
 
-const MASTER_EVENT_STATUS_VALUES: MasterEventStatus[] = ['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']
+const MASTER_EVENT_STATUS_VALUES: ParishEventStatus[] = ['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']
 
 const masterEventSchema = z.object({
   status: z.enum(['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']),
 })
 
-type MasterEventFormData = z.infer<typeof masterEventSchema>
+type ParishEventFormData = z.infer<typeof masterEventSchema>
 
-interface MasterEventFormProps {
+interface ParishEventFormProps {
   eventType: EventTypeWithRelations
-  initialData?: MasterEventWithRelations
+  initialData?: ParishEventWithRelations
   isEditing?: boolean
   onSubmit?: (data: any) => Promise<void>
   formId?: string
@@ -57,7 +57,7 @@ interface MasterEventFormProps {
 }
 
 /**
- * MasterEventForm - Reusable form component for master events
+ * ParishEventForm - Reusable form component for master events
  *
  * Dynamically renders fields based on input_field_definitions from event_type.
  * Supports person, location, group, calendar_event, text, rich_text, date, time, number, yes_no field types.
@@ -65,18 +65,18 @@ interface MasterEventFormProps {
  *
  * Per FORMS.md: Uses FormField component pattern and semantic color tokens.
  */
-export function MasterEventForm({
+export function ParishEventForm({
   eventType,
   initialData,
   isEditing = false,
   onSubmit: customOnSubmit,
   formId,
   onLoadingChange
-}: MasterEventFormProps) {
+}: ParishEventFormProps) {
   const router = useRouter()
 
   // React Hook Form setup
-  const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<MasterEventFormData>({
+  const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<ParishEventFormData>({
     resolver: zodResolver(masterEventSchema),
     defaultValues: {
       status: initialData?.status || 'PLANNING',
@@ -145,7 +145,7 @@ export function MasterEventForm({
   }
 
   // Handle form submission
-  const onSubmitForm = async (data: MasterEventFormData) => {
+  const onSubmitForm = async (data: ParishEventFormData) => {
     try {
       // Validate required fields
       const missingRequired: string[] = []
@@ -426,8 +426,8 @@ export function MasterEventForm({
   const sortedFields = [...(eventType.input_field_definitions || [])].sort((a, b) => a.order - b.order)
 
   // Get status label
-  const getStatusLabel = (status: MasterEventStatus) => {
-    const labels: Record<MasterEventStatus, string> = {
+  const getStatusLabel = (status: ParishEventStatus) => {
+    const labels: Record<ParishEventStatus, string> = {
       PLANNING: 'Planning',
       ACTIVE: 'Active',
       SCHEDULED: 'Scheduled',
@@ -450,7 +450,7 @@ export function MasterEventForm({
           label="Status"
           description="Current status of this event"
           value={watch('status') || 'PLANNING'}
-          onChange={(value) => setValue('status', value as MasterEventStatus)}
+          onChange={(value) => setValue('status', value as ParishEventStatus)}
           options={MASTER_EVENT_STATUS_VALUES.map((value) => ({
             value,
             label: getStatusLabel(value)

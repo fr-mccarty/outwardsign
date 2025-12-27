@@ -1,7 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getEvents, type MasterEventFilterParams } from "@/lib/actions/master-events"
+import { getEvents, type ParishEventFilterParams } from "@/lib/actions/parish-events"
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
@@ -42,9 +42,9 @@ export default async function DynamicEventsPage({ params, searchParams }: PagePr
   }
 
   // Build filters from search params with defaults
-  const filters: MasterEventFilterParams = {
+  const filters: ParishEventFilterParams = {
     search: searchParamsResolved.search,
-    sort: (searchParamsResolved.sort as MasterEventFilterParams['sort']) || 'date_desc',
+    sort: (searchParamsResolved.sort as ParishEventFilterParams['sort']) || 'date_desc',
     offset: 0, // Always fetch first page on server
     limit: LIST_VIEW_PAGE_SIZE,
     startDate: searchParamsResolved.start_date,

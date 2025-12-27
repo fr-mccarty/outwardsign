@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
-import { createEvent, updateEvent } from "@/lib/actions/master-events"
-import type { MasterEventWithRelations } from "@/lib/types"
+import { createEvent, updateEvent } from "@/lib/actions/parish-events"
+import type { ParishEventWithRelations } from "@/lib/types"
 import type { Person, Location, ContentWithTags, Petition, Document, Group } from "@/lib/types"
 import type { LiturgicalCalendarEvent } from "@/lib/actions/liturgical-calendar"
 import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
@@ -49,7 +49,7 @@ const eventSchema = z.object({
 type EventFormData = z.infer<typeof eventSchema>
 
 interface EventFormProps {
-  event?: MasterEventWithRelations
+  event?: ParishEventWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
   initialLiturgicalEvent?: LiturgicalCalendarEvent | null
@@ -60,7 +60,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   const isEditing = !!event
 
   // Initialize React Hook Form
-  // Note: status, liturgical_event_id, and note are form-only fields not yet in MasterEvent type
+  // Note: status, liturgical_event_id, and note are form-only fields not yet in ParishEvent type
   const { handleSubmit, formState: { errors, isSubmitting, isDirty }, setValue, watch } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {

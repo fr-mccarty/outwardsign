@@ -1,7 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getAllMasterEvents, getMasterEventStats, type MasterEventFilterParams } from "@/lib/actions/master-events"
+import { getAllParishEvents, getParishEventStats, type ParishEventFilterParams } from "@/lib/actions/parish-events"
 import { getActiveEventTypes } from "@/lib/actions/event-types"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -47,22 +47,22 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   // Build filters from search params WITH DEFAULTS
   // Per LIST_VIEW_PATTERN.md: Apply defaults on server BEFORE calling server actions
-  const filters: MasterEventFilterParams = {
+  const filters: ParishEventFilterParams = {
     search: params.search,
     systemType: 'parish-event', // Filter only master_events with system_type = 'parish-event'
-    status: (params.status as MasterEventFilterParams['status']) || 'ACTIVE', // Default applied
+    status: (params.status as ParishEventFilterParams['status']) || 'ACTIVE', // Default applied
     eventTypeId,
     startDate: params.start_date,
     endDate: params.end_date,
-    sort: (params.sort as MasterEventFilterParams['sort']) || 'date_asc', // Default to date ascending
+    sort: (params.sort as ParishEventFilterParams['sort']) || 'date_asc', // Default to date ascending
     offset: 0,
     limit: LIST_VIEW_PAGE_SIZE
   }
 
   // Fetch master events and stats server-side
   const [events, stats] = await Promise.all([
-    getAllMasterEvents(filters),
-    getMasterEventStats(filters)
+    getAllParishEvents(filters),
+    getParishEventStats(filters)
   ])
 
   const t = await getTranslations()

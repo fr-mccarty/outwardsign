@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { processScriptForRendering } from '@/lib/utils/content-processor'
 import { PrintPageWrapper } from '@/components/print/print-page-wrapper'

@@ -8,7 +8,7 @@ import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
 import Link from 'next/link'
 import type { MassWithRelations } from '@/lib/schemas/mass-liturgies'
 import type { ScriptWithSections } from '@/lib/types/event-types'
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 
 interface MassScriptViewClientProps {
   mass: MassWithRelations
@@ -26,9 +26,9 @@ interface MassScriptViewClientProps {
 export function MassLiturgyScriptViewClient({ mass, script }: MassScriptViewClientProps) {
   const router = useRouter()
 
-  // Convert Mass data to match the MasterEventWithRelations interface expected by DynamicScriptViewer
+  // Convert Mass data to match the ParishEventWithRelations interface expected by DynamicScriptViewer
   // Note: Only resolved_fields and parish are actually used by the script processor
-  const eventForProcessing: MasterEventWithRelations = {
+  const eventForProcessing: ParishEventWithRelations = {
     id: mass.id,
     parish_id: mass.parish_id,
     event_type_id: mass.event_type_id!,

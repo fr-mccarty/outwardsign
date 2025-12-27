@@ -49,6 +49,7 @@
 | **Event type config** | [EVENT_TYPE_CONFIGURATION.md](./docs/EVENT_TYPE_CONFIGURATION.md) | developer-agent |
 | **Use/create components** | [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) | developer-agent |
 | **Use dialogs** | [DIALOGS.md](./docs/DIALOGS.md) | developer-agent |
+| **Security audit** | [ARCHITECTURE.md](./docs/ARCHITECTURE.md), [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) | security-agent |
 
 **New to the project?** Start with [DEFINITIONS.md](./docs/DEFINITIONS.md) for liturgical terminology.
 
@@ -60,22 +61,26 @@
 
 | Agent | Folder | Purpose |
 |-------|--------|---------|
-| **brainstorming-agent** | `/brainstorming/` | Creative vision capture |
-| **devils-advocate-agent** | `/brainstorming/` | Challenge brainstorming |
-| **requirements-agent** | `/requirements/` | Requirements analysis |
+| **brainstorming-agent** | `/agents/brainstorming/` | Creative vision capture |
+| **devils-advocate-agent** | `/agents/brainstorming/` | Challenge brainstorming |
+| **requirements-agent** | `/agents/requirements/` | Requirements analysis |
 | **developer-agent** | `/src/` | Feature implementation |
 | **test-writer** | `/tests/` | Test creation |
 | **test-runner-debugger** | N/A | Test execution & debugging |
 | **project-documentation-writer** | `/docs/` | Developer/AI documentation |
-| **supervisor-agent** | `/supervisor/` | Codebase health audits |
+| **qa-specialist** | N/A | Quality assurance audits |
+| **supervisor-agent** | `/agents/supervisor/` | Codebase health audits |
 | **cleanup-agent** | N/A | Safe lint --fix in isolation |
 | **user-documentation-writer** | `/src/app/documentation/content/` | End-user guides |
 | **explorer-agent** | N/A | Codebase exploration |
 | **refactor-agent** | N/A | Code quality improvement |
+| **release-agent** | `/agents/release/` | Deployment & releases |
 | **ui-agent** | N/A | Visual quality audits |
 | **ux-agent** | N/A | UX understanding audits |
 | **wisdom-agent** | N/A | Perspective when stuck |
-| **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits |
+| **agent-audit-agent** | `/agents/agent-audit/` | Agent ecosystem audits |
+| **claude-audit-agent** | N/A | CLAUDE.md accuracy audits |
+| **security-agent** | `/agents/security/` | Security audits |
 | **branch-merge-agent** | N/A | Evaluate and merge Claude branches |
 
 ### Quick Decision Guide
@@ -89,7 +94,15 @@
 - **Deploy?** → qa-specialist → release-agent
 - **Stuck?** → wisdom-agent
 - **Audit agents/settings?** → agent-audit-agent
+- **Audit CLAUDE.md accuracy?** → claude-audit-agent
 - **Merge Claude branches?** → branch-merge-agent
+- **Security audit?** → security-agent
+
+### Agent Output Lifecycle
+
+- **Temporary:** brainstorming outputs (move to /requirements/ when formalized)
+- **Audit trail:** supervisor, agent-audit, security, release outputs (commit for history)
+- **Context-dependent:** requirements outputs (commit if defining features, delete if exploratory)
 
 ---
 
@@ -162,6 +175,13 @@ When `npm run build` fails:
 - Common sources: TypeScript mismatches, import errors, form pattern violations, server/client boundaries
 - Fix root cause, not symptoms
 
+**Next.js 15 Breaking Change:** `params` and `searchParams` must be awaited in server pages:
+```typescript
+// Correct
+const { id } = await params;
+const query = await searchParams;
+```
+
 ---
 
 ## Tools
@@ -174,7 +194,7 @@ When `npm run build` fails:
 
 ## Tech Stack
 
-- **Frontend:** Next.js 13+ (App Router)
+- **Frontend:** Next.js 15+ (App Router)
 - **Database:** Supabase (PostgreSQL)
 - **Auth:** Supabase Auth (server-side sessions)
 - **API:** Server Actions
@@ -223,7 +243,7 @@ When `npm run build` fails:
 **Full reference:** [FORMS.md](./docs/FORMS.md)
 
 **Critical Rules:**
-- ALL inputs must use `FormField` component
+- ALL inputs must use project form components (see FORMS.md for patterns)
 - NEVER modify font-family, borders, or backgrounds on inputs
 - Unified form pattern handles create/edit via `entity` prop
 - Use SaveButton, CancelButton, picker components

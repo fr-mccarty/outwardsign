@@ -1,9 +1,9 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
-import { DynamicEventEditClient } from '@/app/(main)/events/[event_type_id]/[id]/edit/master-event-edit-client'
+import { ParishEventEditClient } from '@/app/(main)/events/[event_type_id]/[id]/edit/parish-event-edit-client'
 
 interface PageProps {
   params: Promise<{
@@ -53,7 +53,7 @@ export default async function EditSpecialLiturgyPage({ params }: PageProps) {
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <DynamicEventEditClient
+      <ParishEventEditClient
         event={event}
         eventType={eventType}
         title={title}

@@ -52,7 +52,7 @@ export default async function PrintMassScriptPage({ params }: PageProps) {
     notFound()
   }
 
-  // Convert Mass data to match the MasterEventWithRelations interface expected by DynamicScriptViewer
+  // Convert Mass data to match the ParishEventWithRelations interface expected by DynamicScriptViewer
   // Note: Only resolved_fields and parish are actually used by the script processor
   const eventForProcessing = {
     id: mass.id,

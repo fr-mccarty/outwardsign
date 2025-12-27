@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Document, Packer, Paragraph, TextRun, PageBreak, AlignmentType } from 'docx'
 import { htmlToWordParagraphs, FONT_FAMILY, POINT_TO_HALF_POINT, POINT_TO_TWIP } from '@/lib/utils/export-helpers'
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'

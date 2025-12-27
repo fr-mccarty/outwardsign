@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { EventType } from '@/lib/types'
-import type { MasterEventWithTypeAndCalendarEvent } from '@/lib/actions/master-events'
-import { getEvents, deleteEvent, type MasterEventFilterParams } from '@/lib/actions/master-events'
+import type { ParishEventWithTypeAndCalendarEvent } from '@/lib/actions/parish-events'
+import { getEvents, deleteEvent, type ParishEventFilterParams } from '@/lib/actions/parish-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS, MODULE_STATUS_COLORS, LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -35,7 +35,7 @@ import {
 
 interface EventsListClientProps {
   eventType: EventType
-  initialData: MasterEventWithTypeAndCalendarEvent[]
+  initialData: ParishEventWithTypeAndCalendarEvent[]
   initialHasMore: boolean
   /** Base URL for this list view (e.g., /events/[id] or /special-liturgies/[slug]) */
   baseUrl?: string
@@ -61,14 +61,14 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
   const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
 
   // Infinite scroll state
-  const [events, setEvents] = useState<MasterEventWithTypeAndCalendarEvent[]>(initialData)
+  const [events, setEvents] = useState<ParishEventWithTypeAndCalendarEvent[]>(initialData)
   const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
+  const [eventToDelete, setEventToDelete] = useState<ParishEventWithTypeAndCalendarEvent | null>(null)
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -101,7 +101,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
     try {
       const nextEvents = await getEvents(eventType.id, {
         search: filters.getFilterValue('search'),
-        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
+        sort: filters.getFilterValue('sort') as ParishEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
         startDate: filters.getFilterValue('start_date'),
@@ -156,7 +156,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
   }
 
   // Build event name column with status indicator
-  const buildEventNameColumn = (): DataTableColumn<MasterEventWithTypeAndCalendarEvent> => {
+  const buildEventNameColumn = (): DataTableColumn<ParishEventWithTypeAndCalendarEvent> => {
     return {
       key: 'name',
       header: 'Name',
@@ -194,7 +194,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
   }
 
   // Define table columns
-  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
+  const columns: DataTableColumn<ParishEventWithTypeAndCalendarEvent>[] = [
     buildEventNameColumn(),
     // Date column
     {
@@ -237,7 +237,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
     ...(eventType.system_type === 'special-liturgy' ? [{
       key: 'liturgical_color',
       header: 'Color',
-      cell: (event: MasterEventWithTypeAndCalendarEvent) => {
+      cell: (event: ParishEventWithTypeAndCalendarEvent) => {
         const color = event.liturgical_color
         if (!color || !LITURGICAL_COLOR_LABELS[color]) {
           return <span className="text-sm text-muted-foreground">—</span>
@@ -259,12 +259,12 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
       sortable: false
     }] : []),
     // Where column (location)
-    buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
+    buildWhereColumn<ParishEventWithTypeAndCalendarEvent>({
       getLocation: (event) => event.primary_calendar_event?.location || null,
       hiddenOn: 'lg'
     }),
     // Actions column
-    buildActionsColumn<MasterEventWithTypeAndCalendarEvent>({
+    buildActionsColumn<ParishEventWithTypeAndCalendarEvent>({
       baseUrl: listBaseUrl,
       onDelete: (event) => {
         setEventToDelete(event)

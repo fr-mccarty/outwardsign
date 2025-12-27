@@ -10,7 +10,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 // import { getPresentations, PresentationWithRelations } from './presentations'
 // import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
 import { getMasses, getMassRoles } from './mass-liturgies'
-import type { MassWithNames, MasterEventRoleWithRelations } from '@/lib/schemas/mass-liturgies'
+import type { MassWithNames, ParishEventRoleWithRelations } from '@/lib/schemas/mass-liturgies'
 import { toLocalDateString } from '@/lib/utils/formatters'
 
 export interface WeekendSummaryParams {
@@ -38,7 +38,7 @@ export interface WeekendSummaryData {
   massRoles: {
     massId: string
     massTitle: string
-    roles: MasterEventRoleWithRelations[]
+    roles: ParishEventRoleWithRelations[]
   }[]
 }
 

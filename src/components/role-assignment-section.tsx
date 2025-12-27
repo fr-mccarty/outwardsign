@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { User, X, Plus } from 'lucide-react'
-import type { MasterEventWithRelations, Person } from '@/lib/types'
+import type { ParishEventWithRelations, Person } from '@/lib/types'
 
 // Local RoleDefinition interface for backward compatibility (temporary)
 // TODO: Refactor to use people_event_assignments pattern
@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 
 interface RoleAssignmentSectionProps {
-  masterEvent: MasterEventWithRelations
+  masterEvent: ParishEventWithRelations
   onRoleAssigned?: (roleId: string, person: Person, notes?: string) => Promise<void>
   onRoleRemoved?: (roleAssignmentId: string) => Promise<void>
 }
@@ -66,7 +66,7 @@ export function RoleAssignmentSection({
   const roleDefinitions: RoleDefinition[] = []
   // const roleDefinitions: RoleDefinition[] = masterEvent.event_type?.role_definitions?.roles || []
 
-  // TODO: roles no longer exists in MasterEventWithRelations - needs refactoring
+  // TODO: roles no longer exists in ParishEventWithRelations - needs refactoring
   const roleAssignments: any[] = []
   // const roleAssignments = masterEvent.roles || []
 

@@ -1,32 +1,32 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MasterEventForm } from '../master-event-form'
+import { ParishEventForm } from '../parish-event-form'
 import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
-import { TemplatePickerDialog } from '@/components/template-picker-dialog'
+import { PresetPickerDialog } from '@/components/preset-picker-dialog'
 import { BookmarkCheck, Settings } from 'lucide-react'
-import type { EventTypeWithRelations, MasterEventTemplate } from '@/lib/types'
+import type { EventTypeWithRelations, EventPreset } from '@/lib/types'
 
-interface DynamicEventCreateClientProps {
+interface ParishEventCreateClientProps {
   eventType: EventTypeWithRelations
   title: string
   description: string
 }
 
-export function DynamicEventCreateClient({
+export function ParishEventCreateClient({
   eventType,
   title,
   description
-}: DynamicEventCreateClientProps) {
+}: ParishEventCreateClientProps) {
   const formId = 'dynamic-event-form'
   const [isLoading, setIsLoading] = useState(false)
-  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<MasterEventTemplate | null>(null)
+  const [showPresetPicker, setShowPresetPicker] = useState(false)
+  const [selectedPreset, setSelectedPreset] = useState<EventPreset | null>(null)
 
-  const handleSelectTemplate = (template: MasterEventTemplate) => {
-    setSelectedTemplate(template)
-    // The MasterEventForm component will handle pre-filling from the template
+  const handleSelectPreset = (preset: EventPreset) => {
+    setSelectedPreset(preset)
+    // The ParishEventForm component will handle pre-filling from the preset
   }
 
   return (
@@ -38,9 +38,9 @@ export function DynamicEventCreateClient({
         additionalActions={[
           {
             type: 'action',
-            label: 'Create from Template',
+            label: 'Create from Preset',
             icon: <BookmarkCheck className="h-4 w-4" />,
-            onClick: () => setShowTemplatePicker(true)
+            onClick: () => setShowPresetPicker(true)
           },
           {
             type: 'action',
@@ -50,19 +50,19 @@ export function DynamicEventCreateClient({
           }
         ]}
       >
-        <MasterEventForm
+        <ParishEventForm
           eventType={eventType}
           formId={formId}
           onLoadingChange={setIsLoading}
-          templateData={selectedTemplate?.template_data}
+          presetData={selectedPreset?.preset_data}
         />
       </PageContainer>
 
-      <TemplatePickerDialog
+      <PresetPickerDialog
         eventTypeId={eventType.id}
-        open={showTemplatePicker}
-        onOpenChange={setShowTemplatePicker}
-        onSelectTemplate={handleSelectTemplate}
+        open={showPresetPicker}
+        onOpenChange={setShowPresetPicker}
+        onSelectPreset={handleSelectPreset}
       />
     </>
   )

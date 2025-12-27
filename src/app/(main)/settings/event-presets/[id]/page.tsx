@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { getTemplate } from '@/lib/actions/master-event-templates'
-import { EventTemplateViewClient } from './event-template-view-client'
+import { getPreset } from '@/lib/actions/event-presets'
+import { EventPresetViewClient } from './event-preset-view-client'
 
 interface PageProps {
   params: Promise<{
@@ -10,7 +10,7 @@ interface PageProps {
   }>
 }
 
-export default async function EventTemplateViewPage({ params }: PageProps) {
+export default async function EventPresetViewPage({ params }: PageProps) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -23,11 +23,11 @@ export default async function EventTemplateViewPage({ params }: PageProps) {
   await requireSelectedParish()
 
   const { id } = await params
-  const template = await getTemplate(id)
+  const preset = await getPreset(id)
 
-  if (!template) {
+  if (!preset) {
     notFound()
   }
 
-  return <EventTemplateViewClient template={template} />
+  return <EventPresetViewClient preset={preset} />
 }

@@ -6,10 +6,12 @@
 
 ## Overview
 
-Seeders populate the database with initial data. There are two seeder categories:
+Seeders populate the database with initial data. There are two seeder phases:
 
-1. **Onboarding Seeders** (`src/lib/onboarding-seeding/`) - Run for new parishes
-2. **Dev Seeders** (`scripts/dev-seeders/`) - Run only in development
+1. **Onboarding Seeding** (`src/lib/onboarding-seeding/`) - Data ALL parishes get (production + development)
+2. **Dev Seeding** (`scripts/dev-seeders/`) - Additional data for development only
+
+When running `npm run db:fresh` or `npm run seed:dev`, you'll see clear section headers indicating which phase is running.
 
 ---
 
@@ -19,6 +21,7 @@ Seeders populate the database with initial data. There are two seeder categories
 
 ```bash
 npm run seed:dev      # Full development seed (resets and reseeds everything)
+npm run db:fresh      # Reset database and run all seeders
 ```
 
 ### Seeder Execution Order
@@ -27,24 +30,37 @@ The dev seed script (`scripts/dev-seed.ts`) executes seeders in this order:
 
 1. Storage buckets (person-avatars)
 2. Dev user and parish setup
-3. Onboarding seeders (via `seedParishData`)
-4. Content library (via `seedContentForParish`)
-5. Dev seeders (readings, groups, people, etc.)
+3. Clean up existing data
+4. **ONBOARDING SEEDING** (via `seedParishData`):
+   - Event types, locations, groups, category tags
+   - Non-reading content (prayers, instructions, announcements)
+   - Sample parish events and special liturgies (Baptisms, Quinceañeras, Presentations)
+5. **DEV SEEDING**:
+   - Scripture readings (via `seedReadingsForParish`)
+   - Sample people with avatars
+   - Group memberships, families
+   - Masses and mass intentions
+   - Weddings and Funerals (with readings)
 
 ---
 
 ## Onboarding Seeders
 
-These seeders run when a new parish is created.
+These seeders run when a new parish is created. This is the data ALL parishes receive, including production.
 
 | File | Purpose | Data Created |
 |------|---------|--------------|
 | `parish-seed-data.ts` | Orchestrator | Calls all onboarding seeders |
 | `category-tags-seed.ts` | Tag definitions | ~25 tags (sacrament, section, theme, testament) |
-| `content-seed.ts` | Sample content | Prayers, announcements (no scripture) |
+| `content-seed.ts` | Sample content | `seedNonReadingContentForParish()` - Prayers, announcements, ceremony instructions |
 | `event-types-seed.ts` | Event types | Wedding, Funeral, Baptism, Quinceañera, Presentation + parish events |
 | `mass-event-types-seed.ts` | Mass types | Sunday Mass, Daily Mass |
 | `special-liturgy-event-types-seed.ts` | Special liturgies | Holy Week, Easter Vigil, etc. |
+| `locations-seed.ts` | Locations | Church, Parish Hall, Funeral Home |
+| `groups-seed.ts` | Groups | Parish Council, Finance Council, etc. |
+| `event-presets-seed.ts` | Event presets | Religious Education, Staff Meeting presets |
+| `events-seed.ts` | Sample events | Bible Study, Fundraiser, Religious Ed, Staff Meeting |
+| `special-liturgies-seed.ts` | Special liturgies | Baptisms, Quinceañeras, Presentations (NOT Weddings/Funerals) |
 
 ### category-tags-seed.ts
 
@@ -60,14 +76,18 @@ Seeds the polymorphic tag system used across content and petitions.
 
 ### content-seed.ts
 
-Seeds sample content items (public domain only - no copyrighted scripture).
+Seeds sample content items. The content is split into two functions:
 
-**Content Types:**
+**`seedNonReadingContentForParish()`** - Called by onboarding (ALL parishes):
 - Opening prayers (wedding, funeral, baptism, quinceañera, presentation)
 - Closing prayers
 - Prayers of the faithful
 - Ceremony instructions
 - Announcements
+
+**`seedReadingsForParish()`** - Called by dev seeder (development only):
+- First Readings, Second Readings, Gospels, Psalms
+- Uses public domain Douay-Rheims translation
 
 **Tagging:** Each content item is tagged with sacrament + section slugs.
 
@@ -92,33 +112,18 @@ Seeds configurable event types with input field definitions.
 
 ## Dev Seeders
 
-These seeders only run in development via `npm run seed:dev`.
+These seeders only run in development via `npm run seed:dev`. They augment the onboarding data with additional records for testing and development.
 
 | File | Purpose | Data Created |
 |------|---------|--------------|
 | `seed-people.ts` | Sample people | ~25 parishioners with various roles |
-| `seed-groups.ts` | Ministry groups | Choir, Lectors, Youth Ministry, etc. |
-| `seed-locations.ts` | Locations | Church, parish hall, funeral home |
+| `seed-groups.ts` | Group memberships | Assigns people to groups (groups created by onboarding) |
 | `seed-masses.ts` | Mass records | Sunday and daily Masses |
 | `seed-mass-intentions.ts` | Intentions | Sample Mass intentions |
-| `seed-events.ts` | Events | Baptisms, quinceañeras, parish events |
-| `seed-weddings-funerals.ts` | Weddings/funerals | With readings from content library |
-| `seed-readings.ts` | Scripture readings | Tagged liturgical readings |
 | `seed-families.ts` | Family records | Links people into family groups |
+| `seed-weddings-funerals.ts` | Weddings/funerals | With readings from content library |
 
-### seed-readings.ts
-
-Seeds liturgical readings from `src/lib/data/readings.ts`.
-
-**Readings Created:**
-- 4 readings per category (wedding/funeral × first/second/psalm/gospel)
-- Tagged with sacrament + section + testament
-
-**How to Find Readings:**
-```typescript
-// Query by tags: ['wedding', 'first-reading']
-// Pericope is in title, text is in body, intro is in description
-```
+**Note:** Scripture readings are seeded via `seedReadingsForParish()` from `content-seed.ts`, not from this folder.
 
 ### seed-weddings-funerals.ts
 
@@ -132,28 +137,6 @@ Seeds Wedding and Funeral events with content assignments.
 1. Query content tagged with sacrament (e.g., 'wedding')
 2. Filter by section tag (e.g., 'first-reading')
 3. Assign content ID to event's field_values
-
-### seed-events.ts
-
-Seeds sample events for non-wedding/funeral event types.
-
-**Event Types Seeded:**
-- Baptisms (2 events)
-- Quinceañeras (2 events)
-- Presentations (2 events)
-- Bible Studies (2 events)
-- Fundraisers (2 events)
-- Religious Education (2 events)
-- Staff Meetings (2 events)
-
-**Field Values Structure:**
-```json
-{
-  "child": "uuid-of-person",
-  "mother": "uuid-of-person",
-  "presider": "uuid-of-person"
-}
-```
 
 ---
 
@@ -189,17 +172,27 @@ Seeds sample events for non-wedding/funeral event types.
 ## Source Files
 
 ### Onboarding Seeders
-- `src/lib/onboarding-seeding/parish-seed-data.ts`
+- `src/lib/onboarding-seeding/parish-seed-data.ts` (orchestrator)
 - `src/lib/onboarding-seeding/category-tags-seed.ts`
-- `src/lib/onboarding-seeding/content-seed.ts`
+- `src/lib/onboarding-seeding/content-seed.ts` (non-readings for onboarding, readings for dev)
 - `src/lib/onboarding-seeding/event-types-seed.ts`
 - `src/lib/onboarding-seeding/mass-event-types-seed.ts`
 - `src/lib/onboarding-seeding/special-liturgy-event-types-seed.ts`
+- `src/lib/onboarding-seeding/locations-seed.ts`
+- `src/lib/onboarding-seeding/groups-seed.ts`
+- `src/lib/onboarding-seeding/event-presets-seed.ts`
+- `src/lib/onboarding-seeding/events-seed.ts`
+- `src/lib/onboarding-seeding/special-liturgies-seed.ts`
 
 ### Dev Seeders
 - `scripts/dev-seed.ts` (orchestrator)
 - `scripts/dev-seeders/index.ts` (exports)
-- `scripts/dev-seeders/seed-*.ts` (individual seeders)
+- `scripts/dev-seeders/seed-people.ts`
+- `scripts/dev-seeders/seed-groups.ts` (group memberships)
+- `scripts/dev-seeders/seed-masses.ts`
+- `scripts/dev-seeders/seed-mass-intentions.ts`
+- `scripts/dev-seeders/seed-families.ts`
+- `scripts/dev-seeders/seed-weddings-funerals.ts`
 
 ---
 

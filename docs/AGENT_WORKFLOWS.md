@@ -37,7 +37,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 
 ## Agent Inventory
 
-### Complete Agent List (18 agents)
+### Complete Agent List (20 agents)
 
 | Agent | Folder | Role | Phase |
 |-------|--------|------|-------|
@@ -54,11 +54,13 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **release-agent** | `/releases/` | Deployment | Optional |
 | **explorer-agent** | N/A | Codebase exploration | As-needed |
 | **refactor-agent** | N/A | Code improvement | As-needed |
-| **qa-specialist** | N/A | Performance/security | As-needed |
+| **qa-specialist** | N/A | Performance/accessibility | As-needed |
+| **security-agent** | `/agents/security/` | Security audits | As-needed |
 | **ui-agent** | N/A (read-only) | Visual styling audits | As-needed |
 | **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
 | **wisdom-agent** | N/A (read-only) | Perspective and encouragement | As-needed |
 | **agent-audit-agent** | `/agent-audit-agent/` | Agent ecosystem audits | As-needed |
+| **claude-audit-agent** | N/A | CLAUDE.md accuracy audits | As-needed |
 | **branch-merge-agent** | N/A | Evaluate and merge Claude branches | As-needed |
 
 ---
@@ -78,6 +80,7 @@ Each agent "owns" a specific folder where it creates and manages files:
 | `/src/app/documentation/content/` | user-documentation-writer | End-user guides | Permanent |
 | `/supervisor/` | supervisor-agent | Codebase health reports | Permanent (audit trail) |
 | `/agent-audit-agent/` | agent-audit-agent | Agent ecosystem audit reports | Permanent (audit trail) |
+| `/agents/security/` | security-agent | Security audit reports | Permanent (audit trail) |
 
 **Read-only agents** (no folder ownership):
 - test-runner-debugger (runs tests)
@@ -88,6 +91,7 @@ Each agent "owns" a specific folder where it creates and manages files:
 - ui-agent (audits visual styling)
 - ux-agent (audits user understanding)
 - wisdom-agent (provides perspective and encouragement)
+- claude-audit-agent (audits CLAUDE.md accuracy - reports inline)
 - branch-merge-agent (manages git branches - has extended git permissions)
 
 ---
@@ -135,6 +139,9 @@ USER REQUEST
     │
     ├─ "Performance/accessibility issues"
     │   └─ qa-specialist → developer-agent (fix) → test-runner-debugger
+    │
+    ├─ "Security audit" or "Check for vulnerabilities"
+    │   └─ security-agent → developer-agent (fix) → test-runner-debugger
     │
     ├─ "UI looks inconsistent/styling issues"
     │   └─ ui-agent → developer-agent (fix) → test-runner-debugger

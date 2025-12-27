@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import type { MasterEventWithRelations, CalendarEvent, InputFieldDefinition } from '@/lib/types'
+import type { ParishEventWithRelations, CalendarEvent, InputFieldDefinition } from '@/lib/types'
 import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
 import type { PeopleEventAssignmentWithPerson } from '@/lib/actions/people-event-assignments'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface CalendarEventViewClientProps {
-  massLiturgy: MasterEventWithRelations
+  massLiturgy: ParishEventWithRelations
   calendarEvent: CalendarEvent
   intentions: MassIntentionWithNames[]
   assignments: PeopleEventAssignmentWithPerson[]

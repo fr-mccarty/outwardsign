@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { MASS_STATUS_VALUES, LITURGICAL_COLOR_VALUES } from '@/lib/constants'
 import type {
-  MasterEvent,
-  MasterEventWithRelations,
+  ParishEvent,
+  ParishEventWithRelations,
   Person,
   MassIntention,
   CalendarEvent,
   EventType,
-  MasterEventStatus,
+  ParishEventStatus,
 } from '@/lib/types'
 
 // ========================================
@@ -18,7 +18,7 @@ import type {
 
 export interface MassFilterParams {
   search?: string
-  status?: MasterEventStatus | 'all'
+  status?: ParishEventStatus | 'all'
   start_date?: string
   end_date?: string
   sort?: 'date_asc' | 'date_desc' | 'created_asc' | 'created_desc'
@@ -33,8 +33,8 @@ export interface MassStats {
   filtered: number
 }
 
-// MassWithNames wraps MasterEvent with additional calendar/person info
-export interface MassWithNames extends MasterEvent {
+// MassWithNames wraps ParishEvent with additional calendar/person info
+export interface MassWithNames extends ParishEvent {
   event_type?: EventType
   primary_calendar_event?: CalendarEvent
   presider?: Person | null
@@ -42,7 +42,7 @@ export interface MassWithNames extends MasterEvent {
 }
 
 // MassWithRelations provides full data for view pages
-export interface MassWithRelations extends MasterEventWithRelations {
+export interface MassWithRelations extends ParishEventWithRelations {
   // Additional mass-specific relations
   mass_intention?: (MassIntention & {
     requested_by?: Person | null
@@ -50,7 +50,7 @@ export interface MassWithRelations extends MasterEventWithRelations {
 }
 
 // Type for role assignment with resolved person
-export interface MasterEventRoleWithRelations {
+export interface ParishEventRoleWithRelations {
   id: string
   master_event_id: string
   role_id: string

@@ -11,42 +11,42 @@ import { FormBottomActions } from '@/components/form-bottom-actions'
 import { UnsavedChangesDialog } from '@/components/unsaved-changes-dialog'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { updateTemplate } from '@/lib/actions/master-event-templates'
-import type { MasterEventTemplateWithRelations } from '@/lib/types'
+import { updatePreset } from '@/lib/actions/event-presets'
+import type { EventPresetWithRelations } from '@/lib/types'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 // Validation schema
-const eventTemplateSchema = z.object({
+const eventPresetSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
 })
 
-type EventTemplateFormValues = z.infer<typeof eventTemplateSchema>
+type EventPresetFormValues = z.infer<typeof eventPresetSchema>
 
-interface EventTemplateEditClientProps {
-  template: MasterEventTemplateWithRelations
+interface EventPresetEditClientProps {
+  preset: EventPresetWithRelations
 }
 
-export function EventTemplateEditClient({ template }: EventTemplateEditClientProps) {
+export function EventPresetEditClient({ preset }: EventPresetEditClientProps) {
   const router = useRouter()
   const t = useTranslations()
 
   // Initialize form with React Hook Form
-  const form = useForm<EventTemplateFormValues>({
-    resolver: zodResolver(eventTemplateSchema),
+  const form = useForm<EventPresetFormValues>({
+    resolver: zodResolver(eventPresetSchema),
     defaultValues: {
-      name: template.name,
-      description: template.description || '',
+      name: preset.name,
+      description: preset.description || '',
     },
   })
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
     { label: t('nav.settings'), href: '/settings' },
-    { label: t('settings.eventTemplates'), href: '/settings/event-templates' },
-    { label: template.name, href: `/settings/event-templates/${template.id}` },
+    { label: t('settings.eventPresets'), href: '/settings/event-presets' },
+    { label: preset.name, href: `/settings/event-presets/${preset.id}` },
     { label: t('common.edit') },
   ]
 
@@ -55,33 +55,33 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
 
   return (
     <ModuleFormWrapper
-      title={t('settings.editEventTemplate')}
-      description={t('settings.updateEventTemplateDetails')}
-      moduleName="Event Template"
-      viewPath="/settings/event-templates"
-      entity={template}
+      title={t('settings.editEventPreset')}
+      description={t('settings.updateEventPresetDetails')}
+      moduleName="Event Preset"
+      viewPath="/settings/event-presets"
+      entity={preset}
       buttonPlacement="inline"
     >
       {({ isLoading, setIsLoading }) => {
-        const onSubmit = async (data: EventTemplateFormValues) => {
+        const onSubmit = async (data: EventPresetFormValues) => {
           setIsLoading(true)
 
           try {
-            const result = await updateTemplate(template.id, {
+            const result = await updatePreset(preset.id, {
               name: data.name,
               description: data.description || null,
             })
 
             if (result.success) {
-              toast.success(t('settings.templateUpdatedSuccess'))
-              router.push(`/settings/event-templates/${template.id}`)
+              toast.success(t('settings.presetUpdatedSuccess'))
+              router.push(`/settings/event-presets/${preset.id}`)
             } else {
-              toast.error(result.error || t('settings.templateUpdatedError'))
+              toast.error(result.error || t('settings.presetUpdatedError'))
               setIsLoading(false)
             }
           } catch (error) {
-            console.error('Error updating template:', error)
-            toast.error(t('settings.templateUpdatedError'))
+            console.error('Error updating preset:', error)
+            toast.error(t('settings.presetUpdatedError'))
             setIsLoading(false)
           }
         }
@@ -90,13 +90,13 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
           <>
             <BreadcrumbSetter breadcrumbs={breadcrumbs} />
             <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
-              <FormSectionCard title={t('settings.templateInformation')}>
+              <FormSectionCard title={t('settings.presetInformation')}>
                 <FormInput
                   id="name"
                   label={t('common.name')}
                   value={form.watch('name')}
                   onChange={(value) => form.setValue('name', value)}
-                  placeholder={t('settings.templateNamePlaceholder')}
+                  placeholder={t('settings.presetNamePlaceholder')}
                   required
                   error={form.formState.errors.name?.message}
                 />
@@ -107,7 +107,7 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
                   inputType="textarea"
                   value={form.watch('description') || ''}
                   onChange={(value) => form.setValue('description', value)}
-                  placeholder={t('settings.templateDescriptionPlaceholder')}
+                  placeholder={t('settings.presetDescriptionPlaceholder')}
                   rows={4}
                   error={form.formState.errors.description?.message}
                 />
@@ -116,8 +116,8 @@ export function EventTemplateEditClient({ template }: EventTemplateEditClientPro
               <FormBottomActions
                 isEditing={true}
                 isLoading={isLoading}
-                cancelHref={`/settings/event-templates/${template.id}`}
-                moduleName={t('settings.eventTemplate')}
+                cancelHref={`/settings/event-presets/${preset.id}`}
+                moduleName={t('settings.eventPreset')}
                 isDirty={form.formState.isDirty}
                 onNavigate={unsavedChanges.handleNavigation}
               />

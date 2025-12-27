@@ -2,11 +2,11 @@
 
 import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { EventForm } from './event-form'
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 import type { LiturgicalCalendarEvent } from '@/lib/actions/liturgical-calendar'
 
 interface EventFormWrapperProps {
-  event?: MasterEventWithRelations
+  event?: ParishEventWithRelations
   title: string
   description: string
   initialLiturgicalEvent?: LiturgicalCalendarEvent | null

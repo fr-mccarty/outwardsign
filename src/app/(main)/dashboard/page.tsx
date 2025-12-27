@@ -19,7 +19,7 @@ import { getLocations } from "@/lib/actions/locations"
 import { format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
 import { DashboardErrorHandler } from "./dashboard-error-handler"
-import { getAllMasterEvents } from "@/lib/actions/master-events"
+import { getAllParishEvents } from "@/lib/actions/parish-events"
 import { getActiveEventTypes } from "@/lib/actions/event-types"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import { getTranslations } from 'next-intl/server'
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     getPeople(),
     getLocations(),
-    getAllMasterEvents({ limit: 50 }),
+    getAllParishEvents({ limit: 50 }),
     getActiveEventTypes()
   ])
 

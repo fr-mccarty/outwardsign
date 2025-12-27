@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from 'react'
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
-import { deleteEvent } from '@/lib/actions/master-events'
+import { deleteEvent } from '@/lib/actions/parish-events'
 import { deleteCalendarEvent } from '@/lib/actions/calendar-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { AddMassTimeDialog } from '@/components/add-mass-time-dialog'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 
 interface MassViewClientProps {
-  mass: MasterEventWithRelations
+  mass: ParishEventWithRelations
   scripts: Script[]
   intentionsByCalendarEvent?: Record<string, MassIntentionWithNames[]>
 }

@@ -6,7 +6,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
 import {
-  MasterEvent,
+  ParishEvent,
   Person,
   CalendarEvent,
   EventType,
@@ -36,7 +36,7 @@ import {
   type MassStats,
   type MassWithNames,
   type MassWithRelations,
-  type MasterEventRoleWithRelations,
+  type ParishEventRoleWithRelations,
   type CreateMassRoleData,
 } from '@/lib/schemas/mass-liturgies'
 
@@ -268,7 +268,7 @@ export async function getMassesPaginated(params?: PaginatedParams): Promise<Pagi
   }
 }
 
-export async function getMass(id: string): Promise<MasterEvent | null> {
+export async function getMass(id: string): Promise<ParishEvent | null> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
@@ -461,7 +461,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       }
     }
 
-    // Key by property_name for consistency with master-events.ts and script placeholders
+    // Key by property_name for consistency with parish-events.ts and script placeholders
     resolvedFields[fieldDef.property_name] = resolvedField
   }
 
@@ -517,7 +517,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
   }
 }
 
-export async function createMass(data: CreateMassData): Promise<MasterEvent> {
+export async function createMass(data: CreateMassData): Promise<ParishEvent> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate data with Zod schema
@@ -609,14 +609,14 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
   return mass
 }
 
-export async function updateMass(id: string, data: UpdateMassData): Promise<MasterEvent> {
+export async function updateMass(id: string, data: UpdateMassData): Promise<ParishEvent> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate data with Zod schema
   const validatedData = updateMassSchema.parse(data)
 
   // Build update object from only defined values
-  const updateData: Partial<MasterEvent> = {}
+  const updateData: Partial<ParishEvent> = {}
 
   if (validatedData.field_values !== undefined) {
     updateData.field_values = validatedData.field_values ?? {}
@@ -729,7 +729,7 @@ export async function unlinkMassIntention(massIntentionId: string): Promise<void
 // ============================================================================
 
 // Get all role assignments for a mass
-export async function getMassRoles(massId: string): Promise<MasterEventRoleWithRelations[]> {
+export async function getMassRoles(massId: string): Promise<ParishEventRoleWithRelations[]> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -746,11 +746,11 @@ export async function getMassRoles(massId: string): Promise<MasterEventRoleWithR
     throw new Error('Failed to fetch mass roles')
   }
 
-  return roles as MasterEventRoleWithRelations[]
+  return roles as ParishEventRoleWithRelations[]
 }
 
 // Create a role assignment for a mass
-export async function createMassRole(data: CreateMassRoleData): Promise<MasterEventRoleWithRelations> {
+export async function createMassRole(data: CreateMassRoleData): Promise<ParishEventRoleWithRelations> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -775,7 +775,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MasterEv
   revalidatePath(`/masses/${data.master_event_id}`)
   revalidatePath(`/masses/${data.master_event_id}/edit`)
 
-  return role as MasterEventRoleWithRelations
+  return role as ParishEventRoleWithRelations
 }
 
 // Delete a role assignment (soft delete)

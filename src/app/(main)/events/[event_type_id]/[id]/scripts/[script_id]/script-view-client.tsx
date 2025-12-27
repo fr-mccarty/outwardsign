@@ -8,10 +8,10 @@ import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
 import Link from 'next/link'
 import type { ScriptWithSections } from '@/lib/types/event-types'
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 
 interface ScriptViewClientProps {
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
   script: ScriptWithSections
   eventTypeSlug: string
 }

@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
-import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
+import type { ParishEventWithTypeAndCalendarEvent, ParishEventStats, ParishEventFilterParams } from '@/lib/actions/parish-events'
+import { getAllParishEvents, deleteEvent } from '@/lib/actions/parish-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS, LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -42,8 +42,8 @@ import { useTranslations } from 'next-intl'
 const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
 
 interface MassesListClientProps {
-  initialData: MasterEventWithTypeAndCalendarEvent[]
-  stats: MasterEventStats
+  initialData: ParishEventWithTypeAndCalendarEvent[]
+  stats: ParishEventStats
 }
 
 export function MassLiturgiesListClient({ initialData, stats }: MassesListClientProps) {
@@ -90,7 +90,7 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [massToDelete, setMassToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
+  const [massToDelete, setMassToDelete] = useState<ParishEventWithTypeAndCalendarEvent | null>(null)
 
   // Update URL when debounced search value changes
   useEffect(() => {
@@ -120,11 +120,11 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
 
     setIsLoadingMore(true)
     try {
-      const nextMasses = await getAllMasterEvents({
+      const nextMasses = await getAllParishEvents({
         search: filters.getFilterValue('search'),
         systemType: 'mass-liturgy',
-        status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
-        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
+        status: filters.getFilterValue('status') as ParishEventFilterParams['status'],
+        sort: filters.getFilterValue('sort') as ParishEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
         startDate: searchParams.get('start_date') || undefined,
@@ -169,7 +169,7 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
   }
 
   // Custom "Event Name" column
-  const buildMassWhoColumn = (): DataTableColumn<MasterEventWithTypeAndCalendarEvent> => {
+  const buildMassWhoColumn = (): DataTableColumn<ParishEventWithTypeAndCalendarEvent> => {
     return {
       key: 'who',
       header: t('nameOfMass'),
@@ -208,7 +208,7 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
   }
 
   // Define table columns using column builders
-  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
+  const columns: DataTableColumn<ParishEventWithTypeAndCalendarEvent>[] = [
     buildMassWhoColumn(),
     // When column - list all calendar events with date and time
     {
@@ -272,11 +272,11 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
       className: 'max-w-[60px]',
       sortable: false
     },
-    buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
+    buildWhereColumn<ParishEventWithTypeAndCalendarEvent>({
       getLocation: (mass) => mass.primary_calendar_event?.location || null,
       hiddenOn: 'lg'
     }),
-    buildActionsColumn<MasterEventWithTypeAndCalendarEvent>({
+    buildActionsColumn<ParishEventWithTypeAndCalendarEvent>({
       baseUrl: '/mass-liturgies',
       onDelete: (mass) => {
         setMassToDelete(mass)

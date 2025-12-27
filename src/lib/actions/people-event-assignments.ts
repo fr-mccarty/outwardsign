@@ -387,7 +387,7 @@ export async function getPersonAssignments(personId: string): Promise<PeopleEven
 /**
  * Get all assignments (template + occurrence) for a master event
  */
-export async function getMasterEventAssignments(masterEventId: string): Promise<PeopleEventAssignmentWithPerson[]> {
+export async function getParishEventAssignments(masterEventId: string): Promise<PeopleEventAssignmentWithPerson[]> {
   return getPeopleEventAssignments({ master_event_id: masterEventId })
 }
 

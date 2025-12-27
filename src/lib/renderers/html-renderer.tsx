@@ -20,6 +20,34 @@ import {
 import { sanitizeHTML } from '@/lib/utils/content-processor'
 
 // ============================================================================
+// SECURITY HELPERS
+// ============================================================================
+
+/**
+ * Validate and sanitize image URLs
+ * Allows: https://, relative URLs starting with /
+ * Blocks: javascript:, data:, file:, and other dangerous protocols
+ */
+function sanitizeImageUrl(url: string | undefined): string {
+  if (!url) return ''
+
+  // Allow relative URLs (Supabase storage paths)
+  if (url.startsWith('/')) return url
+
+  // Allow HTTPS URLs
+  if (url.startsWith('https://')) return url
+
+  // Allow HTTP in development only
+  if (url.startsWith('http://') && process.env.NODE_ENV === 'development') {
+    return url
+  }
+
+  // Block all other protocols (javascript:, data:, file:, etc.)
+  console.warn('Blocked unsafe image URL:', url)
+  return ''
+}
+
+// ============================================================================
 // STYLE HELPERS
 // ============================================================================
 
@@ -271,6 +299,7 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
       const containerStyle = resolveElementStyle('info-row')
       const labelStyle = resolveElementStyle('info-row-label')
       const valueStyle = resolveElementStyle('info-row-value')
+      const sanitizedAvatarUrl = sanitizeImageUrl(element.avatarUrl)
       return containerStyle && labelStyle && valueStyle ? (
         <div key={index} style={{
           ...applyResolvedStyle(containerStyle, isPrintMode),
@@ -287,19 +316,21 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
             whiteSpace: 'pre-wrap'
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={element.avatarUrl}
-              alt="Avatar"
-              style={{
-                width: `${element.avatarSize || 40}px`,
-                height: `${element.avatarSize || 40}px`,
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginRight: '12px',
-                float: 'left'
-              }}
-            />
-            <div dangerouslySetInnerHTML={{ __html: element.value }} />
+            {sanitizedAvatarUrl && (
+              <img
+                src={sanitizedAvatarUrl}
+                alt="Avatar"
+                style={{
+                  width: `${element.avatarSize || 40}px`,
+                  height: `${element.avatarSize || 40}px`,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  marginRight: '12px',
+                  float: 'left'
+                }}
+              />
+            )}
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(element.value) }} />
           </div>
         </div>
       ) : null
@@ -311,6 +342,9 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
     }
 
     case 'image': {
+      const sanitizedUrl = sanitizeImageUrl(element.url)
+      if (!sanitizedUrl) return null
+
       const imageStyle: React.CSSProperties = {
         display: 'block',
         maxWidth: '100%',
@@ -335,7 +369,7 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
         <div key={index} style={containerStyle}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={element.url}
+            src={sanitizedUrl}
             alt={element.alt || 'Image'}
             style={imageStyle}
           />

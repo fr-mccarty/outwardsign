@@ -5,7 +5,7 @@
  * with their role assignments
  */
 
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 import type { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 
@@ -32,7 +32,7 @@ import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
  *   Lector 1: Maria Garcia
  *   Cantor: Luis Martinez
  */
-export function buildMassRosterContent(mass: MasterEventWithRelations): LiturgyDocument {
+export function buildMassRosterContent(mass: ParishEventWithRelations): LiturgyDocument {
   const sections: ContentSection[] = []
 
   // 1. COVER SECTION - Mass name and date

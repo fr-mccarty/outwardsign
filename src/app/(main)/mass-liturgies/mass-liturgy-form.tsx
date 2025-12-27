@@ -8,7 +8,7 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, linkMassIntention, unlinkMassIntention } from "@/lib/actions/mass-liturgies"
-import { getMasterEventAssignments, createPeopleEventAssignment, deletePeopleEventAssignment, type PeopleEventAssignmentWithPerson } from "@/lib/actions/people-event-assignments"
+import { getParishEventAssignments, createPeopleEventAssignment, deletePeopleEventAssignment, type PeopleEventAssignmentWithPerson } from "@/lib/actions/people-event-assignments"
 import type { MassWithRelations } from "@/lib/schemas/mass-liturgies"
 import type { Person, Event, Location, ContentWithTags, Petition, Document, InputFieldDefinition } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
@@ -181,7 +181,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
   const loadAssignments = async () => {
     if (!mass?.id) return
     try {
-      const assignmentsList = await getMasterEventAssignments(mass.id)
+      const assignmentsList = await getParishEventAssignments(mass.id)
       setAssignments(assignmentsList)
     } catch (error) {
       console.error('Error loading assignments:', error)

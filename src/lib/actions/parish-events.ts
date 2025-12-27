@@ -2,11 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import {
-  MasterEvent,
-  MasterEventWithRelations,
-  MasterEventStatus,
-  CreateMasterEventData,
-  UpdateMasterEventData,
+  ParishEvent,
+  ParishEventWithRelations,
+  ParishEventStatus,
+  CreateParishEventData,
+  UpdateParishEventData,
   EventType,
   InputFieldDefinition,
   CalendarEvent,
@@ -28,10 +28,120 @@ import {
   isNotFoundError,
 } from './server-action-utils'
 
+// ============================================================================
+// FIELD VALUE VALIDATION HELPERS
+// ============================================================================
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+/** Check if a string is a valid UUID */
+function isValidUUID(str: string): boolean {
+  return UUID_REGEX.test(str)
+}
+
+/** Check if a string is a valid ISO date (YYYY-MM-DD) */
+function isValidISODate(str: string): boolean {
+  if (!ISO_DATE_REGEX.test(str)) return false
+  const date = new Date(str)
+  return !isNaN(date.getTime())
+}
+
+/** Check if a string is a valid ISO datetime */
+function isValidISODateTime(str: string): boolean {
+  const date = new Date(str)
+  return !isNaN(date.getTime())
+}
+
+/** Maximum allowed length for text fields (100KB) */
+const MAX_TEXT_LENGTH = 100000
+
+/**
+ * Validate field values match their type definitions
+ * Throws an error if validation fails
+ */
+function validateFieldValues(
+  fieldValues: Record<string, unknown>,
+  fieldDefinitions: InputFieldDefinition[]
+): void {
+  for (const fieldDef of fieldDefinitions) {
+    // Skip calendar_event fields - validated separately
+    if (fieldDef.type === 'calendar_event') {
+      continue
+    }
+
+    const value = fieldValues[fieldDef.property_name]
+
+    // Skip if empty (required check is done separately)
+    if (value === null || value === undefined || value === '') {
+      continue
+    }
+
+    // Type-specific validation
+    switch (fieldDef.type) {
+      case 'person':
+      case 'location':
+      case 'group':
+      case 'document':
+      case 'content':
+      case 'petition':
+      case 'list_item':
+        // Must be valid UUID
+        if (typeof value !== 'string' || !isValidUUID(value)) {
+          throw new Error(`Field "${fieldDef.name}" must be a valid ID`)
+        }
+        break
+
+      case 'date':
+        // Must be valid ISO date
+        if (typeof value !== 'string' || !isValidISODate(value)) {
+          throw new Error(`Field "${fieldDef.name}" must be a valid date (YYYY-MM-DD)`)
+        }
+        break
+
+      case 'datetime':
+        // Must be valid ISO datetime
+        if (typeof value !== 'string' || !isValidISODateTime(value)) {
+          throw new Error(`Field "${fieldDef.name}" must be a valid datetime`)
+        }
+        break
+
+      case 'number':
+        if (typeof value !== 'number' && typeof value !== 'string') {
+          throw new Error(`Field "${fieldDef.name}" must be a number`)
+        }
+        const num = typeof value === 'string' ? parseFloat(value) : value
+        if (isNaN(num)) {
+          throw new Error(`Field "${fieldDef.name}" must be a valid number`)
+        }
+        break
+
+      case 'text':
+      case 'rich_text':
+        if (typeof value !== 'string') {
+          throw new Error(`Field "${fieldDef.name}" must be text`)
+        }
+        if (value.length > MAX_TEXT_LENGTH) {
+          throw new Error(`Field "${fieldDef.name}" exceeds maximum length`)
+        }
+        break
+
+      case 'yes_no':
+        if (typeof value !== 'boolean' && value !== 'yes' && value !== 'no' && value !== true && value !== false) {
+          throw new Error(`Field "${fieldDef.name}" must be yes/no`)
+        }
+        break
+
+      // For non-validated types, accept any value
+      default:
+        break
+    }
+  }
+}
 
 // Local type definitions for legacy master_event_roles table
 // TODO: Migrate to people_event_assignments pattern
-interface MasterEventRole {
+interface ParishEventRole {
   id: string
   master_event_id: string
   role_id: string
@@ -42,11 +152,11 @@ interface MasterEventRole {
   deleted_at?: string | null
 }
 
-interface MasterEventRoleWithPerson extends MasterEventRole {
+interface ParishEventRoleWithPerson extends ParishEventRole {
   person?: Person | null
 }
 
-export interface MasterEventFilterParams {
+export interface ParishEventFilterParams {
   search?: string
   systemType?: SystemType | 'all'
   status?: 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'all'
@@ -58,7 +168,7 @@ export interface MasterEventFilterParams {
   limit?: number
 }
 
-export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
+export interface ParishEventWithTypeAndCalendarEvent extends ParishEvent {
   event_type?: EventType
   primary_calendar_event?: CalendarEvent
   calendar_events?: CalendarEvent[]  // All calendar events for this master event
@@ -67,7 +177,7 @@ export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
 /**
  * Get all master events for the parish (used by dashboard)
  */
-export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: EventType })[]> {
+export async function getParishEvents(): Promise<(ParishEvent & { event_type?: EventType })[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
@@ -89,9 +199,9 @@ export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: E
 /**
  * Get all master events across all event types for the main events list
  */
-export async function getAllMasterEvents(
-  filters?: MasterEventFilterParams
-): Promise<MasterEventWithTypeAndCalendarEvent[]> {
+export async function getAllParishEvents(
+  filters?: ParishEventFilterParams
+): Promise<ParishEventWithTypeAndCalendarEvent[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = filters?.offset || 0
@@ -170,7 +280,7 @@ export async function getAllMasterEvents(
   }
 
   // Combine events with their calendar events
-  const eventsWithCalendarEvents: MasterEventWithTypeAndCalendarEvent[] = events.map(event => ({
+  const eventsWithCalendarEvents: ParishEventWithTypeAndCalendarEvent[] = events.map(event => ({
     ...event,
     primary_calendar_event: primaryCalendarEventMap.get(event.id) || undefined,
     calendar_events: allCalendarEventsMap.get(event.id) || []
@@ -213,8 +323,8 @@ export async function getAllMasterEvents(
  */
 export async function getEvents(
   eventTypeId: string,
-  filters?: MasterEventFilterParams
-): Promise<MasterEventWithTypeAndCalendarEvent[]> {
+  filters?: ParishEventFilterParams
+): Promise<ParishEventWithTypeAndCalendarEvent[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Calculate pagination
@@ -371,13 +481,13 @@ export async function getEvents(
   return events.map(event => ({
     ...event,
     primary_calendar_event: calendarEventsMap.get(event.id)
-  })) as MasterEventWithTypeAndCalendarEvent[]
+  })) as ParishEventWithTypeAndCalendarEvent[]
 }
 
 /**
  * Get a single event by ID
  */
-export async function getEvent(id: string): Promise<MasterEvent | null> {
+export async function getEvent(id: string): Promise<ParishEvent | null> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
@@ -402,7 +512,7 @@ export async function getEvent(id: string): Promise<MasterEvent | null> {
 /**
  * Get event with all related data (event type, calendar events, presider, homilist, resolved field values, parish)
  */
-export async function getEventWithRelations(id: string): Promise<MasterEventWithRelations | null> {
+export async function getEventWithRelations(id: string): Promise<ParishEventWithRelations | null> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the event
@@ -606,8 +716,8 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
  */
 export async function createEvent(
   eventTypeId: string,
-  data: CreateMasterEventData
-): Promise<MasterEvent> {
+  data: CreateParishEventData
+): Promise<ParishEvent> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate required fields against input field definitions
@@ -635,6 +745,9 @@ export async function createEvent(
       throw new Error(`Required field "${fieldDef.name}" is missing`)
     }
   }
+
+  // Validate field value types (UUID, date, number, etc.)
+  validateFieldValues(data.field_values, inputFieldDefinitions)
 
   // Sanitize field values (strip HTML tags, preserve markdown and custom syntax)
   const sanitizedFieldValues = sanitizeFieldValues(
@@ -705,8 +818,8 @@ export async function createEvent(
  */
 export async function updateEvent(
   id: string,
-  data: UpdateMasterEventData
-): Promise<MasterEvent> {
+  data: UpdateParishEventData
+): Promise<ParishEvent> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get existing event
@@ -723,10 +836,10 @@ export async function updateEvent(
   }
 
   // Build update object
-  const updateData: Partial<MasterEvent> = {}
+  const updateData: Partial<ParishEvent> = {}
 
   if (data.field_values !== undefined) {
-    // Fetch input field definitions for sanitization
+    // Fetch input field definitions for validation and sanitization
     const { data: eventType } = await supabase
       .from('event_types')
       .select('input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -734,6 +847,9 @@ export async function updateEvent(
       .single()
 
     const inputFieldDefinitions = (eventType?.input_field_definitions || []) as InputFieldDefinition[]
+
+    // Validate field value types (UUID, date, number, etc.)
+    validateFieldValues(data.field_values, inputFieldDefinitions)
 
     // Sanitize field values (strip HTML tags, preserve markdown and custom syntax)
     updateData.field_values = sanitizeFieldValues(
@@ -747,7 +863,7 @@ export async function updateEvent(
   }
 
   if (data.status !== undefined && data.status !== null) {
-    updateData.status = data.status as MasterEventStatus
+    updateData.status = data.status as ParishEventStatus
   }
 
   // Update event if there are changes
@@ -950,7 +1066,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
 /**
  * Get role assignments for a master event with person data
  */
-export async function getMasterEventRoles(masterEventId: string): Promise<MasterEventRoleWithPerson[]> {
+export async function getParishEventRoles(masterEventId: string): Promise<ParishEventRoleWithPerson[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish
@@ -987,7 +1103,7 @@ export async function assignRole(
   roleId: string,
   personId: string,
   notes?: string
-): Promise<MasterEventRole> {
+): Promise<ParishEventRole> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish
@@ -1079,7 +1195,7 @@ export async function removeRoleAssignment(roleAssignmentId: string): Promise<vo
  * Compute master event title from key persons and event type name
  * Example: "John Doe and Jane Smith-Wedding" or "Robert Johnson-Funeral"
  */
-export async function computeMasterEventTitle(masterEvent: MasterEventWithRelations): Promise<string> {
+export async function computeParishEventTitle(masterEvent: ParishEventWithRelations): Promise<string> {
   const keyPersonFields = masterEvent.event_type.input_field_definitions
     ?.filter(field => field.is_key_person && field.type === 'person') || []
 
@@ -1107,10 +1223,10 @@ export async function computeMasterEventTitle(masterEvent: MasterEventWithRelati
  * Example: "John Doe and Jane Smith-Wedding Ceremony" or "John Doe and Jane Smith-Wedding Rehearsal"
  */
 export async function computeCalendarEventTitle(
-  masterEvent: MasterEventWithRelations,
+  masterEvent: ParishEventWithRelations,
   fieldDefinition: InputFieldDefinition
 ): Promise<string> {
-  const baseTitle = await computeMasterEventTitle(masterEvent)
+  const baseTitle = await computeParishEventTitle(masterEvent)
 
   // If field definition has a suffix (e.g., "Ceremony", "Rehearsal"), append it
   // This would be stored in the field definition name
@@ -1124,7 +1240,7 @@ export async function computeCalendarEventTitle(
 /**
  * Stats interface for master events
  */
-export interface MasterEventStats {
+export interface ParishEventStats {
   total: number
   upcoming: number
   past: number
@@ -1134,7 +1250,7 @@ export interface MasterEventStats {
 /**
  * Get stats for master events with optional filtering by system type
  */
-export async function getMasterEventStats(filters?: MasterEventFilterParams): Promise<MasterEventStats> {
+export async function getParishEventStats(filters?: ParishEventFilterParams): Promise<ParishEventStats> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   // Build query for all events (for total, upcoming, past counts)
@@ -1156,11 +1272,11 @@ export async function getMasterEventStats(filters?: MasterEventFilterParams): Pr
     throw new Error('Failed to fetch master events for stats')
   }
 
-  const allMasterEvents = allEvents || []
-  const total = allMasterEvents.length
+  const allParishEvents = allEvents || []
+  const total = allParishEvents.length
 
   // Fetch primary calendar events for all events to calculate upcoming/past
-  const eventIds = allMasterEvents.map(e => e.id)
+  const eventIds = allParishEvents.map(e => e.id)
   let upcoming = 0
   let past = 0
 
@@ -1177,8 +1293,8 @@ export async function getMasterEventStats(filters?: MasterEventFilterParams): Pr
     past = calendarEvents?.filter(ce => new Date(ce.start_datetime) < now).length || 0
   }
 
-  // Get filtered count using getAllMasterEvents with all filters applied
-  const filteredEvents = await getAllMasterEvents(filters)
+  // Get filtered count using getAllParishEvents with all filters applied
+  const filteredEvents = await getAllParishEvents(filters)
   const filtered = filteredEvents.length
 
   return {

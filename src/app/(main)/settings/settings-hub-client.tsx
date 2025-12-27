@@ -195,16 +195,16 @@ export function SettingsHubClient() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <FileStack className="h-5 w-5 text-primary" />
-            {t('settings.eventTemplates')}
+            {t('settings.eventPresets')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            {t('settings.eventTemplatesDescription')}
+            {t('settings.eventPresetsDescription')}
           </p>
           <Button asChild variant="outline" className="w-full justify-between">
-            <Link href="/settings/event-templates">
-              {t('settings.manageEventTemplates')}
+            <Link href="/settings/event-presets">
+              {t('settings.manageEventPresets')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

@@ -15,7 +15,7 @@
  * consistency with other modules, but the actual work is done by the content processor.
  */
 
-import { MasterEventWithRelations } from '@/lib/types'
+import { ParishEventWithRelations } from '@/lib/types'
 import { ScriptWithSections } from '@/lib/types/event-types'
 import { LiturgyDocument, ContentSection, TextElement } from '@/lib/types/liturgy-content'
 import { processScriptSection } from '@/lib/utils/content-processor'
@@ -42,7 +42,7 @@ import { processScriptSection } from '@/lib/utils/content-processor'
  * from the markdown processor instead. This builder is for the LiturgyDocument format.
  */
 export function buildFromScriptTemplate(
-  event: MasterEventWithRelations,
+  event: ParishEventWithRelations,
   script: ScriptWithSections
 ): LiturgyDocument {
   // Validate inputs

@@ -15,14 +15,10 @@ import { createClient } from '@supabase/supabase-js'
 import {
   seedPeople,
   uploadAvatars,
-  seedGroups,
   seedGroupMemberships,
-  seedLocations,
   seedMasses,
   seedMassIntentions,
-  seedEvents,
   seedFamilies,
-  seedReadings,
   seedWeddingsAndFunerals
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
@@ -215,11 +211,20 @@ async function seedDevData() {
   // 6. Delete tag_assignments before category_tags
   await supabase.from('tag_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   await supabase.from('category_tags').delete().eq('parish_id', parishId)
+  // 7. Delete contents (must be before seedParishData which seeds non-reading content)
+  await supabase.from('contents').delete().eq('parish_id', parishId)
 
-  logSuccess('Cleaned up existing onboarding data')
+  logSuccess('Cleaned up existing data')
 
+  // =====================================================
+  // ONBOARDING SEEDING
+  // (This is what production parishes get during onboarding)
+  // =====================================================
   logInfo('')
-  logInfo('Seeding onboarding data...')
+  logInfo('=' .repeat(60))
+  logInfo('ONBOARDING SEEDING (production parish data)')
+  logInfo('=' .repeat(60))
+  logInfo('')
 
   const { seedParishData } = await import('../src/lib/onboarding-seeding/parish-seed-data')
 
@@ -230,50 +235,41 @@ async function seedDevData() {
     logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
     logSuccess(`General event types: ${result.generalEventTypesCount}`)
     logSuccess(`Mass event types: ${result.massEventTypesCount}`)
+    logInfo('')
+    logInfo('Onboarding seeding includes:')
+    logInfo('  - Event types, locations, groups, category tags')
+    logInfo('  - Non-reading content (prayers, instructions, announcements)')
+    logInfo('  - Sample parish events and special liturgies (Baptisms, Quinceañeras, Presentations)')
   } catch (error) {
     logError(`Error seeding parish data: ${error}`)
     process.exit(1)
   }
 
   // =====================================================
-  // Seed Content Library (always reseed for dev)
+  // DEV SEEDING
+  // (Additional data for development only - NOT in production)
   // =====================================================
   logInfo('')
-  logInfo('Cleaning up existing content library...')
+  logInfo('=' .repeat(60))
+  logInfo('DEV SEEDING (development-only data)')
+  logInfo('=' .repeat(60))
 
-  // Delete contents (tag_assignments already deleted above)
-  await supabase.from('contents').delete().eq('parish_id', parishId)
-
-  logSuccess('Cleaned up existing content library')
-
-  logInfo('')
-  logInfo('Seeding content library...')
-
-  const { seedContentForParish } = await import('../src/lib/onboarding-seeding/content-seed')
-
-  try {
-    await seedContentForParish(supabase, parishId)
-  } catch (error) {
-    logError(`Error seeding content library: ${error}`)
-    // Non-fatal - continue
-  }
-
-  // =====================================================
-  // Dev Seeder Context
-  // =====================================================
   const ctx = { supabase, parishId, devUserEmail: devUserEmail! }
 
   // =====================================================
-  // Seed Readings (Liturgical Readings for Weddings/Funerals)
+  // Seed Scripture Readings (dev-only content)
   // =====================================================
   logInfo('')
-  await seedReadings(ctx)
+  logInfo('Seeding scripture readings...')
 
-  // =====================================================
-  // Seed Sample Groups
-  // =====================================================
-  logInfo('')
-  const { groups } = await seedGroups(ctx)
+  const { seedReadingsForParish } = await import('../src/lib/onboarding-seeding/content-seed')
+
+  try {
+    await seedReadingsForParish(supabase, parishId)
+  } catch (error) {
+    logError(`Error seeding scripture readings: ${error}`)
+    // Non-fatal - continue
+  }
 
   // =====================================================
   // Seed Sample People
@@ -282,9 +278,17 @@ async function seedDevData() {
   const { people } = await seedPeople(ctx)
 
   // =====================================================
+  // Fetch Groups (created by onboarding seeder)
+  // =====================================================
+  const { data: groups } = await supabase
+    .from('groups')
+    .select('id, name')
+    .eq('parish_id', parishId)
+
+  // =====================================================
   // Seed Group Memberships
   // =====================================================
-  if (groups && people) {
+  if (groups && groups.length > 0 && people) {
     await seedGroupMemberships(ctx, groups, people)
   }
 
@@ -302,9 +306,16 @@ async function seedDevData() {
   await uploadAvatars(ctx)
 
   // =====================================================
-  // Seed Sample Locations
+  // Fetch Locations (created by onboarding seeder)
   // =====================================================
-  const { churchLocation, hallLocation, funeralHomeLocation } = await seedLocations(ctx)
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('id, name')
+    .eq('parish_id', parishId)
+
+  const churchLocation = locations?.find(l => l.name.includes('Church')) || null
+  const hallLocation = locations?.find(l => l.name.includes('Hall')) || null
+  const funeralHomeLocation = locations?.find(l => l.name.includes('Funeral')) || null
 
   // =====================================================
   // Seed Sample Masses
@@ -321,26 +332,29 @@ async function seedDevData() {
   }
 
   // =====================================================
-  // Seed Sample Events (Baptisms, Quinceaneras, Parish Events, etc.)
-  // Note: Weddings/Funerals are handled by seedWeddingsAndFunerals with readings
-  // =====================================================
-  if (people) {
-    await seedEvents(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
-  }
-
-  // =====================================================
   // Seed Weddings and Funerals with Readings
+  // (Special liturgies are created by onboarding seeder,
+  // but dev seeder adds readings from content library)
   // =====================================================
   if (people) {
     await seedWeddingsAndFunerals(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
   }
+
+  logInfo('')
+  logInfo('Dev seeding includes:')
+  logInfo('  - Scripture readings (First Reading, Second Reading, Gospel, Psalm)')
+  logInfo('  - Sample people with avatars')
+  logInfo('  - Group memberships')
+  logInfo('  - Families')
+  logInfo('  - Masses and mass intentions')
+  logInfo('  - Weddings and Funerals (with readings)')
 
   // =====================================================
   // Done!
   // =====================================================
   logInfo('')
   logInfo('=' .repeat(60))
-  logInfo('Development seeding complete!')
+  logInfo('SEEDING COMPLETE')
   logInfo('=' .repeat(60))
   logInfo('')
   logInfo(`Parish ID:   ${parishId}`)

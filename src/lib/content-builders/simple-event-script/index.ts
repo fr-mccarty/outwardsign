@@ -11,7 +11,7 @@
  * - 'special-liturgy': Uses database script templates (NOT this builder)
  */
 
-import { MasterEventWithRelations } from '@/lib/types'
+import { ParishEventWithRelations } from '@/lib/types'
 import { EventTypeWithRelations, InputFieldDefinition } from '@/lib/types/event-types'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import {
@@ -37,7 +37,7 @@ import {
  * // Returns a script with cover page + custom fields section
  */
 export function buildSimpleEventScript(
-  event: MasterEventWithRelations,
+  event: ParishEventWithRelations,
   eventType: EventTypeWithRelations
 ): LiturgyDocument {
   // Validate inputs
@@ -71,7 +71,7 @@ export function buildSimpleEventScript(
  * Build cover page section with event type name, date, time, location
  */
 function buildCoverPageSection(
-  event: MasterEventWithRelations,
+  event: ParishEventWithRelations,
   eventType: EventTypeWithRelations
 ): ContentSection {
   const elements: ContentElement[] = []
@@ -149,7 +149,7 @@ function buildCoverPageSection(
  * Build custom fields section by reading fields in their defined order
  */
 function buildCustomFieldsSection(
-  event: MasterEventWithRelations,
+  event: ParishEventWithRelations,
   eventType: EventTypeWithRelations
 ): ContentSection {
   const elements: ContentElement[] = []
@@ -204,7 +204,7 @@ function buildCustomFieldsSection(
 function formatFieldValue(
   field: InputFieldDefinition,
   rawValue: any,
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): string {
   switch (field.type) {
     case 'person': {
@@ -292,7 +292,7 @@ function formatFieldValue(
 /**
  * Get primary event date/time for subtitle
  */
-function getPrimaryEventDateTime(event: MasterEventWithRelations): string | undefined {
+function getPrimaryEventDateTime(event: ParishEventWithRelations): string | undefined {
   // Find the primary calendar event (first one, or the one linked to primary field definition)
   const primaryCalendarEvent = event.calendar_events?.[0]
   if (!primaryCalendarEvent?.start_datetime) {

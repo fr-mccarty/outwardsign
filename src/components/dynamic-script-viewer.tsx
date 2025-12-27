@@ -2,12 +2,12 @@
 
 import { Card } from '@/components/content-card'
 import type { ScriptWithSections } from '@/lib/types/event-types'
-import type { MasterEventWithRelations } from '@/lib/types'
+import type { ParishEventWithRelations } from '@/lib/types'
 import { processScriptForRendering } from '@/lib/utils/content-processor'
 
 interface DynamicScriptViewerProps {
   script: ScriptWithSections
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 }
 
 /**

@@ -5,6 +5,13 @@
  * Includes public domain content: prayers, ceremony instructions, announcements,
  * and scripture readings (using public domain Douay-Rheims translation).
  *
+ * SEEDING SPLIT:
+ * ==============
+ * - Non-readings (prayers, instructions, announcements, quinceanera/presentation):
+ *   Seeded for ALL parishes via onboarding (seedNonReadingContentForParish)
+ * - Scripture readings (First Reading, Second Reading, Gospel, Psalm):
+ *   Seeded only in development (seedReadingsForParish)
+ *
  * SCRIPTURE READING FORMAT:
  * -------------------------
  * Content uses HTML with inline styles from the Tiptap rich text editor:
@@ -48,7 +55,6 @@
  * ---------
  * - category-tags-seed.ts: Defines all available tag slugs
  * - event-types-seed.ts: Defines input_filter_tags on input fields
- * - scripts/dev-seeders/seed-readings.ts: Seeds scripture readings (dev only)
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -1040,36 +1046,46 @@ be stouthearted, and wait for the Lord.</p>
   }
 ]
 
-// Combine all content
-const ALL_SEED_CONTENT: SeedContent[] = [
+// =====================================================
+// Content Groupings
+// =====================================================
+
+// Non-reading content (seeded for ALL parishes via onboarding)
+const NON_READING_CONTENT: SeedContent[] = [
   ...OPENING_PRAYERS,
   ...CLOSING_PRAYERS,
   ...PRAYERS_OF_THE_FAITHFUL,
   ...CEREMONY_INSTRUCTIONS,
   ...ANNOUNCEMENTS,
   ...QUINCEANERA_CONTENT,
-  ...PRESENTATION_CONTENT,
+  ...PRESENTATION_CONTENT
+]
+
+// Scripture readings (seeded only in development)
+const READING_CONTENT: SeedContent[] = [
   ...FIRST_READINGS,
   ...SECOND_READINGS,
   ...GOSPELS,
   ...PSALMS
 ]
 
-/**
- * Seed sample content items for a parish
- *
- * @param supabase - Supabase client
- * @param parishId - Parish ID to seed content for
- */
-export async function seedContentForParish(
-  supabase: SupabaseClient,
-  parishId: string
-): Promise<void> {
-  logInfo('Seeding content library...')
-  logInfo(`Parish ID: ${parishId}`)
-  logInfo(`Content items to seed: ${ALL_SEED_CONTENT.length}`)
+// All content combined (for reference)
+const ALL_SEED_CONTENT: SeedContent[] = [
+  ...NON_READING_CONTENT,
+  ...READING_CONTENT
+]
 
-  // First, fetch all category tags for this parish to get tag IDs
+// =====================================================
+// Helper function for seeding content
+// =====================================================
+
+async function seedContentItems(
+  supabase: SupabaseClient,
+  parishId: string,
+  contentItems: SeedContent[],
+  label: string
+): Promise<{ contentCount: number; assignmentCount: number }> {
+  // Fetch all category tags for this parish to get tag IDs
   const { data: tags, error: tagsError } = await supabase
     .from('category_tags')
     .select('id, slug')
@@ -1080,11 +1096,9 @@ export async function seedContentForParish(
     throw new Error(`Failed to fetch category tags: ${tagsError.message}`)
   }
 
-  logInfo(`Found ${tags?.length || 0} category tags`)
-
   if (!tags || tags.length === 0) {
     logWarning('No category tags found - skipping content seeding')
-    return
+    return { contentCount: 0, assignmentCount: 0 }
   }
 
   // Create a slug -> id map for quick lookup
@@ -1094,9 +1108,7 @@ export async function seedContentForParish(
   let contentCount = 0
   let assignmentCount = 0
 
-  logInfo(`Starting to insert ${ALL_SEED_CONTENT.length} content items...`)
-
-  for (const content of ALL_SEED_CONTENT) {
+  for (const content of contentItems) {
     // Insert the content item
     const { data: newContent, error: contentError } = await supabase
       .from('contents')
@@ -1142,8 +1154,70 @@ export async function seedContentForParish(
     }
   }
 
-  logSuccess(`Created ${contentCount} content items`)
-  logSuccess(`Created ${assignmentCount} tag assignments`)
+  logSuccess(`Created ${contentCount} ${label} content items`)
+  logSuccess(`Created ${assignmentCount} ${label} tag assignments`)
+
+  return { contentCount, assignmentCount }
+}
+
+// =====================================================
+// Seeding Functions
+// =====================================================
+
+/**
+ * Seed non-reading content for a parish (for onboarding)
+ *
+ * Seeds: prayers, ceremony instructions, announcements, quinceanera/presentation content
+ * Does NOT seed: scripture readings (First Reading, Second Reading, Gospel, Psalm)
+ *
+ * @param supabase - Supabase client
+ * @param parishId - Parish ID to seed content for
+ */
+export async function seedNonReadingContentForParish(
+  supabase: SupabaseClient,
+  parishId: string
+): Promise<void> {
+  logInfo('Seeding non-reading content library...')
+  logInfo(`Content items to seed: ${NON_READING_CONTENT.length}`)
+
+  await seedContentItems(supabase, parishId, NON_READING_CONTENT, 'non-reading')
+}
+
+/**
+ * Seed scripture readings for a parish (for dev seeder only)
+ *
+ * Seeds: First Readings, Second Readings, Gospels, Psalms
+ *
+ * @param supabase - Supabase client
+ * @param parishId - Parish ID to seed content for
+ */
+export async function seedReadingsForParish(
+  supabase: SupabaseClient,
+  parishId: string
+): Promise<void> {
+  logInfo('Seeding scripture readings...')
+  logInfo(`Readings to seed: ${READING_CONTENT.length}`)
+
+  await seedContentItems(supabase, parishId, READING_CONTENT, 'reading')
+}
+
+/**
+ * Seed ALL content items for a parish (legacy - seeds everything)
+ *
+ * @deprecated Use seedNonReadingContentForParish for onboarding,
+ * and seedReadingsForParish for dev seeder
+ *
+ * @param supabase - Supabase client
+ * @param parishId - Parish ID to seed content for
+ */
+export async function seedContentForParish(
+  supabase: SupabaseClient,
+  parishId: string
+): Promise<void> {
+  logInfo('Seeding ALL content library...')
+  logInfo(`Content items to seed: ${ALL_SEED_CONTENT.length}`)
+
+  await seedContentItems(supabase, parishId, ALL_SEED_CONTENT, 'all')
 }
 
 /**

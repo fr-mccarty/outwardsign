@@ -2,7 +2,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
+import { getEventWithRelations, computeParishEventTitle } from '@/lib/actions/parish-events'
 import { getCalendarEventById } from '@/lib/actions/calendar-events'
 import { getMassIntentionsByCalendarEvents } from '@/lib/actions/mass-intentions'
 import { CalendarEventViewClient } from './calendar-event-view-client'
@@ -55,7 +55,7 @@ export default async function ViewCalendarEventPage({ params }: PageProps) {
   ) || []
 
   // Build title
-  const massLiturgyTitle = await computeMasterEventTitle(massLiturgy)
+  const massLiturgyTitle = await computeParishEventTitle(massLiturgy)
   const calendarEventName = fieldDefinition?.name || 'Mass'
   const dateStr = calendarEvent.start_datetime
     ? formatDatePretty(new Date(calendarEvent.start_datetime))

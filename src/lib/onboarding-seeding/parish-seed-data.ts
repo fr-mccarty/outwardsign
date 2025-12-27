@@ -14,6 +14,11 @@ import { seedMassEventTypesForParish } from './mass-event-types-seed'
 import { seedSpecialLiturgyEventTypesForParish } from './special-liturgy-event-types-seed'
 import { seedCategoryTagsForParish } from './category-tags-seed'
 import { seedEventsForParish } from './events-seed'
+import { seedLocationsForParish } from './locations-seed'
+import { seedGroupsForParish } from './groups-seed'
+import { seedEventPresetsForParish } from './event-presets-seed'
+import { seedSpecialLiturgiesForParish } from './special-liturgies-seed'
+import { seedNonReadingContentForParish } from './content-seed'
 import { logError } from '@/lib/utils/console'
 
 // Import petition templates
@@ -213,14 +218,49 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
+  // 8d. Seed Default Locations (Parish Church, Hall, Funeral Home)
+  // =====================================================
+  const locationsResult = await seedLocationsForParish(supabase, parishId)
+  const defaultLocationId = locationsResult.churchLocation?.id || null
+
+  // =====================================================
+  // 8e. Seed Event Presets (Religious Education, Staff Meeting)
+  // =====================================================
+  await seedEventPresetsForParish(supabase, {
+    parishId,
+    defaultLocationId
+  })
+
+  // =====================================================
+  // 8f. Seed Default Groups (Parish Council, Finance Council, etc.)
+  // =====================================================
+  await seedGroupsForParish(supabase, parishId)
+
+  // =====================================================
   // 9. Seed Category Tags
   // =====================================================
   await seedCategoryTagsForParish(supabase, parishId)
 
   // =====================================================
-  // 9b. Seed Sample Events
+  // 9a. Seed Non-Reading Content (prayers, instructions, announcements)
+  // Note: Scripture readings are seeded only in dev by seed-readings.ts
+  // =====================================================
+  await seedNonReadingContentForParish(supabase, parishId)
+
+  // =====================================================
+  // 9b. Seed Sample Parish Events (Bible Study, Fundraiser, etc.)
   // =====================================================
   await seedEventsForParish(supabase, parishId)
+
+  // =====================================================
+  // 9c. Seed Sample Special Liturgies (Baptisms, Quinceañeras, Presentations)
+  // Note: Weddings and Funerals are seeded by dev seeder (they need readings)
+  // =====================================================
+  await seedSpecialLiturgiesForParish(supabase, parishId, {
+    churchLocationId: locationsResult.churchLocation?.id || null,
+    hallLocationId: locationsResult.hallLocation?.id || null,
+    funeralHomeLocationId: locationsResult.funeralHomeLocation?.id || null
+  })
 
   // =====================================================
   // 10. Assign Tags to Petition Templates

@@ -1,4 +1,4 @@
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { buildMassRosterContent } from '@/lib/content-builders/mass-liturgy-roster'
 import { createWordRoute } from '@/lib/api/document-routes'
 import { formatDateForFilename } from '@/lib/utils/formatters'

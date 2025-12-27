@@ -2,10 +2,10 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
-import { DynamicEventViewClient } from './master-event-view-client'
+import { ParishEventViewClient } from './parish-event-view-client'
 
 interface PageProps {
   params: Promise<{
@@ -65,7 +65,7 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
       description={`View ${eventType.name.toLowerCase()} details.`}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <DynamicEventViewClient
+      <ParishEventViewClient
         event={event}
         eventType={eventType}
         scripts={scripts}

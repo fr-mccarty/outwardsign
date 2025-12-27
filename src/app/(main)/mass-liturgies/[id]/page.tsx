@@ -2,7 +2,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
+import { getEventWithRelations, computeParishEventTitle } from '@/lib/actions/parish-events'
 import { getScripts } from '@/lib/actions/scripts'
 import { getMassIntentionsByCalendarEvents } from '@/lib/actions/mass-intentions'
 import { MassLiturgyViewClient } from './mass-liturgy-view-client'
@@ -40,8 +40,8 @@ export default async function ViewMassPage({ params }: PageProps) {
     intentionsByCalendarEvent[calendarEventId] = intentions
   })
 
-  // Build dynamic title from computeMasterEventTitle
-  const title = await computeMasterEventTitle(mass)
+  // Build dynamic title from computeParishEventTitle
+  const title = await computeParishEventTitle(mass)
 
   const t = await getTranslations()
 

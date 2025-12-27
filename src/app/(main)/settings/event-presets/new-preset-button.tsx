@@ -6,7 +6,7 @@ import { InfoDialog } from '@/components/info-dialog'
 import { Plus, ExternalLink } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-export function NewTemplateButton() {
+export function NewPresetButton() {
   const [open, setOpen] = useState(false)
   const t = useTranslations()
 
@@ -14,14 +14,14 @@ export function NewTemplateButton() {
     <>
       <Button onClick={() => setOpen(true)}>
         <Plus className="h-4 w-4 mr-2" />
-        {t('settings.newTemplate')}
+        {t('settings.newPreset')}
       </Button>
 
       <InfoDialog
         open={open}
         onOpenChange={setOpen}
-        title={t('settings.createTemplateTitle')}
-        description={t('settings.createTemplateDescription')}
+        title={t('settings.createPresetTitle')}
+        description={t('settings.createPresetDescription')}
         primaryAction={{
           label: t('settings.goToEvents'),
           href: '/events',
@@ -29,9 +29,9 @@ export function NewTemplateButton() {
         }}
       >
         <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-          <li>{t('settings.createTemplateStep1')}</li>
-          <li>{t('settings.createTemplateStep2')}</li>
-          <li>{t('settings.createTemplateStep3')}</li>
+          <li>{t('settings.createPresetStep1')}</li>
+          <li>{t('settings.createPresetStep2')}</li>
+          <li>{t('settings.createPresetStep3')}</li>
         </ol>
       </InfoDialog>
     </>

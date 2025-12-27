@@ -1,25 +1,25 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MasterEventForm } from '../../master-event-form'
+import { ParishEventForm } from '../../parish-event-form'
 import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
 import { Eye, Settings } from 'lucide-react'
-import type { EventTypeWithRelations, DynamicEventWithRelations } from '@/lib/types'
+import type { EventTypeWithRelations, ParishEventWithRelations } from '@/lib/types'
 
-interface DynamicEventEditClientProps {
-  event: DynamicEventWithRelations
+interface ParishEventEditClientProps {
+  event: ParishEventWithRelations
   eventType: EventTypeWithRelations
   title: string
   description: string
 }
 
-export function DynamicEventEditClient({
+export function ParishEventEditClient({
   event,
   eventType,
   title,
   description
-}: DynamicEventEditClientProps) {
+}: ParishEventEditClientProps) {
   const formId = 'dynamic-event-form'
   const [isLoading, setIsLoading] = useState(false)
 
@@ -43,7 +43,7 @@ export function DynamicEventEditClient({
         }
       ]}
     >
-      <MasterEventForm
+      <ParishEventForm
         event={event}
         eventType={eventType}
         formId={formId}

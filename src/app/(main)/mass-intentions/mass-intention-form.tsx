@@ -94,7 +94,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   }, [requestedBy.value, setValue])
 
   useEffect(() => {
-    // Mass picker returns a MasterEvent with primary_calendar_event
+    // Mass picker returns a ParishEvent with primary_calendar_event
     // We need to extract the calendar_event_id from the primary_calendar_event
     const calendarEventId = (assignedMass.value as any)?.primary_calendar_event?.id || assignedMass.value?.id || null
     setValue("calendar_event_id", calendarEventId)

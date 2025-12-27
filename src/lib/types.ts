@@ -576,12 +576,12 @@ export interface UpdateSectionData {
 }
 
 // ========================================
-// MASTER EVENTS (formerly DynamicEvent)
+// PARISH EVENTS (formerly ParishEvent, DynamicEvent)
 // ========================================
-// Master events are containers for sacraments (Weddings, Funerals, etc.)
+// Parish events are containers for sacraments (Weddings, Funerals, etc.)
 // They store dynamic field values and have manual minister assignment
 
-export type MasterEventStatus = 'PLANNING' | 'ACTIVE' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+export type ParishEventStatus = 'PLANNING' | 'ACTIVE' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
 
 // ========================================
 // PEOPLE EVENT ASSIGNMENTS
@@ -620,13 +620,13 @@ export interface UpdatePeopleEventAssignmentData {
   notes?: string | null
 }
 
-export interface MasterEvent {
+export interface ParishEvent {
   id: string
   parish_id: string
   event_type_id: string
   liturgical_calendar_id: string | null
   field_values: Record<string, any> // JSON object
-  status: MasterEventStatus  // Event status
+  status: ParishEventStatus  // Event status
   liturgical_color: string | null
   created_at: string
   updated_at: string
@@ -638,7 +638,7 @@ export interface ResolvedFieldValue {
   field_type: InputFieldType
   raw_value: any
   // Content is defined later in file - TypeScript handles forward references within the same file
-  resolved_value?: Person | Group | Location | MasterEvent | CustomListItem | Document | Content | Petition | CalendarEvent | null
+  resolved_value?: Person | Group | Location | ParishEvent | CustomListItem | Document | Content | Petition | CalendarEvent | null
 }
 
 /**
@@ -650,7 +650,7 @@ export interface ParishInfo {
   state: string
 }
 
-export interface MasterEventWithRelations extends MasterEvent {
+export interface ParishEventWithRelations extends ParishEvent {
   event_type: EventTypeWithRelations  // Includes input_field_definitions and scripts
   calendar_events: CalendarEvent[]  // RENAMED from occasions
   people_event_assignments?: PeopleEventAssignmentWithPerson[]  // Unified person assignments
@@ -658,14 +658,14 @@ export interface MasterEventWithRelations extends MasterEvent {
   parish?: ParishInfo
 }
 
-export interface CreateMasterEventData {
+export interface CreateParishEventData {
   field_values: Record<string, any>
   status: string
   liturgical_color?: string | null
   calendar_events?: CreateCalendarEventData[]
 }
 
-export interface UpdateMasterEventData {
+export interface UpdateParishEventData {
   field_values?: Record<string, any>
   status?: string | null
   liturgical_color?: string | null
@@ -696,7 +696,7 @@ export interface CalendarEvent {
 }
 
 export interface CalendarEventWithRelations extends CalendarEvent {
-  master_event?: MasterEvent | null  // Parent master event
+  master_event?: ParishEvent | null  // Parent parish event
   input_field_definition?: InputFieldDefinition | null  // The field definition for label
 }
 
@@ -722,78 +722,52 @@ export interface UpdateCalendarEventData {
 }
 
 // ========================================
-// MASTER EVENT TEMPLATES
+// EVENT PRESETS
 // ========================================
-// Templates for master events that can be reused when creating new events
+// Presets for events that can be reused when creating new events
 
-export interface CalendarEventTemplateData {
+export interface CalendarEventPresetData {
   location_id: string | null
   is_all_day: boolean
   duration_days: number | null  // For multi-day all-day events
 }
 
-export interface TemplateData {
+export interface PresetData {
   field_values: Record<string, any>
   presider_id: string | null
   homilist_id: string | null
-  calendar_events: Record<string, CalendarEventTemplateData>
+  calendar_events: Record<string, CalendarEventPresetData>
 }
 
-export interface MasterEventTemplate {
+export interface EventPreset {
   id: string
   parish_id: string
   event_type_id: string
   name: string
   description: string | null
-  template_data: TemplateData
+  preset_data: PresetData
   created_by: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
 }
 
-export interface MasterEventTemplateWithRelations extends MasterEventTemplate {
+export interface EventPresetWithRelations extends EventPreset {
   event_type: EventType
 }
 
-export interface CreateMasterEventTemplateData {
+export interface CreateEventPresetData {
   event_type_id: string
   name: string
   description?: string | null
-  template_data: TemplateData
+  preset_data: PresetData
 }
 
-export interface UpdateMasterEventTemplateData {
+export interface UpdateEventPresetData {
   name?: string
   description?: string | null
 }
 
-// ========================================
-// BACKWARD COMPATIBILITY ALIASES
-// ========================================
-// These are maintained temporarily during migration
-// TODO: Remove after full codebase migration
-
-/** @deprecated Use MasterEvent instead */
-export type DynamicEvent = MasterEvent
-
-/** @deprecated Use MasterEventWithRelations instead */
-export type DynamicEventWithRelations = MasterEventWithRelations
-
-/** @deprecated Use CreateMasterEventData instead */
-export type CreateDynamicEventData = CreateMasterEventData
-
-/** @deprecated Use UpdateMasterEventData instead */
-export type UpdateDynamicEventData = UpdateMasterEventData
-
-/** @deprecated Use CalendarEvent instead */
-export type Occasion = CalendarEvent
-
-/** @deprecated Use CreateCalendarEventData instead */
-export type CreateOccasionData = CreateCalendarEventData
-
-/** @deprecated Use UpdateCalendarEventData instead */
-export type UpdateOccasionData = UpdateCalendarEventData
 
 // Documents (file uploads)
 export interface Document {

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getCalendarEventsForCalendar } from '@/lib/actions/master-events'
+import { getCalendarEventsForCalendar } from '@/lib/actions/parish-events'
 import { CalendarClient } from './calendar-client'
 
 interface CalendarPageProps {

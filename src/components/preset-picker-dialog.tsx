@@ -13,67 +13,67 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, BookmarkCheck, Calendar } from "lucide-react"
-import type { MasterEventTemplate } from "@/lib/types"
-import { getTemplatesByEventType } from "@/lib/actions/master-event-templates"
+import type { EventPreset } from "@/lib/types"
+import { getPresetsByEventType } from "@/lib/actions/event-presets"
 import { formatDatePretty } from "@/lib/utils/formatters"
 
-interface TemplatePickerDialogProps {
+interface PresetPickerDialogProps {
   eventTypeId: string
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelectTemplate: (template: MasterEventTemplate) => void
+  onSelectPreset: (preset: EventPreset) => void
 }
 
-export function TemplatePickerDialog({
+export function PresetPickerDialog({
   eventTypeId,
   open,
   onOpenChange,
-  onSelectTemplate
-}: TemplatePickerDialogProps) {
-  const [templates, setTemplates] = useState<MasterEventTemplate[]>([])
-  const [filteredTemplates, setFilteredTemplates] = useState<MasterEventTemplate[]>([])
+  onSelectPreset
+}: PresetPickerDialogProps) {
+  const [presets, setPresets] = useState<EventPreset[]>([])
+  const [filteredPresets, setFilteredPresets] = useState<EventPreset[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  // Fetch templates when dialog opens
+  // Fetch presets when dialog opens
   useEffect(() => {
-    async function fetchTemplates() {
+    async function fetchPresets() {
       if (!open) return
 
       setIsLoading(true)
       try {
-        const fetchedTemplates = await getTemplatesByEventType(eventTypeId)
-        setTemplates(fetchedTemplates)
-        setFilteredTemplates(fetchedTemplates)
+        const fetchedPresets = await getPresetsByEventType(eventTypeId)
+        setPresets(fetchedPresets)
+        setFilteredPresets(fetchedPresets)
       } catch (error) {
-        console.error("Failed to fetch templates:", error)
-        setTemplates([])
-        setFilteredTemplates([])
+        console.error("Failed to fetch presets:", error)
+        setPresets([])
+        setFilteredPresets([])
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchTemplates()
+    fetchPresets()
   }, [open, eventTypeId])
 
-  // Filter templates by search query
+  // Filter presets by search query
   useEffect(() => {
     if (!searchQuery) {
-      setFilteredTemplates(templates)
+      setFilteredPresets(presets)
       return
     }
 
     const query = searchQuery.toLowerCase()
-    const filtered = templates.filter(template =>
-      template.name.toLowerCase().includes(query) ||
-      template.description?.toLowerCase().includes(query)
+    const filtered = presets.filter(preset =>
+      preset.name.toLowerCase().includes(query) ||
+      preset.description?.toLowerCase().includes(query)
     )
-    setFilteredTemplates(filtered)
-  }, [searchQuery, templates])
+    setFilteredPresets(filtered)
+  }, [searchQuery, presets])
 
-  const handleSelectTemplate = (template: MasterEventTemplate) => {
-    onSelectTemplate(template)
+  const handleSelectPreset = (preset: EventPreset) => {
+    onSelectPreset(preset)
     onOpenChange(false)
   }
 
@@ -81,9 +81,9 @@ export function TemplatePickerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Select Template</DialogTitle>
+          <DialogTitle>Select Preset</DialogTitle>
           <DialogDescription>
-            Choose a template to pre-fill the event with saved data
+            Choose a preset to pre-fill the event with saved data
           </DialogDescription>
         </DialogHeader>
 
@@ -92,47 +92,47 @@ export function TemplatePickerDialog({
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search templates by name or description..."
+              placeholder="Search presets by name or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8"
             />
           </div>
 
-          {/* Templates List */}
+          {/* Presets List */}
           {isLoading ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
-              Loading templates...
+              Loading presets...
             </div>
-          ) : filteredTemplates.length === 0 ? (
+          ) : filteredPresets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <BookmarkCheck className="h-12 w-12 text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">
-                {templates.length === 0
-                  ? "No templates available for this event type. Create an event and save it as a template."
-                  : "No templates match your search."}
+                {presets.length === 0
+                  ? "No presets available for this event type. Create an event and save it as a preset."
+                  : "No presets match your search."}
               </p>
             </div>
           ) : (
             <ScrollArea className="h-96">
               <div className="space-y-2 pr-4">
-                {filteredTemplates.map((template) => (
+                {filteredPresets.map((preset) => (
                   <button
-                    key={template.id}
-                    onClick={() => handleSelectTemplate(template)}
+                    key={preset.id}
+                    onClick={() => handleSelectPreset(preset)}
                     className="w-full text-left p-4 rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">{template.name}</h4>
-                        {template.description && (
+                        <h4 className="font-medium truncate">{preset.name}</h4>
+                        {preset.description && (
                           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                            {template.description}
+                            {preset.description}
                           </p>
                         )}
                         <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>Created {formatDatePretty(template.created_at)}</span>
+                          <span>Created {formatDatePretty(preset.created_at)}</span>
                         </div>
                       </div>
                       <BookmarkCheck className="h-5 w-5 text-muted-foreground flex-shrink-0" />

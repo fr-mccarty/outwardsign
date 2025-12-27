@@ -185,8 +185,8 @@ You perform a systematic audit across 15+ dimensions, organized into categories:
 
 **4.1 Old Task Artifacts**
 - Check `/tasks/` folder for stale tasks
-- Check `/requirements/` folder for outdated requirements
-- Check `/brainstorming/` folder for unprocessed brainstorming docs
+- Check `/agents/requirements/` folder for outdated requirements
+- Check `/agents/brainstorming/` folder for unprocessed brainstorming docs
 - Identify files that should be archived or deleted
 
 **4.2 Legacy Code**
@@ -322,7 +322,7 @@ You perform a systematic audit across 15+ dimensions, organized into categories:
 12. Verify sidebar navigation items are functional
 
 ### Phase 4: Legacy & Cleanup Scan
-13. Search `/tasks/`, `/requirements/`, `/brainstorming/` for stale content
+13. Search `/tasks/`, `/agents/requirements/`, `/agents/brainstorming/` for stale content
 14. Grep for backwards-compatible patterns
 15. Search for dead code indicators
 16. Scan for TODO/FIXME/HACK comments
@@ -455,8 +455,8 @@ Provide your audit as a structured report:
 
 #### 4.1 Stale Artifacts
 - `/tasks/` folder: [X files to review]
-- `/requirements/` folder: [X old requirements]
-- `/brainstorming/` folder: [X unprocessed files]
+- `/agents/requirements/` folder: [X old requirements]
+- `/agents/brainstorming/` folder: [X unprocessed files]
 
 **Files to Archive/Delete**:
 1. [file path] - [reason]
@@ -669,7 +669,7 @@ Based on findings, the following agents should be invoked:
 ### 10. Report File Location
 
 This report should be saved to:
-`/supervisor/YYYY-MM-DD-health-report.md`
+`/agents/supervisor/YYYY-MM-DD-health-report.md`
 ```
 
 ## Search Patterns for Common Issues
@@ -821,7 +821,7 @@ The supervisor-agent produces a report and stops. It does not automatically invo
 - [ ] Categorized all findings by severity
 - [ ] Assigned findings to appropriate agents
 - [ ] Created comprehensive report with evidence
-- [ ] Saved report to /supervisor/
+- [ ] Saved report to /agents/supervisor/
 
 ## Communication Style
 

@@ -5,13 +5,13 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import {
-  MasterEventTemplate,
-  MasterEventTemplateWithRelations,
-  UpdateMasterEventTemplateData,
-  TemplateData
+  EventPreset,
+  EventPresetWithRelations,
+  UpdateEventPresetData,
+  PresetData
 } from '@/lib/types'
 import { logError, logInfo } from '@/lib/utils/console'
-import { getEventWithRelations } from './master-events'
+import { getEventWithRelations } from './parish-events'
 import {
   createAuthenticatedClient,
   isNotFoundError,
@@ -19,13 +19,13 @@ import {
 
 
 /**
- * Get all templates across all event types with event type information
+ * Get all presets across all event types with event type information
  */
-export async function getAllTemplates(): Promise<MasterEventTemplateWithRelations[]> {
+export async function getAllPresets(): Promise<EventPresetWithRelations[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
-    .from('master_event_templates')
+    .from('event_presets')
     .select(`
       *,
       event_type:event_types(*)
@@ -35,21 +35,21 @@ export async function getAllTemplates(): Promise<MasterEventTemplateWithRelation
     .order('created_at', { ascending: false })
 
   if (error) {
-    logError('Error fetching all templates: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch templates')
+    logError('Error fetching all presets: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    throw new Error('Failed to fetch presets')
   }
 
   return data || []
 }
 
 /**
- * Get all templates for a specific event type
+ * Get all presets for a specific event type
  */
-export async function getTemplatesByEventType(eventTypeId: string): Promise<MasterEventTemplate[]> {
+export async function getPresetsByEventType(eventTypeId: string): Promise<EventPreset[]> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
-    .from('master_event_templates')
+    .from('event_presets')
     .select('*')
     .eq('parish_id', parishId)
     .eq('event_type_id', eventTypeId)
@@ -57,21 +57,21 @@ export async function getTemplatesByEventType(eventTypeId: string): Promise<Mast
     .order('created_at', { ascending: false })
 
   if (error) {
-    logError('Error fetching templates by event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch templates')
+    logError('Error fetching presets by event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    throw new Error('Failed to fetch presets')
   }
 
   return data || []
 }
 
 /**
- * Get a single template by ID with event type information
+ * Get a single preset by ID with event type information
  */
-export async function getTemplate(id: string): Promise<MasterEventTemplateWithRelations | null> {
+export async function getPreset(id: string): Promise<EventPresetWithRelations | null> {
   const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
-    .from('master_event_templates')
+    .from('event_presets')
     .select(`
       *,
       event_type:event_types(*)
@@ -85,21 +85,21 @@ export async function getTemplate(id: string): Promise<MasterEventTemplateWithRe
     if (isNotFoundError(error)) {
       return null // Not found
     }
-    logError('Error fetching template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch template')
+    logError('Error fetching preset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    throw new Error('Failed to fetch preset')
   }
 
   return data
 }
 
 /**
- * Save a master event as a template
+ * Save a master event as a preset
  */
-export async function createTemplateFromEvent(
+export async function createPresetFromEvent(
   masterEventId: string,
-  templateName: string,
-  templateDescription?: string
-): Promise<{ success: boolean; template?: MasterEventTemplate; error?: string }> {
+  presetName: string,
+  presetDescription?: string
+): Promise<{ success: boolean; preset?: EventPreset; error?: string }> {
   try {
     const parishId = await requireSelectedParish()
     const supabase = await createClient()
@@ -115,8 +115,8 @@ export async function createTemplateFromEvent(
       return { success: false, error: 'Event not found' }
     }
 
-    // Build template_data JSONB
-    const templateData: TemplateData = {
+    // Build preset_data JSONB
+    const presetData: PresetData = {
       field_values: masterEvent.field_values,
       presider_id: null,
       homilist_id: null,
@@ -140,7 +140,7 @@ export async function createTemplateFromEvent(
           durationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
         }
 
-        templateData.calendar_events[fieldDef.name] = {
+        presetData.calendar_events[fieldDef.name] = {
           location_id: calendarEvent.location_id,
           is_all_day: calendarEvent.is_all_day,
           duration_days: durationDays
@@ -148,16 +148,16 @@ export async function createTemplateFromEvent(
       }
     }
 
-    // Insert template
-    const { data: template, error } = await supabase
-      .from('master_event_templates')
+    // Insert preset
+    const { data: preset, error } = await supabase
+      .from('event_presets')
       .insert([
         {
           parish_id: parishId,
           event_type_id: masterEvent.event_type_id,
-          name: templateName,
-          description: templateDescription || null,
-          template_data: templateData,
+          name: presetName,
+          description: presetDescription || null,
+          preset_data: presetData,
           created_by: userId
         }
       ])
@@ -165,25 +165,25 @@ export async function createTemplateFromEvent(
       .single()
 
     if (error) {
-      logError('Error creating template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-      return { success: false, error: 'Failed to create template' }
+      logError('Error creating preset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+      return { success: false, error: 'Failed to create preset' }
     }
 
-    logInfo('Template created successfully: ' + JSON.stringify({ templateId: template.id, templateName }))
+    logInfo('Preset created successfully: ' + JSON.stringify({ presetId: preset.id, presetName }))
     revalidatePath(`/events/${masterEvent.event_type_id}`)
-    return { success: true, template }
+    return { success: true, preset }
   } catch (error) {
-    logError('Error in createTemplateFromEvent: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    logError('Error in createPresetFromEvent: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
 
 /**
- * Update a template's name or description (NOT template_data)
+ * Update a preset's name or description (NOT preset_data)
  */
-export async function updateTemplate(
+export async function updatePreset(
   id: string,
-  data: UpdateMasterEventTemplateData
+  data: UpdateEventPresetData
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { supabase, parishId } = await createAuthenticatedClient()
@@ -202,48 +202,48 @@ export async function updateTemplate(
     }
 
     const { error } = await supabase
-      .from('master_event_templates')
+      .from('event_presets')
       .update(updateData)
       .eq('id', id)
       .eq('parish_id', parishId)
 
     if (error) {
-      logError('Error updating template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-      return { success: false, error: 'Failed to update template' }
+      logError('Error updating preset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+      return { success: false, error: 'Failed to update preset' }
     }
 
-    logInfo('Template updated successfully: ' + JSON.stringify({ templateId: id }))
+    logInfo('Preset updated successfully: ' + JSON.stringify({ presetId: id }))
     revalidatePath('/events')
     return { success: true }
   } catch (error) {
-    logError('Error in updateTemplate: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    logError('Error in updatePreset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
 
 /**
- * Soft delete a template
+ * Soft delete a preset
  */
-export async function deleteTemplate(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deletePreset(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const { supabase, parishId } = await createAuthenticatedClient()
 
     const { error } = await supabase
-      .from('master_event_templates')
+      .from('event_presets')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
       .eq('parish_id', parishId)
 
     if (error) {
-      logError('Error deleting template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-      return { success: false, error: 'Failed to delete template' }
+      logError('Error deleting preset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+      return { success: false, error: 'Failed to delete preset' }
     }
 
-    logInfo('Template deleted successfully: ' + JSON.stringify({ templateId: id }))
+    logInfo('Preset deleted successfully: ' + JSON.stringify({ presetId: id }))
     revalidatePath('/events')
     return { success: true }
   } catch (error) {
-    logError('Error in deleteTemplate: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    logError('Error in deletePreset: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return { success: false, error: 'An unexpected error occurred' }
   }
 }

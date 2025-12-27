@@ -14,7 +14,7 @@
  * Security: All HTML content is sanitized to prevent XSS attacks.
  */
 
-import type { MasterEventWithRelations, ResolvedFieldValue } from '@/lib/types'
+import type { ParishEventWithRelations, ResolvedFieldValue } from '@/lib/types'
 import { formatDatePretty } from '@/lib/utils/formatters'
 
 /**
@@ -88,7 +88,7 @@ export const PARISH_PLACEHOLDERS = [
  */
 export function replaceFieldPlaceholders(
   content: string,
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): string {
   // Regex to find all {{...}} patterns
   const placeholderRegex = /\{\{([^}]+)\}\}/g
@@ -136,7 +136,7 @@ export function replaceFieldPlaceholders(
  */
 function resolveParishPlaceholder(
   placeholder: string,
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): string {
   const parish = event.parish
 
@@ -299,7 +299,7 @@ function resolveGenderedText(
   fieldRef: string,
   maleText: string,
   femaleText: string,
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): string {
   // Extract the base field name (before any dot notation)
   const fieldName = fieldRef.split('.')[0]
@@ -359,7 +359,7 @@ export function parseContentToHTML(content: string): string {
  */
 export function processScriptSection(
   sectionContent: string,
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): string {
   // Step 1: Replace field placeholders (first pass)
   const firstPass = replaceFieldPlaceholders(sectionContent, event)
@@ -402,7 +402,7 @@ interface ScriptSection {
 /**
  * Get petition content from event's resolved fields
  */
-function getPetitionContent(event: MasterEventWithRelations): string {
+function getPetitionContent(event: ParishEventWithRelations): string {
   // Find the petition field in resolved_fields
   if (!event.resolved_fields) {
     return '<p><em>No petitions configured for this event.</em></p>'
@@ -427,7 +427,7 @@ function getPetitionContent(event: MasterEventWithRelations): string {
 
 export function processScriptForRendering(
   script: { sections: ScriptSection[] },
-  event: MasterEventWithRelations
+  event: ParishEventWithRelations
 ): ProcessedSection[] {
   return script.sections.map(section => {
     const sectionType = section.section_type || 'text'

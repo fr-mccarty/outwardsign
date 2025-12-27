@@ -2,10 +2,10 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
+import { getEventWithRelations, computeParishEventTitle } from '@/lib/actions/parish-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
-import { DynamicEventViewClient } from '@/app/(main)/events/[event_type_id]/[id]/master-event-view-client'
+import { ParishEventViewClient } from '@/app/(main)/events/[event_type_id]/[id]/parish-event-view-client'
 
 interface PageProps {
   params: Promise<{
@@ -48,7 +48,7 @@ export default async function ViewSpecialLiturgyPage({ params }: PageProps) {
   const scripts = await getScripts(event.event_type_id)
 
   // Build dynamic title from key person names
-  const title = await computeMasterEventTitle(event)
+  const title = await computeParishEventTitle(event)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -62,7 +62,7 @@ export default async function ViewSpecialLiturgyPage({ params }: PageProps) {
       description={`View ${eventType.name.toLowerCase()} details.`}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <DynamicEventViewClient
+      <ParishEventViewClient
         event={event}
         eventType={eventType}
         scripts={scripts}

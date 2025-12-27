@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { htmlToText, formatSectionTitleForText, TEXT_PAGE_BREAK } from '@/lib/utils/export-helpers'
-import { getEventWithRelations } from '@/lib/actions/master-events'
+import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'

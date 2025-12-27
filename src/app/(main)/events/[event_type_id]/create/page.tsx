@@ -2,7 +2,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
-import { DynamicEventCreateClient } from './master-event-create-client'
+import { ParishEventCreateClient } from './parish-event-create-client'
 
 interface PageProps {
   params: Promise<{
@@ -37,7 +37,7 @@ export default async function CreateDynamicEventPage({ params }: PageProps) {
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <DynamicEventCreateClient
+      <ParishEventCreateClient
         eventType={eventType}
         title={`Create ${eventType.name}`}
         description={`Add a new ${eventType.name.toLowerCase()} to your parish.`}

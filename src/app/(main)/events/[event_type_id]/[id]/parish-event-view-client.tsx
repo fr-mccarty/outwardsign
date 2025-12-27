@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import type { MasterEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
+import type { ParishEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { FormDialog } from '@/components/form-dialog'
@@ -14,18 +14,18 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { formatDatePretty } from '@/lib/utils/formatters'
-import { deleteEvent } from '@/lib/actions/master-events'
-import { createTemplateFromEvent } from '@/lib/actions/master-event-templates'
+import { deleteEvent } from '@/lib/actions/parish-events'
+import { createPresetFromEvent } from '@/lib/actions/event-presets'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 
-interface MasterEventViewClientProps {
-  event: MasterEventWithRelations
+interface ParishEventViewClientProps {
+  event: ParishEventWithRelations
   eventType: EventTypeWithRelations
   scripts: Script[]
   eventTypeSlug: string
 }
 
-export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlug }: MasterEventViewClientProps) {
+export function ParishEventViewClient({ event, eventType, scripts, eventTypeSlug }: ParishEventViewClientProps) {
   const router = useRouter()
   const [showSavePresetDialog, setShowSavePresetDialog] = useState(false)
   const [presetName, setPresetName] = useState('')
@@ -41,7 +41,7 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
 
     setIsSavingPreset(true)
     try {
-      const result = await createTemplateFromEvent(event.id, presetName, presetDescription)
+      const result = await createPresetFromEvent(event.id, presetName, presetDescription)
       if (result.success) {
         toast.success('Preset saved successfully')
         setShowSavePresetDialog(false)

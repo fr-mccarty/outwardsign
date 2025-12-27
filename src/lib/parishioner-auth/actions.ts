@@ -173,14 +173,12 @@ export async function validateMagicLink(token: string): Promise<ValidateMagicLin
     const supabase = createAdminClient()
 
     // Get all sessions that haven't expired yet (we'll check token hash with bcrypt compare)
-    const windowStart = new Date()
-    windowStart.setHours(windowStart.getHours() - MAGIC_LINK_EXPIRY_HOURS)
-
     const { data: sessions, error: sessionError } = await supabase
       .from('parishioner_auth_sessions')
-      .select('*')
+      .select('id, token, person_id, parish_id, expires_at')
       .gte('expires_at', new Date().toISOString())
       .eq('is_revoked', false)
+      .limit(100) // Reasonable limit for security
 
     if (sessionError || !sessions || sessions.length === 0) {
       return {
@@ -189,15 +187,18 @@ export async function validateMagicLink(token: string): Promise<ValidateMagicLin
       }
     }
 
-    // Find matching session by comparing token hashes
-    let session = null
-    for (const s of sessions) {
-      const isMatch = await compare(token, s.token)
-      if (isMatch) {
-        session = s
-        break
-      }
-    }
+    // Constant-time session lookup: check ALL sessions before returning
+    // This prevents timing attacks that could reveal token existence
+    const results = await Promise.all(
+      sessions.map(async (s) => ({
+        session: s,
+        isMatch: await compare(token, s.token)
+      }))
+    )
+
+    // Find match after all comparisons complete
+    const match = results.find(r => r.isMatch)
+    const session = match?.session || null
 
     if (!session) {
       return {

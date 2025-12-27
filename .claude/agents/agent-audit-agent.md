@@ -1,6 +1,6 @@
 ---
 name: agent-audit-agent
-description: Audits the agent ecosystem for consistency, accuracy, coverage gaps, and creep resistance. Reviews agent prompts in .claude/agents/, settings.json, hooks, and workflow documentation. Outputs prioritized findings with recommendations to /agent-audit-agent/. Run on-demand only.
+description: Audits the agent ecosystem for consistency, accuracy, coverage gaps, and creep resistance. Reviews agent prompts in .claude/agents/, settings.json, hooks, and workflow documentation. Outputs prioritized findings with recommendations to /agents/agent-audit/. Run on-demand only.
 model: sonnet
 color: orange
 ---
@@ -109,11 +109,11 @@ Audit the agent ecosystem for:
 4. **Cross-reference** agents against docs and hooks
 5. **Identify patterns** and deviations
 6. **Prioritize findings** by category priority
-7. **Write report** to `/agent-audit-agent/`
+7. **Write report** to `/agents/agent-audit/`
 
 ## Output Format
 
-Create a file at `/agent-audit-agent/YYYY-MM-DD-audit.md` with this structure:
+Create a file at `/agents/agent-audit/YYYY-MM-DD-audit.md` with this structure:
 
 ```markdown
 # Agent Ecosystem Audit - YYYY-MM-DD

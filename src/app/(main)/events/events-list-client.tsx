@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
-import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
+import type { ParishEventWithTypeAndCalendarEvent, ParishEventStats, ParishEventFilterParams } from '@/lib/actions/parish-events'
+import { getAllParishEvents, deleteEvent } from '@/lib/actions/parish-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -49,8 +49,8 @@ import { useTranslations } from 'next-intl'
 const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
 
 interface EventsListClientProps {
-  initialData: MasterEventWithTypeAndCalendarEvent[]
-  stats: MasterEventStats
+  initialData: ParishEventWithTypeAndCalendarEvent[]
+  stats: ParishEventStats
   eventTypes: EventType[]
 }
 
@@ -98,7 +98,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
+  const [eventToDelete, setEventToDelete] = useState<ParishEventWithTypeAndCalendarEvent | null>(null)
 
   // Update URL when debounced search value changes
   useEffect(() => {
@@ -134,12 +134,12 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
         ? eventTypes.find(et => et.slug === eventTypeSlug)?.id
         : undefined
 
-      const nextEvents = await getAllMasterEvents({
+      const nextEvents = await getAllParishEvents({
         search: filters.getFilterValue('search'),
         systemType: 'parish-event',
-        status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
+        status: filters.getFilterValue('status') as ParishEventFilterParams['status'],
         eventTypeId,
-        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
+        sort: filters.getFilterValue('sort') as ParishEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
         startDate: searchParams.get('start_date') || undefined,
@@ -184,7 +184,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
   }
 
   // Custom "Event Name" column
-  const buildEventWhoColumn = (): DataTableColumn<MasterEventWithTypeAndCalendarEvent> => {
+  const buildEventWhoColumn = (): DataTableColumn<ParishEventWithTypeAndCalendarEvent> => {
     return {
       key: 'who',
       header: t('nameOfEvent'),
@@ -223,7 +223,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
   }
 
   // Define table columns using column builders
-  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
+  const columns: DataTableColumn<ParishEventWithTypeAndCalendarEvent>[] = [
     buildEventWhoColumn(),
     // When column - date and time from primary calendar event
     {
@@ -260,7 +260,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
       sortable: true,
       accessorFn: (event) => event.event_type?.name || ''
     },
-    buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
+    buildWhereColumn<ParishEventWithTypeAndCalendarEvent>({
       getLocation: (event) => event.primary_calendar_event?.location || null,
       hiddenOn: 'lg'
     }),

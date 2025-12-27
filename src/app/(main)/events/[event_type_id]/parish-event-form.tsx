@@ -15,8 +15,8 @@ import { GroupPickerField } from "@/components/group-picker-field"
 import { ListItemPickerField } from "@/components/list-item-picker-field"
 import { DocumentPickerField } from "@/components/document-picker-field"
 import { CalendarEventFieldView, type CalendarEventFieldData } from "@/components/calendar-event-field-view"
-import { createEvent, updateEvent } from "@/lib/actions/master-events"
-import type { MasterEventWithRelations, EventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document, TemplateData } from "@/lib/types"
+import { createEvent, updateEvent } from "@/lib/actions/parish-events"
+import type { ParishEventWithRelations, EventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document, PresetData } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -26,19 +26,19 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { LITURGICAL_COLOR_VALUES, LITURGICAL_COLOR_LABELS, type LiturgicalColor, MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, type ModuleStatus } from "@/lib/constants"
 
-interface MasterEventFormProps {
-  event?: MasterEventWithRelations
+interface ParishEventFormProps {
+  event?: ParishEventWithRelations
   eventType: EventTypeWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
-  templateData?: TemplateData  // Template data to pre-fill the form
+  presetData?: PresetData  // Preset data to pre-fill the form
 }
 
 interface FieldValues {
   [key: string]: string | boolean | null | undefined
 }
 
-export function MasterEventForm({ event, eventType, formId, onLoadingChange, templateData }: MasterEventFormProps) {
+export function ParishEventForm({ event, eventType, formId, onLoadingChange, presetData }: ParishEventFormProps) {
   const router = useRouter()
   const isEditing = !!event
 
@@ -55,8 +55,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         // Priority: existing event > template > default
         if (event?.field_values?.[field.property_name] !== undefined) {
           initial[field.property_name] = event.field_values[field.property_name]
-        } else if (templateData?.field_values?.[field.property_name] !== undefined) {
-          initial[field.property_name] = templateData.field_values[field.property_name]
+        } else if (presetData?.field_values?.[field.property_name] !== undefined) {
+          initial[field.property_name] = presetData.field_values[field.property_name]
         } else {
           initial[field.property_name] = field.type === 'yes_no' ? false : ''
         }
@@ -72,7 +72,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
     calendarEventFields.forEach((field) => {
       // Match calendar event to field by input_field_definition_id
       const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
-      const templateCalendarEvent = templateData?.calendar_events?.[field.property_name]
+      const templateCalendarEvent = presetData?.calendar_events?.[field.property_name]
 
       // Parse start_datetime into date and time components
       let date = ''
