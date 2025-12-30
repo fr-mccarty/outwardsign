@@ -25,6 +25,7 @@ import {
   Building,
   HelpCircle,
   ScrollText,
+  MessageSquare,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -153,6 +154,15 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 ]}
                 defaultOpen={false}
               />
+
+              <SidebarMenuItem key="Chat">
+                <SidebarMenuButton asChild isActive={isRouteActive('/chat')} tooltip={t('nav.chat')}>
+                  <Link href="/chat" onClick={handleLinkClick}>
+                    <MessageSquare />
+                    <span>{t('nav.chat')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

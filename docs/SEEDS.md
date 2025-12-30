@@ -4,151 +4,199 @@ This document explains how to populate the database with sample data for testing
 
 ## Overview
 
-The seed scripts create comprehensive sample data for testing and development purposes. These scripts are **NOT** part of the migration system and must be run manually.
+The seeding system uses a **shared module** that provides consistent sample data for both development and production environments. Both the dev seeder (CLI) and the UI seeder (Settings button) use the exact same code.
+
+## Architecture
+
+```
+src/lib/seeding/                    # Shared seeding module
+├── index.ts                        # Public exports
+├── types.ts                        # Shared types (SeederContext, CreatedPerson, etc.)
+├── sample-data.ts                  # Sample data arrays (people, families, hymns)
+├── seed-functions.ts               # Individual seed functions
+└── run-seeders.ts                  # ⭐ ORCHESTRATOR - single source of truth
+
+scripts/
+├── dev-seed.ts                     # Dev seeder entry point (calls shared module)
+└── dev-seeders/
+    ├── index.ts                    # Re-exports + dev-specific functions
+    ├── seed-people.ts              # Dev-only: avatars, dev user person
+    └── types.ts                    # Dev-specific types
+
+src/lib/actions/
+└── seed-data.ts                    # Production seeder (server action)
+```
+
+## Running Seeders
+
+### Development Seeder (CLI)
+
+```bash
+npm run seed:dev
+```
+
+This runs the full development seeder which:
+1. Creates storage buckets
+2. Creates/finds dev user and parish
+3. Runs onboarding seeding (production parish data)
+4. Runs shared seeders (from `src/lib/seeding/`)
+5. Creates dev user person record with portal access
+6. Uploads avatar images (dev-only, requires Node.js fs)
+
+### Production Seeder (UI)
+
+Navigate to **Settings > Developer Tools** and click the "Seed Sample Data" button.
+
+This runs the same shared seeders as the dev seeder, minus:
+- Avatar uploads (not supported in server actions)
+- Dev user person creation (dev-only)
+
+## What Gets Seeded
+
+### Core Data
+| Data | Count | Description |
+|------|-------|-------------|
+| People | 20 | Sample parishioners with varied demographics |
+| Families | 15 | Family units with members and relationships |
+| Group Memberships | 7 | People assigned to ministry groups |
+| Masses | 20 | 8 Sunday Masses + 12 Daily Masses |
+| Mass Intentions | 12 | Linked and standalone intentions |
+| Weddings | 1 | Fully populated with readings |
+| Funerals | 1 | Fully populated with readings |
+
+### Comprehensive Data (JSONB columns)
+| Data | Description |
+|------|-------------|
+| Parish Settings | Quick amounts for donations and intentions |
+| Mass Times Role Quantities | Minister requirements per Mass time |
+| Custom Lists | Music styles, flower colors, venues, etc. |
+| Person Blackout Dates | Unavailability periods |
+| Parishioner Notifications | Sample ministry messages |
+| Event Presets | Wedding, funeral, and Mass templates |
+| Calendar Visibility | Public/private event settings |
+
+## Adding New Seeders
+
+When adding a new seeder, update **one file**: `src/lib/seeding/run-seeders.ts`
+
+### Step 1: Create the Seed Function
+
+Add your function to `src/lib/seeding/seed-functions.ts`:
+
+```typescript
+export async function seedMyNewThing(
+  ctx: SeederContext,
+  people: CreatedPerson[]  // if needed
+): Promise<{ itemsCreated: number }> {
+  const { supabase, parishId } = ctx
+
+  // Your seeding logic here
+  const { data, error } = await supabase
+    .from('my_table')
+    .insert([...])
+    .select()
+
+  return { itemsCreated: error ? 0 : (data?.length || 0) }
+}
+```
+
+### Step 2: Add to Orchestrator
+
+Update `src/lib/seeding/run-seeders.ts`:
+
+```typescript
+// 1. Import your function
+import {
+  // ... existing imports
+  seedMyNewThing,
+} from './seed-functions'
+
+// 2. Update SeederCounts interface
+export interface SeederCounts {
+  // ... existing counts
+  myNewThingCount: number
+}
+
+// 3. Call your function in runAllSeeders()
+export async function runAllSeeders(...) {
+  // ... existing seeders
+
+  // ADD NEW SEEDERS HERE
+  const { itemsCreated: myNewThingCount } = await seedMyNewThing(ctx, people)
+
+  return {
+    counts: {
+      // ... existing counts
+      myNewThingCount,
+    }
+  }
+}
+```
+
+### Step 3: Export (Optional)
+
+If you need direct access to the function, export it from `src/lib/seeding/index.ts`:
+
+```typescript
+export {
+  // ... existing exports
+  seedMyNewThing,
+} from './seed-functions'
+```
 
 ## Console Helper Functions
 
-**CRITICAL:** All seeder AND server action console output MUST use the helper functions from `src/lib/utils/console.ts`. Direct use of `console.log()` is prohibited in seeder files and server actions.
-
-**Scope:** These helper functions are used by:
-- Database seed scripts (when written in TypeScript)
-- Server actions (for user-facing operation feedback)
-- Migration output and logging
-- Batch operations where consistent formatting is critical
-
-### Available Functions
+**CRITICAL:** All seeder console output MUST use helper functions from `src/lib/utils/console.ts`.
 
 ```typescript
 import { logSuccess, logWarning, logError, logInfo } from '@/lib/utils/console'
 
-// Success messages (prefixed with [OK])
-logSuccess('Created 5 users')
-
-// Warning messages (prefixed with ⚠️)
-logWarning('No existing groups found, creating defaults')
-
-// Error messages (prefixed with ❌)
-logError('Failed to create parish')
-
-// Info messages (no prefix - for section headers)
-logInfo('Creating sample locations...')
+logInfo('Creating sample data...')      // Section headers
+logSuccess('Created 25 people')         // Success with counts (prefixed with [OK])
+logWarning('Skipping duplicate')        // Non-critical issues (prefixed with ⚠️)
+logError('Failed to create')            // Critical failures (prefixed with ❌)
 ```
 
 ### Character Validation
 
-All console helper functions enforce strict character validation:
+Console helpers enforce strict character validation:
+- **Allowed:** Letters (a-z, A-Z), numbers, Spanish accents (ñÑáéíóúÁÉÍÓÚüÜ), whitespace, standard symbols
+- **Prohibited:** Emojis and unicode symbols (except ⚠️ and ❌ added by helpers)
 
-**Allowed characters:**
-- Letters: a-z, A-Z
-- Numbers: 0-9
-- Spanish accented characters: ñÑáéíóúÁÉÍÓÚüÜ
-- Whitespace: space, newline (\n), carriage return (\r), tab (\t)
-- All standard keyboard symbols: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+## Sample Data Location
 
-**Prohibited characters:**
-- Emojis and other unicode symbols (except ⚠️ and ❌ which are added by the helper functions themselves)
-
-**If prohibited characters are detected, the function will throw an error and halt execution.**
-
-### Usage Patterns
+All sample data is defined in `src/lib/seeding/sample-data.ts`:
 
 ```typescript
-// Section headers
-logInfo('Creating sample people...')
+// People with varied demographics
+export const SAMPLE_PEOPLE: SamplePerson[] = [...]
 
-// Success with counts
-logSuccess('Created 25 people')
+// Families with relationships
+export const SAMPLE_FAMILIES: FamilyDefinition[] = [...]
 
-// Errors with context
-logError('Failed to create location: No parish found')
+// Hymn arrays for Masses
+export const ENTRANCE_HYMNS = [...]
+export const OFFERTORY_HYMNS = [...]
+export const COMMUNION_HYMNS = [...]
+export const RECESSIONAL_HYMNS = [...]
 
-// Warnings for non-critical issues
-logWarning('Skipping duplicate record')
+// Mass intention texts
+export const INTENTION_TEXTS = [...]
 ```
-
-### Output Format Rules
-
-1. **Section Headers** - Use `logInfo()` with plain descriptive text
-2. **Success Messages** - Use `logSuccess()` with counts and details (prefixed with `[OK]`)
-3. **Warnings** - Use `logWarning()` for non-critical issues (prefixed with ⚠️)
-4. **Errors** - Use `logError()` for critical failures (prefixed with ❌)
-
-**Why These Rules:**
-- Consistent, professional output across all seeders and server actions
-- Strict validation prevents emoji/unicode creep in user messages
-- Easy to scan for success/failure (prefixes clearly indicate status)
-- Makes logs easier to parse programmatically
-- Reduces visual noise
-- Spanish characters are allowed for bilingual support
-
-## Prerequisites
-
-Before running seed scripts:
-
-1. Ensure your database migrations are up to date:
-   ```bash
-   supabase db push
-   ```
-
-2. Ensure at least one parish exists in the database. The seed script will fail if no parish is found.
-
-## Running Seed Scripts
-
-To execute the seed script, use the Supabase CLI:
-
-```bash
-supabase seed
-```
-
-This command reads the seed configuration from `supabase/config.toml` and runs the specified SQL files.
-
-### What the Seed Script Creates
-
-The `seed_modules.sql` script creates one fully populated record for each primary module:
-
-- **25 People** - Including bride, groom, deceased, family contacts, presiders, musicians, readers, etc.
-- **3 Locations** - Church, reception hall, funeral home
-- **12 Events** - Wedding, funeral, baptism, presentation, mass, and related events
-- **11 Readings** - Liturgical readings for marriage, funeral, and baptism
-- **7 Module Records**:
-  - 1 Wedding (fully populated with all relationships)
-  - 1 Funeral (fully populated)
-  - 1 Quinceañera (fully populated)
-  - 1 Baptism (fully populated)
-  - 1 Presentation (fully populated)
-  - 1 Mass (fully populated)
-  - 1 Mass Intention (linked to the mass)
 
 ## Important Notes
 
-- **Development Only**: Seed scripts are intended for development and testing environments only
-- **Not Idempotent**: Running the seed script multiple times will create duplicate data
-- **Parish Required**: The script uses the first parish found in the database
-- **Manual Execution**: These scripts are intentionally separated from migrations to prevent accidental execution in production
-
-## Creating Additional Seed Scripts
-
-When creating new seed scripts:
-
-1. Place them in the `supabase/seeds/` directory
-2. Use descriptive names (e.g., `seed_readings.sql`, `seed_test_users.sql`)
-3. Add the script path to `supabase/config.toml` under `[db.seed]` → `sql_paths`
-4. Document the script's purpose in this file
-5. Make sure scripts handle missing dependencies gracefully with appropriate error messages
+- **Development Only**: Seeders are for development/testing only
+- **Not Idempotent**: Running multiple times creates duplicate data
+- **Parish Required**: Both seeders require an existing parish
+- **Shared Code**: Always update `run-seeders.ts` when adding seeders
+- **Avatar Limitation**: Avatar uploads only work in dev seeder (requires Node.js fs)
 
 ## Troubleshooting
 
-If the seed script fails:
-
-1. **No parish found**: Create a parish first through the application or via SQL
-2. **Foreign key violations**: Ensure all migrations have been run successfully
-3. **Permission errors**: Check that you're connected to the correct Supabase project
-
-## Viewing Results
-
-After running the seed script, check the terminal output for:
-- Parish ID being used
-- Count of records created in each category
-- IDs of the created module records
-
-You can verify the data in your Supabase dashboard or by querying the database directly.
+| Problem | Solution |
+|---------|----------|
+| No parish found | Create a parish first via onboarding or SQL |
+| Foreign key violations | Run `npm run db:fresh` to reset and apply migrations |
+| Permission errors | Check Supabase connection and service role key |
+| Avatar upload fails | Verify image files exist in `public/team/` |

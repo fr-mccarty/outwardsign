@@ -136,13 +136,14 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 11 },
     { name: 'First Reader', property_name: 'first_reader', type: 'person', required: false, order: 12 },
     { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'first-reading'], order: 13 },
-    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['wedding', 'psalm'], order: 14 },
-    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 15 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'second-reading'], order: 16 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'gospel'], order: 17 },
-    { name: '---', property_name: 'spacer_4', type: 'spacer', required: false, order: 18 },
-    { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 19 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 20 }
+    { name: 'Psalm Reader', property_name: 'psalm_reader', type: 'person', required: false, order: 14 },
+    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['wedding', 'psalm'], order: 15 },
+    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 16 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'second-reading'], order: 17 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'gospel'], order: 18 },
+    { name: '---', property_name: 'spacer_4', type: 'spacer', required: false, order: 19 },
+    { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 20 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 21 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -184,7 +185,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Wedding Ceremony</strong></span></p>
 <p style="text-align: center">Please join us in celebrating the marriage of</p>
 <p style="text-align: center"><strong>{{bride.full_name}}</strong> and <strong>{{groom.full_name}}</strong></p>
-<p style="text-align: center">{{wedding_ceremony}}</p>`,
+<p style="text-align: center">{{wedding_ceremony.date}}</p>
+<p style="text-align: center">{{wedding_ceremony.location}}</p>`,
       page_break_after: false,
       order: 0
     },
@@ -265,7 +267,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Ceremonia de Matrimonio</strong></span></p>
 <p style="text-align: center">Por favor, acompáñenos a celebrar el matrimonio de</p>
 <p style="text-align: center"><strong>{{bride.full_name}}</strong> y <strong>{{groom.full_name}}</strong></p>
-<p style="text-align: center">{{wedding_ceremony}}</p>`,
+<p style="text-align: center">{{wedding_ceremony.date}}</p>
+<p style="text-align: center">{{wedding_ceremony.location}}</p>`,
       page_break_after: false,
       order: 0
     },
@@ -346,7 +349,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Cover',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>The Celebration of Marriage</strong></span></p>
 <p style="text-align: center"><strong>{{bride.full_name}}</strong><br>&amp;<br><strong>{{groom.full_name}}</strong></p>
-<p style="text-align: center">{{wedding_ceremony}}</p>
+<p style="text-align: center">{{wedding_ceremony.date}}</p>
 <p style="text-align: center">{{parish.name}}</p>`,
       page_break_after: true,
       order: 0
@@ -506,13 +509,14 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 10 },
     { name: 'First Reader', property_name: 'first_reader', type: 'person', required: false, order: 11 },
     { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'first-reading'], order: 12 },
-    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['funeral', 'psalm'], order: 13 },
-    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 14 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'second-reading'], order: 15 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'gospel'], order: 16 },
-    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 17 },
-    { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 18 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 19 }
+    { name: 'Psalm Reader', property_name: 'psalm_reader', type: 'person', required: false, order: 13 },
+    { name: 'Responsorial Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['funeral', 'psalm'], order: 14 },
+    { name: 'Second Reader', property_name: 'second_reader', type: 'person', required: false, order: 15 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'second-reading'], order: 16 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'gospel'], order: 17 },
+    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 18 },
+    { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 19 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 20 }
   ]
 
   const { error: funeralFieldsError } = await supabase
@@ -560,7 +564,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     {
       name: 'Service Details',
       content: `<p><span style="font-size: 1.25em"><strong>Funeral Mass</strong></span></p>
-<p>{{funeral_mass}}</p>
+<p>{{funeral_mass.date}} at {{funeral_mass.time}}</p>
+<p>{{funeral_mass.location}}</p>
 <p>Presider: {{presider.full_name}}</p>`,
       page_break_after: false,
       order: 1
@@ -640,7 +645,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     {
       name: 'Notice',
       content: `<p>Please pray for the repose of the soul of <strong>{{deceased.full_name}}</strong>, who passed away on {{date_of_death}}.</p>
-<p>Funeral Mass will be celebrated at {{funeral_mass}}.</p>
+<p>Funeral Mass will be celebrated on {{funeral_mass.date}} at {{funeral_mass.time}} at {{funeral_mass.location}}.</p>
 <p>May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpetual light shine upon {{deceased.sex | him | her}}. May {{deceased.sex | he | she}} rest in peace. Amen.</p>`,
       page_break_after: false,
       order: 0
@@ -683,7 +688,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Cover',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Funeral Mass</strong></span></p>
 <p style="text-align: center"><strong>{{deceased.full_name}}</strong></p>
-<p style="text-align: center">{{funeral_mass}}</p>
+<p style="text-align: center">{{funeral_mass.date}}</p>
 <p style="text-align: center">{{parish.name}}</p>`,
       page_break_after: true,
       order: 0
@@ -853,7 +858,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Baptism</strong></span></p>
 <p style="text-align: center">Please join us in celebrating the Baptism of</p>
 <p style="text-align: center"><strong>{{child.full_name}}</strong></p>
-<p style="text-align: center">{{baptism}}</p>`,
+<p style="text-align: center">{{baptism.date}}</p>
+<p style="text-align: center">{{baptism.location}}</p>`,
       page_break_after: false,
       order: 0
     },
@@ -963,7 +969,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Quinceañera</strong></span></p>
 <p style="text-align: center">Please join us in celebrating the Quinceañera of</p>
 <p style="text-align: center"><strong>{{quinceanera.full_name}}</strong></p>
-<p style="text-align: center">{{quinceanera_mass}}</p>`,
+<p style="text-align: center">{{quinceanera_mass.date}}</p>
+<p style="text-align: center">{{quinceanera_mass.location}}</p>`,
       page_break_after: false,
       order: 0
     },
@@ -1080,7 +1087,8 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Presentation of the Child</strong></span></p>
 <p style="text-align: center">Please join us in celebrating the Presentation of</p>
 <p style="text-align: center"><strong>{{child.full_name}}</strong></p>
-<p style="text-align: center">{{presentation}}</p>`,
+<p style="text-align: center">{{presentation.date}}</p>
+<p style="text-align: center">{{presentation.location}}</p>`,
       page_break_after: false,
       order: 0
     },
@@ -1194,7 +1202,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Session Information',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Bible Study Session</strong></span></p>
 <p style="text-align: center">{{parish.name}}</p>
-<p><strong>Date:</strong> {{session}}</p>
+<p><strong>Date:</strong> {{session.date}}</p>
+<p><strong>Time:</strong> {{session.time}}</p>
+<p><strong>Location:</strong> {{session.location}}</p>
 <p><strong>Leader:</strong> {{discussion_leader.full_name}}</p>
 <p><strong>Topic:</strong> {{topic}}</p>`,
       page_break_after: false,
@@ -1309,7 +1319,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Event Information',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Fundraiser Event</strong></span></p>
 <p style="text-align: center">{{parish.name}}</p>
-<p><strong>Date:</strong> {{event_date}}</p>
+<p><strong>Date:</strong> {{event_date.date}}</p>
+<p><strong>Time:</strong> {{event_date.time}}</p>
+<p><strong>Location:</strong> {{event_date.location}}</p>
 <p><strong>Coordinator:</strong> {{event_coordinator.full_name}}</p>
 <p><strong>Fundraising Goal:</strong> $` + `{{fundraising_goal}}</p>`,
       page_break_after: false,
@@ -1430,7 +1442,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Class Information',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Religious Education Lesson Plan</strong></span></p>
 <p style="text-align: center">{{parish.name}}</p>
-<p><strong>Date:</strong> {{class_session}}</p>
+<p><strong>Date:</strong> {{class_session.date}}</p>
+<p><strong>Time:</strong> {{class_session.time}}</p>
+<p><strong>Location:</strong> {{class_session.location}}</p>
 <p><strong>Catechist:</strong> {{catechist.full_name}}</p>
 <p><strong>Grade Level:</strong> {{grade_level}}</p>
 <p><strong>Topic:</strong> {{lesson_topic}}</p>`,
@@ -1544,7 +1558,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       name: 'Meeting Information',
       content: `<p style="text-align: center"><span style="font-size: 1.5em"><strong>Staff Meeting</strong></span></p>
 <p style="text-align: center">{{parish.name}}</p>
-<p><strong>Date:</strong> {{meeting_date}}</p>
+<p><strong>Date:</strong> {{meeting_date.date}}</p>
+<p><strong>Time:</strong> {{meeting_date.time}}</p>
+<p><strong>Location:</strong> {{meeting_date.location}}</p>
 <p><strong>Leader:</strong> {{meeting_leader.full_name}}</p>`,
       page_break_after: false,
       order: 0

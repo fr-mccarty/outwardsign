@@ -2,6 +2,7 @@
   "nav": {
     "application": "Application",
     "dashboard": "Dashboard",
+    "chat": "AI Assistant",
     "calendar": "Calendar",
     "events": "Parish Events",
     "ourEvents": "Our Parish Events",
@@ -466,6 +467,7 @@
   },
   "masses": {
     "title": "Masses",
+    "description": "Each Mass Liturgy groups multiple masses that share the same readings, music, and liturgical content.",
     "searchPlaceholder": "Search by presider, homilist, or event name...",
     "nameOfMass": "Name of Mass",
     "unnamedMass": "Unnamed Mass",
@@ -629,6 +631,42 @@
       "manageRoles": "Manage Roles",
       "volunteersDescription": "View and manage people who serve in liturgical roles.",
       "manageVolunteers": "Manage Volunteers"
+    },
+    "developerTools": {
+      "title": "Developer Tools",
+      "description": "Tools for development and testing purposes.",
+      "manageDeveloperTools": "Manage Developer Tools",
+      "seedData": {
+        "title": "Seed Sample Data",
+        "description": "Add sample data to your parish for testing and demonstration purposes.",
+        "info": "This will create sample records including:",
+        "items": {
+          "people": "20 sample people with contact information",
+          "families": "12 sample families with relationships",
+          "masses": "8 sample Mass liturgies",
+          "intentions": "3 sample Mass intentions",
+          "weddings": "1 sample wedding",
+          "funerals": "1 sample funeral",
+          "readings": "Scripture readings for the content library"
+        },
+        "button": "Seed Sample Data",
+        "seeding": "Seeding data...",
+        "confirmTitle": "Seed Sample Data?",
+        "confirmDescription": "This will add sample people, families, masses, and other records to your parish. This is useful for testing and demonstration. You can delete these records later if needed.",
+        "confirmButton": "Yes, Seed Data",
+        "results": {
+          "people": "People",
+          "families": "Families",
+          "masses": "Masses",
+          "intentions": "Intentions",
+          "weddings": "Weddings",
+          "funerals": "Funerals",
+          "readings": "Readings",
+          "groupMemberships": "Group Memberships"
+        }
+      },
+      "seedSuccess": "Sample data seeded successfully!",
+      "seedError": "Failed to seed sample data. Please try again."
     }
   },
   "eventTypes": {

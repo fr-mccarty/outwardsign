@@ -33,6 +33,10 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
     router.push(`/events/${eventTypeSlug}/${event.id}`)
   }
 
+  const handleEditEvent = () => {
+    router.push(`/events/${eventTypeSlug}/${event.id}/edit`)
+  }
+
   const handleEditScript = () => {
     router.push(`/settings/event-types/${eventTypeSlug}/scripts/${script.id}`)
   }
@@ -41,12 +45,20 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
   const actionButtons = (
     <>
       <Button
-        onClick={handleEditScript}
-        variant="default"
+        onClick={handleBackToEvent}
+        variant="outline"
+        className="w-full"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Event
+      </Button>
+      <Button
+        onClick={handleEditEvent}
+        variant="outline"
         className="w-full"
       >
         <Pencil className="h-4 w-4 mr-2" />
-        Edit Script
+        Edit Event
       </Button>
       <Button asChild variant="outline" className="w-full">
         <Link href={`/print/events/${eventTypeSlug}/${event.id}/scripts/${script.id}`} target="_blank">
@@ -55,12 +67,12 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
         </Link>
       </Button>
       <Button
-        onClick={handleBackToEvent}
+        onClick={handleEditScript}
         variant="outline"
         className="w-full"
       >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Event
+        <Pencil className="h-4 w-4 mr-2" />
+        Edit Script
       </Button>
     </>
   )

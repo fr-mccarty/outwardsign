@@ -17,6 +17,7 @@ import { formatDatePretty } from '@/lib/utils/formatters'
 import { deleteEvent } from '@/lib/actions/parish-events'
 import { createPresetFromEvent } from '@/lib/actions/event-presets'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
+import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 
 interface ParishEventViewClientProps {
   event: ParishEventWithRelations
@@ -97,9 +98,7 @@ export function ParishEventViewClient({ event, eventType, scripts, eventTypeSlug
         <div className="flex items-center gap-2">
           <span className="font-medium">Liturgical Color:</span>
           <div className="flex items-center gap-1.5">
-            <div
-              className={`w-3 h-3 rounded-full bg-liturgy-${event.liturgical_color.toLowerCase()}`}
-            />
+            <LiturgicalColorDot color={event.liturgical_color} />
             <span>{LITURGICAL_COLOR_LABELS[event.liturgical_color].en}</span>
           </div>
         </div>

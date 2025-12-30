@@ -5,6 +5,13 @@
  * Seeds the database with development data after a reset.
  * Uses the SAME onboarding setup function, then adds extra dev data.
  *
+ * SHARED MODULE: Core seeding logic is in src/lib/seeding/
+ * This script adds dev-specific functionality on top:
+ * - Storage bucket creation
+ * - Dev user creation and parish setup
+ * - Avatar uploads (requires Node.js fs)
+ * - Dev user person record with portal access
+ *
  * Usage:
  *   npm run seed:dev
  *
@@ -13,13 +20,9 @@
 
 import { createClient } from '@supabase/supabase-js'
 import {
-  seedPeople,
   uploadAvatars,
-  seedGroupMemberships,
-  seedMasses,
-  seedMassIntentions,
-  seedFamilies,
-  seedWeddingsAndFunerals
+  createDevUserPerson,
+  runAllSeeders,
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
@@ -248,6 +251,7 @@ async function seedDevData() {
   // =====================================================
   // DEV SEEDING
   // (Additional data for development only - NOT in production)
+  // Uses shared seeding module (src/lib/seeding/)
   // =====================================================
   logInfo('')
   logInfo('=' .repeat(60))
@@ -266,88 +270,59 @@ async function seedDevData() {
 
   try {
     await seedReadingsForParish(supabase, parishId)
+    logSuccess('Scripture readings seeded')
   } catch (error) {
     logError(`Error seeding scripture readings: ${error}`)
     // Non-fatal - continue
   }
 
   // =====================================================
-  // Seed Sample People
+  // Run Shared Seeders (from src/lib/seeding/)
+  // This is the SAME code used by the production UI seeder
   // =====================================================
   logInfo('')
-  const { people } = await seedPeople(ctx)
+  logInfo('Running shared seeders (same as production UI)...')
 
-  // =====================================================
-  // Fetch Groups (created by onboarding seeder)
-  // =====================================================
-  const { data: groups } = await supabase
-    .from('groups')
-    .select('id, name')
-    .eq('parish_id', parishId)
-
-  // =====================================================
-  // Seed Group Memberships
-  // =====================================================
-  if (groups && groups.length > 0 && people) {
-    await seedGroupMemberships(ctx, groups, people)
+  try {
+    const result = await runAllSeeders(supabase, parishId)
+    logSuccess(`People created: ${result.counts.people}`)
+    logSuccess(`Families created: ${result.counts.families}`)
+    logSuccess(`Group memberships: ${result.counts.groupMemberships}`)
+    logSuccess(`Masses created: ${result.counts.masses}`)
+    logSuccess(`Mass role assignments: ${result.counts.massRoleAssignments}`)
+    logSuccess(`Mass intentions: ${result.counts.massIntentions}`)
+    logSuccess(`Weddings created: ${result.counts.weddings}`)
+    logSuccess(`Funerals created: ${result.counts.funerals}`)
+    logSuccess(`Special liturgies (baptisms, quinceañeras, presentations): ${result.counts.specialLiturgies}`)
+  } catch (error) {
+    logError(`Error running shared seeders: ${error}`)
+    process.exit(1)
   }
 
   // =====================================================
-  // Seed Families and Family Members
+  // Dev-Specific: Create Dev User Person Record
+  // (NOT in shared module - dev-only)
   // =====================================================
-  logInfo('')
-  if (people) {
-    await seedFamilies(ctx, people as Array<{ id: string; first_name: string; last_name: string }>)
-  }
+  await createDevUserPerson(ctx)
 
   // =====================================================
-  // Upload Avatars
+  // Dev-Specific: Upload Avatars
+  // (NOT in shared module - requires Node.js fs)
   // =====================================================
   await uploadAvatars(ctx)
 
   // =====================================================
-  // Fetch Locations (created by onboarding seeder)
+  // Summary
   // =====================================================
-  const { data: locations } = await supabase
-    .from('locations')
-    .select('id, name')
-    .eq('parish_id', parishId)
-
-  const churchLocation = locations?.find(l => l.name.includes('Church')) || null
-  const hallLocation = locations?.find(l => l.name.includes('Hall')) || null
-  const funeralHomeLocation = locations?.find(l => l.name.includes('Funeral')) || null
-
-  // =====================================================
-  // Seed Sample Masses
-  // =====================================================
-  if (people && churchLocation) {
-    await seedMasses(ctx, people as Array<{ id: string; first_name: string; last_name: string }>, churchLocation)
-  }
-
-  // =====================================================
-  // Seed Sample Mass Intentions
-  // =====================================================
-  if (people) {
-    await seedMassIntentions(ctx, people as Array<{ id: string; first_name: string; last_name: string }>)
-  }
-
-  // =====================================================
-  // Seed Weddings and Funerals with Readings
-  // (Special liturgies are created by onboarding seeder,
-  // but dev seeder adds readings from content library)
-  // =====================================================
-  if (people) {
-    await seedWeddingsAndFunerals(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
-  }
-
   logInfo('')
   logInfo('Dev seeding includes:')
   logInfo('  - Scripture readings (First Reading, Second Reading, Gospel, Psalm)')
-  logInfo('  - Sample people with avatars')
-  logInfo('  - Group memberships')
-  logInfo('  - Families')
-  logInfo('  - Masses and mass intentions')
+  logInfo('  - Sample people, families, group memberships')
+  logInfo('  - Masses with minister assignments')
+  logInfo('  - Mass intentions')
   logInfo('  - Weddings and Funerals (with readings)')
+  logInfo('  - Dev user person record with portal access')
+  logInfo('  - Avatar images for sample people')
 
   // =====================================================
   // Done!

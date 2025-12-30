@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
-import { User, FileText, ChevronRight, Church, Calendar, Tag, FileStack, BookOpen } from 'lucide-react'
+import { User, FileText, ChevronRight, Church, Calendar, Tag, FileStack, BookOpen, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -205,6 +205,26 @@ export function SettingsHubClient() {
           <Button asChild variant="outline" className="w-full justify-between">
             <Link href="/settings/event-presets">
               {t('settings.manageEventPresets')}
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <Wrench className="h-5 w-5 text-primary" />
+            {t('settings.developerTools.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            {t('settings.developerTools.description')}
+          </p>
+          <Button asChild variant="outline" className="w-full justify-between">
+            <Link href="/settings/developer-tools">
+              {t('settings.developerTools.manageDeveloperTools')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

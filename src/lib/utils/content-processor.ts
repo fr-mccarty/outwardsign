@@ -15,7 +15,7 @@
  */
 
 import type { ParishEventWithRelations, ResolvedFieldValue } from '@/lib/types'
-import { formatDatePretty } from '@/lib/utils/formatters'
+import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 
 /**
  * Sanitize HTML content to prevent XSS attacks
@@ -201,11 +201,13 @@ function resolveFieldValue(resolvedField: ResolvedFieldValue, propertyPath: stri
         if (!timeValue) return 'empty'
         // Extract time portion if it's a datetime
         const timeStr = String(timeValue)
+        let timePart: string
         if (timeStr.includes('T')) {
-          const timePart = timeStr.split('T')[1]?.slice(0, 5)
-          return timePart || 'empty'
+          timePart = timeStr.split('T')[1]?.slice(0, 8) || '' // HH:MM:SS
+        } else {
+          timePart = timeStr
         }
-        return timeStr.slice(0, 5) // HH:MM
+        return formatTime(timePart) || 'empty'
       }
       if (propertyPath === 'location') {
         const location = calendarEvent.location as Record<string, unknown> | undefined
@@ -267,12 +269,75 @@ function resolveFieldValue(resolvedField: ResolvedFieldValue, propertyPath: stri
       return 'empty'
     }
 
+    case 'mass-intention': {
+      // Mass intention with dot notation for specific fields
+      // Supports: {{mass_intention.mass_offered_for}}, {{mass_intention.requested_by}}, etc.
+      const massIntention = resolved_value as {
+        mass_offered_for?: string | null
+        requested_by?: { full_name?: string; first_name?: string; last_name?: string } | null
+        date_requested?: string | null
+        date_received?: string | null
+        note?: string | null
+        status?: string | null
+      } | null | undefined
+
+      if (!massIntention) return 'empty'
+
+      // Handle dot notation for nested properties
+      if (propertyPath === 'mass_offered_for') {
+        return massIntention.mass_offered_for || 'empty'
+      }
+      if (propertyPath === 'requested_by' || propertyPath === 'requested_by.full_name') {
+        return massIntention.requested_by?.full_name || 'empty'
+      }
+      if (propertyPath === 'requested_by.first_name') {
+        return massIntention.requested_by?.first_name || 'empty'
+      }
+      if (propertyPath === 'requested_by.last_name') {
+        return massIntention.requested_by?.last_name || 'empty'
+      }
+      if (propertyPath === 'date_requested') {
+        return massIntention.date_requested ? formatDatePretty(massIntention.date_requested) : 'empty'
+      }
+      if (propertyPath === 'date_received') {
+        return massIntention.date_received ? formatDatePretty(massIntention.date_received) : 'empty'
+      }
+      if (propertyPath === 'note') {
+        return massIntention.note || 'empty'
+      }
+      if (propertyPath === 'status') {
+        return massIntention.status || 'empty'
+      }
+
+      // Default: return mass_offered_for (the most commonly needed field)
+      return massIntention.mass_offered_for || 'empty'
+    }
+
+    case 'time':
+      // Format time with AM/PM
+      if (!raw_value) return 'empty'
+      return formatTime(String(raw_value)) || 'empty'
+
+    case 'datetime': {
+      // Format as "December 30, 2025 at 9:30 AM"
+      if (!raw_value) return 'empty'
+      const dtStr = String(raw_value)
+      const datePart = formatDatePretty(dtStr)
+      // Extract time portion if present
+      if (dtStr.includes('T')) {
+        const timePart = dtStr.split('T')[1]?.slice(0, 8) || ''
+        const formattedTime = formatTime(timePart)
+        if (formattedTime) {
+          return `${datePart} at ${formattedTime}`
+        }
+      }
+      return datePart
+    }
+
     case 'text':
     case 'rich_text':
     case 'number':
     case 'yes_no':
-    case 'time':
-    case 'datetime':
     default:
       // For all other types, convert raw_value to string
       if (raw_value === null || raw_value === undefined || raw_value === '') {

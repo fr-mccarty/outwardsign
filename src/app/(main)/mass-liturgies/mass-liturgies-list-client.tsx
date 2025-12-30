@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
+import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Filter } from "lucide-react"
@@ -260,7 +261,7 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className={`h-4 w-4 rounded-full bg-liturgy-${color.toLowerCase()}`} />
+                <LiturgicalColorDot color={color} size="md" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>{LITURGICAL_COLOR_LABELS[color].en}</p>

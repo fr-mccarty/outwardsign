@@ -1,108 +1,118 @@
 # CLAUDE.md
 
-> **🔴 GREENFIELD DEVELOPMENT:** Modify original files directly rather than creating backward-compatible implementations. Make breaking changes as needed—we are not concerned with backward compatibility.
+> **GREENFIELD DEVELOPMENT:** Modify original files directly. Make breaking changes as needed—we are not concerned with backward compatibility.
 
 ## Table of Contents
 
-- [🔴 Required Reading by Task](#-required-reading-by-task)
-- [Agent Orchestration](#agent-orchestration)
+- [Decision Framework](#decision-framework)
+- [Required Reading by Task](#required-reading-by-task)
 - [Project Description](#project-description)
-- [🔴 Database](#-database)
-- [🔴 Git Operations](#-git-operations)
-- [Testing & Linting](#testing--linting)
-- [🔴 Build Process](#-build-process)
-- [Tools](#tools)
 - [Tech Stack](#tech-stack)
-- [🔴 Architecture](#-architecture)
-- [🔴 Styling](#-styling)
-- [🔴 Forms](#-forms)
-- [🔴 Module Structure](#-module-structure)
-- [🔴 Code Conventions](#-code-conventions)
-- [🔴 Design Principles](#-design-principles)
-- [🔴 Creating New Modules](#-creating-new-modules)
+- [Critical Rules](#critical-rules)
 - [Known Issues](#known-issues)
 
 ---
 
-## 🔴 Required Reading by Task
+## Decision Framework
 
-**Before ANY code change, consult this table first.** All detailed documentation is in the `docs/` directory.
+You are a capable developer. Make decisions confidently when the path is clear. Escalate only when genuinely uncertain or when the risk is high.
 
-| Task | Required Reading | Agent |
-|------|------------------|-------|
-| **Create/edit forms** | [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md), [FORMS.md](./docs/FORMS.md) | developer-agent |
-| **Create new module** | [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md), [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) | developer-agent |
-| **Create/modify list page** | [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md), [REACT_HOOKS_PATTERNS.md](./docs/REACT_HOOKS_PATTERNS.md) | developer-agent |
-| **Work with pickers** | [PICKERS.md](./docs/PICKERS.md) | developer-agent |
-| **Database changes** | [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md), [DATABASE.md](./docs/DATABASE.md) | developer-agent |
-| **Write/update tests** | [testing/TESTING.md](./docs/testing/TESTING.md) | test-writer |
-| **Run/debug tests** | [testing/TESTING.md](./docs/testing/TESTING.md) | test-runner-debugger |
-| **Add form validation** | [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md), [VALIDATION.md](./docs/VALIDATION.md) | developer-agent |
-| **Style components** | [STYLES-CRITICAL.md](./docs/STYLES-CRITICAL.md), [STYLES.md](./docs/STYLES.md) | developer-agent |
-| **Use formatters** | [FORMATTERS.md](./docs/FORMATTERS.md) | developer-agent |
-| **Content builders/renderers** | [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md), [RENDERER.md](./docs/RENDERER.md) | developer-agent |
-| **Understand features** | Related module docs | explorer-agent |
-| **Refactor code** | [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md) | refactor-agent |
-| **Update /docs/** | [docs/README.md](./docs/README.md) | project-documentation-writer |
-| **Create user guides** | [USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md) | user-documentation-writer |
-| **Permission checks** | [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) | developer-agent |
-| **Event type config** | [EVENT_TYPE_CONFIGURATION.md](./docs/EVENT_TYPE_CONFIGURATION.md) | developer-agent |
-| **Use/create components** | [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) | developer-agent |
-| **Use dialogs** | [DIALOGS.md](./docs/DIALOGS.md) | developer-agent |
-| **Security audit** | [ARCHITECTURE.md](./docs/ARCHITECTURE.md), [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) | security-agent |
+### Decision Tree
 
-**New to the project?** Start with [DEFINITIONS.md](./docs/DEFINITIONS.md) for liturgical terminology.
+When you encounter a choice, work through these questions in order:
+
+**1. Is this a destructive or irreversible action?**
+- Deleting data, tables, or files → **STOP and ASK**
+- Modifying production environment → **STOP and ASK**
+- Changing authentication/RLS logic → **STOP and ASK**
+- If none of these → Continue to question 2
+
+**2. Does an existing pattern in the codebase cover this?**
+- Yes, clear pattern exists → **PROCEED** and follow it
+- Pattern exists but doesn't quite fit → **PROCEED** and note the deviation
+- No pattern exists → Continue to question 3
+
+**3. Is this additive or modifying?**
+- Additive (new file, new function, new component) → **PROCEED**
+- Modifying existing code → Continue to question 4
+
+**4. Is the modification low-risk?**
+- Bug fix with clear expected behavior → **PROCEED**
+- Refactor that doesn't change behavior → **PROCEED**
+- Changes data structures or relationships → **STOP and ASK**
+- Changes affect multiple parts of the app → **STOP and ASK**
+
+**5. Are there multiple valid approaches?**
+- One obvious best approach → **PROCEED** with it
+- Multiple approaches with unclear trade-offs → **STOP and ASK**
+- Multiple approaches but one matches existing patterns → **PROCEED** with that one
+
+### Always PROCEED Without Asking
+
+- Creating new files
+- Writing new functions that don't modify existing ones
+- Adding new database columns (not removing or renaming)
+- Installing npm packages for stated requirements
+- Running tests (`npm run test`)
+- Running builds (`npm run build`)
+- Running lint (`npm run lint`)
+- Updating TypeScript types to match schema changes
+- Fixing lint errors or type errors
+- Following established patterns in the codebase
+- **Restarting the dev server after code changes** - always restart `npm run dev` after making changes so the user can test immediately
+
+### Always STOP and ASK
+
+- Pushing to main/production branch
+- Deleting tables, columns, or files
+- Changing environment variables
+- Modifying auth, RLS policies, or security logic
+- When the task contradicts what you're finding in the code
+- When you discover the task is significantly larger than described
+- When tests fail and you're unsure why
+- **Git commits** - you don't have permission, instruct user to commit
+- **Modifying `src/components/ui/`** - these are shadcn/ui vendor components; create custom components elsewhere instead
+
+### After Acting Independently, Report
+
+When you complete significant work without asking, include a brief summary:
+
+**Decisions Made:**
+- What approaches you chose and why
+- Any patterns you established that weren't there before
+- Deviations from what you expected
+
+**Dependencies Added:**
+- Any new npm packages and why
+
+**Questions for Later:**
+- Non-blocking items that might need discussion
+- Potential improvements you noticed but didn't implement
 
 ---
 
-## Agent Orchestration
+## Required Reading by Task
 
-**Detailed workflows:** [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md)
+**Before ANY code change, consult this table first.** All detailed documentation is in the `docs/` directory.
 
-| Agent | Folder | Purpose |
-|-------|--------|---------|
-| **brainstorming-agent** | `/agents/brainstorming/` | Creative vision capture |
-| **devils-advocate-agent** | `/agents/brainstorming/` | Challenge brainstorming |
-| **requirements-agent** | `/agents/requirements/` | Requirements analysis |
-| **developer-agent** | `/src/` | Feature implementation |
-| **test-writer** | `/tests/` | Test creation |
-| **test-runner-debugger** | N/A | Test execution & debugging |
-| **project-documentation-writer** | `/docs/` | Developer/AI documentation |
-| **qa-specialist** | N/A | Quality assurance audits |
-| **supervisor-agent** | `/agents/supervisor/` | Codebase health audits |
-| **cleanup-agent** | N/A | Safe lint --fix in isolation |
-| **user-documentation-writer** | `/src/app/documentation/content/` | End-user guides |
-| **explorer-agent** | N/A | Codebase exploration |
-| **refactor-agent** | N/A | Code quality improvement |
-| **release-agent** | `/agents/release/` | Deployment & releases |
-| **ui-agent** | N/A | Visual quality audits |
-| **ux-agent** | N/A | UX understanding audits |
-| **wisdom-agent** | N/A | Perspective when stuck |
-| **agent-audit-agent** | `/agents/agent-audit/` | Agent ecosystem audits |
-| **claude-audit-agent** | N/A | CLAUDE.md accuracy audits |
-| **security-agent** | `/agents/security/` | Security audits |
-| **branch-merge-agent** | N/A | Evaluate and merge Claude branches |
+| Task | Required Reading |
+|------|------------------|
+| **Create/edit forms** | [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md), [FORMS.md](./docs/FORMS.md) |
+| **Create new module** | [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md), [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) |
+| **Create/modify list page** | [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md), [REACT_HOOKS_PATTERNS.md](./docs/REACT_HOOKS_PATTERNS.md) |
+| **Work with pickers** | [PICKERS.md](./docs/PICKERS.md) |
+| **Database changes** | [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md), [DATABASE.md](./docs/DATABASE.md) |
+| **Write/run tests** | [testing/TESTING.md](./docs/testing/TESTING.md) |
+| **Add form validation** | [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md), [VALIDATION.md](./docs/VALIDATION.md) |
+| **Style components** | [STYLES-CRITICAL.md](./docs/STYLES-CRITICAL.md), [STYLES.md](./docs/STYLES.md) |
+| **Use formatters** | [FORMATTERS.md](./docs/FORMATTERS.md) |
+| **Content builders/renderers** | [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md), [RENDERER.md](./docs/RENDERER.md) |
+| **Permission checks** | [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) |
+| **Event type config** | [EVENT_TYPE_CONFIGURATION.md](./docs/EVENT_TYPE_CONFIGURATION.md) |
+| **Use/create components** | [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) |
+| **Use dialogs** | [DIALOGS.md](./docs/DIALOGS.md) |
 
-### Quick Decision Guide
-
-- **New feature?** → brainstorming → devils-advocate → requirements → developer → test-writer → test-runner-debugger → project-documentation-writer
-- **Bug fix?** → developer (or explorer if complex) → test-writer → test-runner-debugger
-- **Understand code?** → explorer-agent
-- **Tests failing?** → test-runner-debugger
-- **Fix linting?** → cleanup-agent (runs lint --fix safely, in isolation)
-- **Health check?** → supervisor-agent → cleanup-agent (lint) or developer-agent (judgment fixes)
-- **Deploy?** → qa-specialist → release-agent
-- **Stuck?** → wisdom-agent
-- **Audit agents/settings?** → agent-audit-agent
-- **Audit CLAUDE.md accuracy?** → claude-audit-agent
-- **Merge Claude branches?** → branch-merge-agent
-- **Security audit?** → security-agent
-
-### Agent Output Lifecycle
-
-- **Temporary:** brainstorming outputs (move to /requirements/ when formalized)
-- **Audit trail:** supervisor, agent-audit, security, release outputs (commit for history)
-- **Context-dependent:** requirements outputs (commit if defining features, delete if exploratory)
+**New to the project?** Start with [DEFINITIONS.md](./docs/DEFINITIONS.md) for liturgical terminology.
 
 ---
 
@@ -118,80 +128,6 @@ Plan, communicate, and celebrate sacraments (Weddings, Funerals, Baptisms, Quinc
 
 ---
 
-## 🔴 Database
-
-**Full reference:** [DATABASE.md](./docs/DATABASE.md)
-
-**Critical Rules:**
-- **NEVER use Supabase MCP** for database changes during development
-- All changes via migration files in `supabase/migrations/`
-- One table per migration file (plural names: `masses`, `events`, `people`)
-- Problems fixed at migration level, never outside migrations
-
-**Workflow:**
-1. Create/modify migration files
-2. Run `npm run db:fresh` to reset and apply (local dev)
-3. `supabase db push` for remote (maintainer only)
-
-**Early Development:** Modify existing migrations rather than creating new files.
-
----
-
-## 🔴 Git Operations
-
-**Critical Rules:**
-- **NEVER use `git add` or `git commit`** - you don't have permission
-- Only read-only commands: `git status`, `git log`, `git show`, `git diff`, `git branch`, `git remote`
-- Instruct user to run staging/commit commands manually
-
-**Exception - branch-merge-agent:** Has extended git permissions for merging and cleanup:
-- `git fetch`, `git checkout`, `git merge`
-- `git branch -d`, `git push origin --delete`, `git reset`
-
----
-
-## Testing & Linting
-
-**Full reference:** [testing/TESTING.md](./docs/testing/TESTING.md)
-
-```bash
-npm run test                              # Run all tests
-npm run test -- tests/events.spec.ts      # Specific file
-npm run test:ui                           # Interactive debugger
-npm run lint                              # Check code quality
-npm run lint -- --fix                     # Auto-fix issues
-```
-
-**Test Limits:** 150 lines/file max, 5 tests/file max, 30 lines/test max
-
-**Selector priority:** `getByRole` → `getByLabel` → `getByTestId`
-
----
-
-## 🔴 Build Process
-
-When `npm run build` fails:
-- Check documentation first—build errors often indicate pattern violations
-- Common sources: TypeScript mismatches, import errors, form pattern violations, server/client boundaries
-- Fix root cause, not symptoms
-
-**Next.js 15 Breaking Change:** `params` and `searchParams` must be awaited in server pages:
-```typescript
-// Correct
-const { id } = await params;
-const query = await searchParams;
-```
-
----
-
-## Tools
-
-**🔴 Supabase MCP:** DO NOT use for database operations. All changes via migration files.
-
-**🔴 Claude Code Settings:** Configure in `.claude/settings.json` only (committed). DO NOT create `settings.local.json`. See [CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md).
-
----
-
 ## Tech Stack
 
 - **Frontend:** Next.js 15+ (App Router)
@@ -204,63 +140,87 @@ const query = await searchParams;
 
 ---
 
-## 🔴 Architecture
+## Critical Rules
 
-**Full reference:** [ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+These are project-specific constraints that override general patterns.
 
-**Key Points:**
+### Database
+
+**Full reference:** [DATABASE.md](./docs/DATABASE.md)
+
+- **NEVER use Supabase MCP** for database changes
+- All changes via migration files in `supabase/migrations/`
+- One table per migration file (plural names: `masses`, `events`, `people`)
+- Run `npm run db:fresh -- -y` to reset database and seed dev data (the `-y` flag skips confirmation)
+
+### Git Operations
+
+- **NEVER use `git add` or `git commit`** - you don't have permission
+- Read-only commands only: `git status`, `git log`, `git show`, `git diff`, `git branch`
+- Instruct user to run staging/commit commands manually
+
+### Build Process
+
+When `npm run build` fails:
+- Check documentation first—build errors often indicate pattern violations
+- Fix root cause, not symptoms
+
+**Next.js 15:** `params` and `searchParams` must be awaited:
+```typescript
+const { id } = await params;
+const query = await searchParams;
+```
+
+### Dev Server Management
+
+You can manage the dev server using background shells:
+
+```bash
+# Start server in background
+rm -rf ./.next && npm run dev  # (with run_in_background: true)
+
+# Restart: KillShell the old task, then start fresh
+```
+
+**When to restart:**
+- After `npm run db:fresh -- -y`
+- After modifying `next.config.js` or environment files
+- After installing new packages
+- When the server crashes or gets stuck
+
+**Note:** Hot reload handles most code changes—only restart when necessary.
+
+### Styling
+
+- **NEVER hardcode colors** (`bg-white`, `text-gray-900`, hex values)
+- **ALWAYS pair backgrounds with foregrounds** (`bg-card text-card-foreground`)
+- Use semantic tokens: `bg-background`, `text-foreground`, `bg-muted`
+- No `dark:` utility classes—CSS variables handle dark mode
+- Print views (`app/print/`) exempt from these rules
+
+### Forms
+
+- ALL inputs must use project form components (see FORMS.md)
+- NEVER modify font-family, borders, or backgrounds on inputs
+- Unified form pattern handles create/edit via `entity` prop
+- Use SaveButton, CancelButton, picker components
+
+### Architecture
+
 - Parish-scoped multi-tenancy (all records have `parish_id`)
 - Tables plural, columns singular, interfaces singular
 - Server → Client: Props | Client → Server: Server Actions
-- All server pages check auth via `createClient()` and `getUser()`
 - RLS policies enforce permissions automatically
 
 **Roles:** Admin (full), Staff (CRUD events), Ministry-Leader (configurable), Parishioner (read-only)
 
-**`requireSelectedParish()` Pattern:**
-- Need ID? → `const selectedParishId = await requireSelectedParish()`
-- Just validating? → `await requireSelectedParish()`
-
-**Permissions:** [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md)
-
----
-
-## 🔴 Styling
-
-**Full reference:** [STYLES.md](./docs/STYLES.md)
-
-**Critical Rules:**
-- **NEVER hardcode colors** (`bg-white`, `text-gray-900`, hex values)
-- **ALWAYS pair backgrounds with foregrounds** (`bg-card text-card-foreground`)
-- Use semantic tokens: `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`
-- No `dark:` utility classes—CSS variables handle dark mode automatically
-- Print views (`app/print/`) exempt from these rules
-
----
-
-## 🔴 Forms
-
-**Full reference:** [FORMS.md](./docs/FORMS.md)
-
-**Critical Rules:**
-- ALL inputs must use project form components (see FORMS.md for patterns)
-- NEVER modify font-family, borders, or backgrounds on inputs
-- Unified form pattern handles create/edit via `entity` prop
-- Use SaveButton, CancelButton, picker components
-- Nested forms require `e.stopPropagation()`
-- Dual validation with Zod
-
----
-
-## 🔴 Module Structure
-
-**Full reference:** [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)
+### Module Structure
 
 **Reference implementation:** `src/app/(main)/masses/`
 
 **The 8 Main Files:**
 1. `page.tsx` - List page (server)
-2. `[entities]-list-client.tsx` - List client
+2. `[entities]-list-client.tsx` - List client (PLURAL name)
 3. `create/page.tsx` - Create page (server)
 4. `[id]/page.tsx` - View page (server)
 5. `[id]/edit/page.tsx` - Edit page (server)
@@ -268,64 +228,36 @@ const query = await searchParams;
 7. `[entity]-form.tsx` - Unified form (client)
 8. `[id]/[entity]-view-client.tsx` - View client
 
-**Key Patterns:**
-- Server pages: no 'use client'
-- List client: PLURAL name
-- Form detects mode via `entity` prop, redirects to view after save
-- Groups module uses different pattern (dialog-based)
+### Code Conventions
 
----
-
-## 🔴 Code Conventions
-
-**Full reference:** [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)
-
-**Critical Rules:**
 - 2-space indentation, TypeScript for all new files
 - Server Components default, Client only when needed
-- Bilingual: all user-facing text needs `en` and `es` (currently hardcoded to `.en`)
-- Page titles: `[Dynamic Content]-[Module Name]` (module at end)
+- Bilingual: user-facing text needs `en` and `es`
 - **ALWAYS use formatters** (`formatDatePretty()`, etc.)—never raw date strings
-- Person names: use `person.full_name` directly
 - NEVER nest clickable elements
 - Rule of Three: wait for 3 uses before abstracting
 
----
-
-## 🔴 Design Principles
-
-**Full reference:** [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md)
-
-**Core Principles:** Simplicity, Clarity, Feedback, Affordances
-
-**Questions to ask:** Is this simple? Is it clear? Does it provide feedback? Can users recover from mistakes?
-
----
-
-## 🔴 Creating New Modules
-
-**Event Types (common):** Created through Settings UI at `/settings/event-types`—no code changes needed.
-
-**New Code Modules (rare):** Only for fundamentally different functionality (Masses, People, Locations, Groups).
-
-**Checklist:** [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md)
-
-**Steps:**
-1. Database Layer - Migration, RLS, types
-2. Server Actions - CRUD with `WithRelations`
-3. Module Structure - 8 files following masses pattern
-4. Components - Use existing pickers
-5. Content & Export - Content builder + API routes
-6. Constants - Status constants, sidebar navigation
-
----
-
-## 🔴 Component Directory Rules
+### Component Rules
 
 - Custom components: anywhere in `src/components/` except `ui/`
 - `src/components/ui/` = shadcn/ui (NEVER edit)
-- Wrap shadcn components outside `ui/` if customization needed
-- **Dialogs:** NEVER import from `ui/dialog` in app code—use `ConfirmationDialog` or `InfoDialog` (see [DIALOGS.md](./docs/DIALOGS.md))
+- **Dialogs:** NEVER import from `ui/dialog`—use `ConfirmationDialog` or `InfoDialog`
+
+---
+
+## Specialized Agents
+
+For complex tasks that benefit from isolated context, these agents are available:
+
+| Agent | Use For |
+|-------|---------|
+| `explorer-agent` | Understanding code, finding patterns, answering "how does X work?" |
+| `test-writer` | Writing new tests (reads testing docs automatically) |
+| `test-runner-debugger` | Running tests and debugging failures |
+| `branch-merge-agent` | Evaluating and merging claude/* branches |
+| `developer-agent` | Complex multi-file implementations |
+
+Use agents when the task benefits from a fresh context window. For most work, proceed directly.
 
 ---
 

@@ -5,99 +5,19 @@
       "mcp__supabase__*",
       "Bash(supabase db push:*)",
       "Bash(supabase db reset:*)",
-      "Bash(npm run db:fresh:*)"
-    ],
-    "allow": [
-      "Bash(mv:*)",
-      "Bash(wc:*)",
-      "Bash(ls:*)",
-      "Bash(file:*)",
-      "Bash(diff:*)",
-      "Bash(xargs:*)",
-      "Bash(tree:*)",
-      "Bash(pwd:*)",
-      "Bash(du:*)",
-      "Bash(stat:*)",
-      "Bash(which:*)",
-      "Bash(env:*)",
-      "Bash(printenv:*)",
-      "Bash(sort:*)",
-      "Bash(uniq:*)",
-      "Bash(cut:*)",
-      "Bash(tr:*)",
-      "Bash(paste:*)",
-      "Bash(jq:*)",
-      "Bash(tee:*)",
-      "Bash(for file:*)",
-      "Bash(for table:*)",
-      "Bash(do echo:*)",
-      "Bash(done)",
-      "Bash(basename:*)",
-      "Bash(dirname:*)",
-      "Bash(realpath:*)",
-      "Bash(readlink:*)",
-      "Bash(git status:*)",
-      "Bash(git log:*)",
-      "Bash(git show:*)",
-      "Bash(git branch:*)",
-      "Bash(git branch -d:*)",
-      "Bash(git remote:*)",
-      "Bash(git diff:*)",
-      "Bash(git fetch:*)",
-      "Bash(git checkout:*)",
-      "Bash(git merge:*)",
-      "Bash(git push origin --delete:*)",
-      "Bash(git reset:*)",
-      "Bash(node:*)",
-      "Bash(npm run build:*)",
-      "Bash(npm run lint:*)",
-      "Bash(npm run test:*)",
-      "Bash(npm test:*)",
-      "Bash(npm run test:unit:*)",
-      "Bash(npx vitest:*)",
-      "Bash(vitest:*)",
-      "Bash(npx playwright test:*)",
-      "Bash(:* | :*)",
-      "Bash(:* && :*)",
-      "Bash(:* ; :*)",
-      "Bash(npx tsc:*)",
-      "Bash(mkdir:*)",
-      "Bash(npx eslint:*)",
-      "Bash(rm -rf node_modules)",
-      "Bash(rm -rf .next)",
-      "Bash(rm -rf playwright-report)",
-      "Bash(lsof:*)",
-      "Bash(pgrep:*)",
-      "Bash(wait)",
-      "Bash(npm install)",
-      "Bash(npm install :*)",
-      "WebFetch(domain:docx.js.org)",
-      "WebFetch(domain:lolekproductions.org)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.npmjs.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:code.claude.com)",
-      "WebSearch",
-      "Bash(npx dotenv:*)"
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash(npm run test:*)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to run tests. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Tests are pre-authenticated (no login code needed)\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states, obvious behaviors\n- Use role-based selectors first, then labels, then test IDs\n- No console.log, no waitForTimeout\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
         "matcher": "Edit(**/*form*.tsx)",
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this edit.\n\nTool being used: $ARGUMENTS"
+            "prompt": "FORMS: Read docs/FORMS-CRITICAL.md first. FormField required, never modify input styling, use SaveButton/CancelButton, Zod validation required."
           }
         ]
       },
@@ -106,43 +26,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this edit.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(**/page.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a page.tsx file. Before proceeding, you MUST read:\n- docs/MODULE-PATTERNS-CRITICAL.md (Next.js 15 searchParams pattern, server component pattern)\n- docs/LIST-VIEW-CRITICAL.md (if this is a list page)\n\nKey patterns:\n- searchParams MUST be awaited in Next.js 15\n- Server components must check auth and redirect\n- List pages require SearchCard, ListStatsBar, ContentCard grid, and EmptyState\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(**/*-list-client.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a list client component. Before proceeding, you MUST read docs/LIST-VIEW-CRITICAL.md.\n\nThis file contains critical patterns for list pages including:\n- SearchCard with filters (required)\n- ListStatsBar showing counts (required)\n- ContentCard grid for entities (required)\n- EmptyState for no results (required)\n\nHave you read docs/LIST-VIEW-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(**/*form*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this write.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(**/*Form*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this write.\n\nTool being used: $ARGUMENTS"
+            "prompt": "FORMS: Read docs/FORMS-CRITICAL.md first. FormField required, never modify input styling, use SaveButton/CancelButton, Zod validation required."
           }
         ]
       },
@@ -151,7 +35,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a database migration. Before proceeding, you MUST read docs/DATABASE-CRITICAL.md.\n\nKey rules:\n- One table per migration file\n- Tables use plural names, columns use singular names\n- All tables need RLS policies\n- Migration timestamps must be within current date to +30 days\n- User must run 'npm run db:fresh' after migration creation\n\nHave you read docs/DATABASE-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+            "prompt": "DATABASE: Read docs/DATABASE-CRITICAL.md first. One table per file, plural table names, RLS policies required. User must run 'npm run db:fresh' after."
           }
         ]
       },
@@ -160,25 +44,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a database migration. Before proceeding, you MUST read docs/DATABASE-CRITICAL.md.\n\nKey rules:\n- One table per migration file\n- All tables need RLS policies\n- In early development, modify existing migrations instead of creating new ones\n- User must run 'npm run db:fresh' after migration changes\n\nHave you read docs/DATABASE-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(src/lib/actions/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a server action file. Before proceeding, you MUST read:\n- docs/ARCHITECTURE.md (auth patterns, role permissions)\n- docs/PERMISSION_ENFORCEMENT_SUMMARY.md (permission enforcement patterns)\n\nKey patterns:\n- All server actions must verify authentication\n- Check user permissions before data operations\n- Use createClient() for database access\n- Return proper error responses\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(src/lib/actions/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a server action file. Before proceeding, you MUST read:\n- docs/ARCHITECTURE.md (auth patterns, role permissions)\n- docs/PERMISSION_ENFORCEMENT_SUMMARY.md (permission enforcement patterns)\n\nKey patterns:\n- All server actions must verify authentication\n- Check user permissions before data operations\n- Use createClient() for database access\n- Return proper error responses\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+            "prompt": "DATABASE: Read docs/DATABASE-CRITICAL.md first. One table per file, RLS policies required. User must run 'npm run db:fresh' after."
           }
         ]
       },
@@ -187,7 +53,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a test file. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states\n- Use role-based selectors (getByRole), then labels, then test IDs\n- No console.log, no waitForTimeout, no over-commenting\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
+            "prompt": "TESTING: Read docs/testing/TESTING.md first. Max 150 lines/file, 5 tests/file, 30 lines/test. Use getByRole selectors. No console.log or waitForTimeout."
           }
         ]
       },
@@ -196,79 +62,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a test file. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- 2-3 tests per module is usually sufficient (happy path + edge cases)\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states\n- Use role-based selectors (getByRole), then labels, then test IDs\n- No console.log, no waitForTimeout, no over-commenting\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(src/components/pickers/*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a picker component. Before proceeding, you MUST read:\n- docs/PICKERS.md (navigation hub)\n- docs/pickers/ subdirectory (specific picker documentation)\n\nPicker components have complex patterns for selection, filtering, and form integration.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(src/components/pickers/*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a picker component. Before proceeding, you MUST read:\n- docs/PICKERS.md (navigation hub)\n- docs/pickers/ subdirectory (specific picker documentation)\n\nPicker components have complex patterns for selection, filtering, and form integration.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(src/lib/validation/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a validation file. Before proceeding, you MUST read:\n- docs/VALIDATION.md (validation patterns)\n- docs/FORMS-CRITICAL.md (Zod validation requirements)\n\nKey rules:\n- Use Zod for all validation schemas\n- Follow existing validation patterns\n- Ensure bilingual error messages (en/es)\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(src/lib/validation/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a validation file. Before proceeding, you MUST read:\n- docs/VALIDATION.md (validation patterns)\n- docs/FORMS-CRITICAL.md (Zod validation requirements)\n\nKey rules:\n- Use Zod for all validation schemas\n- Follow existing validation patterns\n- Ensure bilingual error messages (en/es)\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(src/lib/content-builders/**/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a content builder. Before proceeding, you MUST read:\n- docs/LITURGICAL_SCRIPT_SYSTEM.md (overview and architecture)\n- docs/CONTENT_BUILDER_SECTIONS.md (section patterns)\n- docs/CONTENT_BUILDER_STRUCTURE.md (standard structure)\n\nContent builders generate liturgical scripts for print/export.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(src/lib/content-builders/**/*.ts)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a content builder. Before proceeding, you MUST read:\n- docs/LITURGICAL_SCRIPT_SYSTEM.md (overview and architecture)\n- docs/CONTENT_BUILDER_SECTIONS.md (section patterns)\n- docs/CONTENT_BUILDER_STRUCTURE.md (standard structure)\n\nContent builders generate liturgical scripts for print/export.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(docs/**/*.md)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a documentation file. Before proceeding, you MUST read docs/README.md.\n\nThis file contains documentation standards including:\n- File size limit (1000 lines max)\n- Future-oriented documentation (current patterns only)\n- Scannable structure with clear headings and TOC\n- Agent-friendly linking and cross-references\n- Code examples should be commented and runnable\n\nKey rules:\n- Update cross-references when changing doc structure\n- Link related documentation throughout\n- Keep files focused on one topic\n- Remove outdated or deprecated information\n\nHave you read docs/README.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(docs/**/*.md)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a documentation file. Before proceeding, you MUST read docs/README.md.\n\nThis file contains documentation standards including:\n- File size limit (1000 lines max)\n- Future-oriented documentation (current patterns only)\n- Scannable structure with clear headings and TOC\n- Agent-friendly linking and cross-references\n- Code examples should be commented and runnable\n\nKey rules:\n- Add new docs to CLAUDE.md and relevant registry files\n- Link related documentation throughout the project\n- Keep files focused on one topic\n- Use descriptive filenames for easy discovery\n\nHave you read docs/README.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+            "prompt": "TESTING: Read docs/testing/TESTING.md first. Max 150 lines/file, 5 tests/file, 30 lines/test. Use getByRole selectors. No console.log or waitForTimeout."
           }
         ]
       },
@@ -277,7 +71,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a component file. Before proceeding, read:\n- docs/STYLES-CRITICAL.md (NEVER hardcode colors, always pair bg/foreground)\n- docs/COMPONENT_REGISTRY.md (check for existing components before creating new ones)\n- docs/DIALOGS.md (NEVER import from ui/dialog - use ConfirmationDialog or InfoDialog)\n\nKey rules:\n- NEVER edit files in src/components/ui/ (shadcn/ui managed)\n- Use semantic color tokens (bg-background, text-foreground, bg-card text-card-foreground)\n- No dark: utility classes - CSS variables handle dark mode\n- Check COMPONENT_REGISTRY.md for existing patterns before implementing\n\nTool being used: $ARGUMENTS"
+            "prompt": "STYLING: Never hardcode colors. Use semantic tokens (bg-card text-card-foreground). Never edit src/components/ui/. For dialogs, use ConfirmationDialog or InfoDialog."
           }
         ]
       },
@@ -286,25 +80,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a component file. Before proceeding, read:\n- docs/STYLES-CRITICAL.md (NEVER hardcode colors, always pair bg/foreground)\n- docs/COMPONENT_REGISTRY.md (check for existing components before creating new ones)\n- docs/DIALOGS.md (NEVER import from ui/dialog - use ConfirmationDialog or InfoDialog)\n\nKey rules:\n- NEVER create files in src/components/ui/ (shadcn/ui managed)\n- Check COMPONENT_REGISTRY.md - a similar component may already exist\n- Use semantic color tokens (bg-background, text-foreground, bg-card text-card-foreground)\n- No dark: utility classes - CSS variables handle dark mode\n- For dialogs, wrap shadcn Dialog outside ui/ directory\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit(src/app/**/*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "STYLING REMINDER:\n\nYou are editing an app file. Key styling rules from docs/STYLES-CRITICAL.md:\n- NEVER hardcode colors (bg-white, text-gray-900, hex values)\n- ALWAYS pair backgrounds with foregrounds (bg-card text-card-foreground)\n- Use semantic tokens: bg-background, text-foreground, bg-muted, text-muted-foreground\n- No dark: utility classes - CSS variables handle dark mode automatically\n- Print views (app/print/) are exempt from these rules\n\nTool being used: $ARGUMENTS"
-          }
-        ]
-      },
-      {
-        "matcher": "Write(src/app/**/*.tsx)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "STYLING REMINDER:\n\nYou are creating an app file. Key styling rules from docs/STYLES-CRITICAL.md:\n- NEVER hardcode colors (bg-white, text-gray-900, hex values)\n- ALWAYS pair backgrounds with foregrounds (bg-card text-card-foreground)\n- Use semantic tokens: bg-background, text-foreground, bg-muted, text-muted-foreground\n- No dark: utility classes - CSS variables handle dark mode automatically\n- Print views (app/print/) are exempt from these rules\n\nTool being used: $ARGUMENTS"
+            "prompt": "STYLING: Never hardcode colors. Use semantic tokens (bg-card text-card-foreground). Never create in src/components/ui/. For dialogs, use ConfirmationDialog or InfoDialog."
           }
         ]
       }

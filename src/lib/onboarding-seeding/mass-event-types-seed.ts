@@ -112,7 +112,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
     {
       name: 'Mass Information',
       order: 1,
-      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intentions}}'
+      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intention.mass_offered_for}}'
     },
     {
       name: 'Music',
@@ -229,7 +229,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
     {
       name: 'Mass Information',
       order: 1,
-      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intentions}}\n\n## Special Instructions\n{{special_instructions}}'
+      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intention.mass_offered_for}}\n\n## Special Instructions\n{{special_instructions}}'
     }
   ]
 

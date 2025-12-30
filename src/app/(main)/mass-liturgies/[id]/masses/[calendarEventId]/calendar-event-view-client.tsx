@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 import { CalendarEventAssignmentSection } from '@/components/calendar-event-assignment-section'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
+import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 
 interface CalendarEventViewClientProps {
@@ -97,9 +98,7 @@ export function CalendarEventViewClient({
                 <Palette className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Liturgical Color:</span>
                 <div className="flex items-center gap-1.5">
-                  <div
-                    className={`w-3 h-3 rounded-full bg-liturgy-${massLiturgy.liturgical_color.toLowerCase()}`}
-                  />
+                  <LiturgicalColorDot color={massLiturgy.liturgical_color} />
                   <span>{LITURGICAL_COLOR_LABELS[massLiturgy.liturgical_color].en}</span>
                 </div>
               </div>

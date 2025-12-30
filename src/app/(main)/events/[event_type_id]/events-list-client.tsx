@@ -9,6 +9,7 @@ import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS
 import { PAGE_SECTIONS_SPACING } from '@/lib/constants/form-spacing'
 import { useDebounce } from '@/hooks/use-debounce'
 import { EndOfListMessage } from '@/components/end-of-list-message'
+import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -246,7 +247,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className={`h-4 w-4 rounded-full bg-liturgy-${color.toLowerCase()}`} />
+                <LiturgicalColorDot color={color} size="md" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>{LITURGICAL_COLOR_LABELS[color].en}</p>

@@ -201,19 +201,13 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
                         onItemClick?.(group.event, e)
                       }}
                     >
-                      {group.colors.map((color, colorIndex) => {
-                        const isWhite = color.toLowerCase() === 'white'
-                        return (
+                      {group.colors.map((color, colorIndex) => (
                           <div
                             key={colorIndex}
-                            className={cn(
-                              "h-2 w-2 rounded-full",
-                              isWhite && "border border-border"
-                            )}
+                            className="h-2 w-2 rounded-full border border-black"
                             style={{ backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()) }}
                           />
-                        )
-                      })}
+                      ))}
                     </div>
                   </CalendarTooltip>
                 ))}

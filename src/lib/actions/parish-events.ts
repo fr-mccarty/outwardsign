@@ -593,6 +593,33 @@ export async function getEventWithRelations(id: string): Promise<ParishEventWith
       raw_value: rawValue
     }
 
+    // For person fields, check people_event_assignments first (preferred storage)
+    if (fieldDef.type === 'person') {
+      const assignment = peopleEventAssignments.find(
+        (a: { field_definition?: { id?: string }, person?: Person }) =>
+          a.field_definition?.id === fieldDef.id
+      )
+      if (assignment?.person) {
+        resolvedField.resolved_value = assignment.person as Person
+        resolvedField.raw_value = assignment.person.id
+        resolvedFields[fieldDef.property_name] = resolvedField
+        continue
+      }
+    }
+
+    // For calendar_event fields, find matching calendar event by field definition ID
+    // Calendar events are stored in calendar_events table, NOT in field_values
+    if (fieldDef.type === 'calendar_event') {
+      const matchingCalendarEvent = calendarEvents.find(
+        ce => ce.input_field_definition_id === fieldDef.id
+      )
+      if (matchingCalendarEvent) {
+        resolvedField.resolved_value = matchingCalendarEvent
+        resolvedFields[fieldDef.property_name] = resolvedField
+        continue
+      }
+    }
+
     // Resolve references based on field type
     if (rawValue) {
       try {

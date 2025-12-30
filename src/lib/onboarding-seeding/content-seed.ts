@@ -849,7 +849,7 @@ const PSALMS: SeedContent[] = [
 
 <p style="text-align: right; color: #c41e3a;"><strong>Psalm 23:1-6</strong></p>
 
-<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
+<p style="text-align: right; color: #c41e3a;"><strong>{{psalm_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is my shepherd; there is nothing I shall want.</p>
 
@@ -891,7 +891,7 @@ for years to come.</p>
 
 <p style="text-align: right; color: #c41e3a;"><strong>Psalm 33:12, 18-22</strong></p>
 
-<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
+<p style="text-align: right; color: #c41e3a;"><strong>{{psalm_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The earth is full of the goodness of the Lord.</p>
 
@@ -927,7 +927,7 @@ who have put our hope in you.</p>
 
 <p style="text-align: right; color: #c41e3a;"><strong>Psalm 103:1-4, 8, 10, 13-18</strong></p>
 
-<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
+<p style="text-align: right; color: #c41e3a;"><strong>{{psalm_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is kind and merciful.</p>
 
@@ -970,7 +970,7 @@ he remembers that we are dust.</p>
 
 <p style="text-align: right; color: #c41e3a;"><strong>Psalm 128:1-5</strong></p>
 
-<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
+<p style="text-align: right; color: #c41e3a;"><strong>{{psalm_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> Blessed are those who fear the Lord.</p>
 
@@ -1007,7 +1007,7 @@ all the days of your life.</p>
 
 <p style="text-align: right; color: #c41e3a;"><strong>Psalm 27:1, 4, 7-9, 13-14</strong></p>
 
-<p style="text-align: right; color: #c41e3a;"><strong>{{first_reader.full_name}}</strong></p>
+<p style="text-align: right; color: #c41e3a;"><strong>{{psalm_reader.full_name}}</strong></p>
 
 <p><strong>Reader:</strong> The Lord is my light and my salvation.</p>
 

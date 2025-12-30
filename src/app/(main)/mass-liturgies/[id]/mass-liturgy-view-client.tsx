@@ -8,7 +8,7 @@ import { deleteCalendarEvent } from '@/lib/actions/calendar-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { ContentCard } from '@/components/content-card'
-import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings, Trash2 } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
@@ -18,6 +18,7 @@ import type { Script } from '@/lib/types'
 import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 import { AddMassTimeDialog } from '@/components/add-mass-time-dialog'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
+import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 
 interface MassViewClientProps {
   mass: ParishEventWithRelations
@@ -44,6 +45,12 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
   const calendarEventFieldDefinitions = mass.event_type?.input_field_definitions?.filter(
     field => field.type === 'calendar_event'
   ) || []
+
+  // Get occurrence-level person fields (ministry slots per calendar event)
+  const occurrenceLevelPersonFields = mass.event_type?.input_field_definitions?.filter(
+    field => field.type === 'person' && field.is_per_calendar_event
+  ) || []
+  const totalMinistrySlots = occurrenceLevelPersonFields.length
 
   // Handle assignment change - refresh the page data
   const handleAssignmentChange = () => {
@@ -138,9 +145,7 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
         <div className="flex items-center gap-2 pt-2 border-t">
           <span className="font-medium">Liturgical Color:</span>
           <div className="flex items-center gap-1.5">
-            <div
-              className={`w-3 h-3 rounded-full bg-liturgy-${mass.liturgical_color.toLowerCase()}`}
-            />
+            <LiturgicalColorDot color={mass.liturgical_color} />
             <span>{LITURGICAL_COLOR_LABELS[mass.liturgical_color].en}</span>
           </div>
         </div>
@@ -231,10 +236,32 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
       )}
 
       {/* Mass Times Section - Clickable links to individual masses */}
-      {mass.calendar_events && mass.calendar_events.length > 0 && (
+      {mass.calendar_events && mass.calendar_events.length > 0 && (() => {
+        // Calculate overall ministry fulfillment
+        const calendarEventCount = mass.calendar_events?.length || 0
+        const totalPositionsNeeded = totalMinistrySlots * calendarEventCount
+        const totalFilled = mass.people_event_assignments?.filter(
+          a => a.calendar_event_id && occurrenceLevelPersonFields.some(f => f.id === a.field_definition_id)
+        ).length || 0
+
+        return (
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Mass Times</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold">Mass Times</h3>
+              {totalMinistrySlots > 0 && totalPositionsNeeded > 0 && (
+                <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                  totalFilled === totalPositionsNeeded
+                    ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                    : totalFilled > 0
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  <Users className="h-3 w-3" />
+                  {totalFilled}/{totalPositionsNeeded} ministries filled
+                </span>
+              )}
+            </div>
             {calendarEventFieldDefinitions.length > 0 && (
               <Button
                 variant="outline"
@@ -296,9 +323,16 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {eventAssignments.length > 0 && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                          {eventAssignments.length} assigned
+                      {totalMinistrySlots > 0 && (
+                        <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                          eventAssignments.length === totalMinistrySlots
+                            ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                            : eventAssignments.length > 0
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          <Users className="h-3 w-3" />
+                          {eventAssignments.length}/{totalMinistrySlots}
                         </span>
                       )}
                       <Button
@@ -317,7 +351,8 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
             })}
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {/* Show scripts from event type */}
       {mass.event_type_id && scripts.length > 0 && (

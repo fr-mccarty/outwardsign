@@ -46,7 +46,7 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
         <ModuleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
         {liturgicalColor && (
           <div
-            className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border border-background shadow-sm flex-shrink-0"
+            className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border border-black flex-shrink-0"
             style={{ backgroundColor: getLiturgicalCssVarValue(liturgicalColor) }}
           />
         )}

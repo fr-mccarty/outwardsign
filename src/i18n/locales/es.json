@@ -2,6 +2,7 @@
   "nav": {
     "application": "Aplicación",
     "dashboard": "Panel",
+    "chat": "Asistente IA",
     "calendar": "Calendario",
     "events": "Eventos Parroquiales",
     "ourEvents": "Nuestros Eventos Parroquiales",
@@ -465,6 +466,7 @@
   },
   "masses": {
     "title": "Misas",
+    "description": "Cada Liturgia de Misa agrupa varias misas que comparten las mismas lecturas, música y contenido litúrgico.",
     "searchPlaceholder": "Buscar por presidente, homilista o nombre del evento...",
     "nameOfMass": "Nombre de la Misa",
     "unnamedMass": "Misa sin nombre",
@@ -622,6 +624,42 @@
       "manageRoles": "Administrar Roles",
       "volunteersDescription": "Ve y administra a las personas que sirven en roles litúrgicos.",
       "manageVolunteers": "Administrar Voluntarios"
+    },
+    "developerTools": {
+      "title": "Herramientas de Desarrollo",
+      "description": "Herramientas para propósitos de desarrollo y pruebas.",
+      "manageDeveloperTools": "Administrar Herramientas de Desarrollo",
+      "seedData": {
+        "title": "Sembrar Datos de Ejemplo",
+        "description": "Agregar datos de ejemplo a tu parroquia para propósitos de prueba y demostración.",
+        "info": "Esto creará registros de ejemplo incluyendo:",
+        "items": {
+          "people": "20 personas de ejemplo con información de contacto",
+          "families": "12 familias de ejemplo con relaciones",
+          "masses": "8 liturgias de Misa de ejemplo",
+          "intentions": "3 intenciones de Misa de ejemplo",
+          "weddings": "1 boda de ejemplo",
+          "funerals": "1 funeral de ejemplo",
+          "readings": "Lecturas de las Escrituras para la biblioteca de contenido"
+        },
+        "button": "Sembrar Datos de Ejemplo",
+        "seeding": "Sembrando datos...",
+        "confirmTitle": "¿Sembrar Datos de Ejemplo?",
+        "confirmDescription": "Esto agregará personas, familias, misas y otros registros de ejemplo a tu parroquia. Esto es útil para pruebas y demostraciones. Puedes eliminar estos registros más tarde si es necesario.",
+        "confirmButton": "Sí, Sembrar Datos",
+        "results": {
+          "people": "Personas",
+          "families": "Familias",
+          "masses": "Misas",
+          "intentions": "Intenciones",
+          "weddings": "Bodas",
+          "funerals": "Funerales",
+          "readings": "Lecturas",
+          "groupMemberships": "Membresías de Grupo"
+        }
+      },
+      "seedSuccess": "¡Datos de ejemplo sembrados exitosamente!",
+      "seedError": "Error al sembrar datos de ejemplo. Por favor, intenta de nuevo."
     }
   },
   "eventTypes": {

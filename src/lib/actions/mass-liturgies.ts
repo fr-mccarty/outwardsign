@@ -497,6 +497,17 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     }
   }
 
+  // Add mass_intention to resolved_fields for script placeholder access
+  // This enables {{mass_intention.mass_offered_for}} and similar placeholders
+  if (massIntentionData.data) {
+    resolvedFields['mass_intention'] = {
+      field_name: 'mass_intention',
+      field_type: 'mass-intention',
+      raw_value: massIntentionData.data.id,
+      resolved_value: massIntentionData.data
+    }
+  }
+
   return {
     ...event,
     event_type: {

@@ -48,7 +48,7 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
         <ModuleIcon className="h-5 w-5 flex-shrink-0" />
         {liturgicalColor && (
           <div
-            className="w-3 h-3 rounded-full border border-background shadow-sm flex-shrink-0"
+            className="w-3 h-3 rounded-full border border-black flex-shrink-0"
             style={{ backgroundColor: getLiturgicalCssVarValue(liturgicalColor) }}
           />
         )}
