@@ -6,6 +6,8 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import Anthropic from '@anthropic-ai/sdk'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
+import fs from 'fs'
+import path from 'path'
 
 // Import server actions to wrap as tools
 import { getPeople, getPerson, createPerson, updatePerson } from '@/lib/actions/people'
@@ -582,6 +584,22 @@ const tools: Anthropic.Tool[] = [
         group_id: { type: 'string', description: 'Optional: Filter to only show assignments for a specific ministry/group (by group ID)' },
         group_name: { type: 'string', description: 'Optional: Filter to only show assignments for a ministry by name (e.g., "Lectors", "Ushers")' },
       },
+    },
+  },
+
+  // ============================================================================
+  // DOCUMENTATION
+  // ============================================================================
+  {
+    name: 'search_documentation',
+    description: 'Search the user documentation/help articles for information about how to use Outward Sign features. Use when users ask "how do I", "where can I find", "help with", or general questions about using the application.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query to find relevant documentation' },
+        language: { type: 'string', enum: ['en', 'es'], description: 'Language for documentation (default: en)' },
+      },
+      required: ['query'],
     },
   },
 
@@ -1478,6 +1496,99 @@ async function executeTool(
       }
 
       // ============================================================================
+      // DOCUMENTATION
+      // ============================================================================
+      case 'search_documentation': {
+        const query = toolInput.query as string
+        const lang = (toolInput.language as string) || 'en'
+        const CONTENT_DIR = path.join(process.cwd(), 'src/app/documentation/content')
+        const langDir = path.join(CONTENT_DIR, lang)
+
+        // Helper to recursively find all markdown files
+        function getAllMarkdownFiles(dir: string): string[] {
+          const files: string[] = []
+          if (!fs.existsSync(dir)) return files
+          const items = fs.readdirSync(dir)
+          for (const item of items) {
+            const fullPath = path.join(dir, item)
+            const stat = fs.statSync(fullPath)
+            if (stat.isDirectory()) {
+              files.push(...getAllMarkdownFiles(fullPath))
+            } else if (item.endsWith('.md')) {
+              files.push(fullPath)
+            }
+          }
+          return files
+        }
+
+        // Extract title from markdown content
+        function extractTitle(content: string): string {
+          const titleMatch = content.match(/^#\s+(.+)$/m)
+          return titleMatch ? titleMatch[1] : 'Untitled'
+        }
+
+        // Create excerpt around matching text
+        function createExcerpt(content: string, searchQuery: string): string {
+          const lowerContent = content.toLowerCase()
+          const lowerQuery = searchQuery.toLowerCase()
+          const index = lowerContent.indexOf(lowerQuery)
+          if (index === -1) {
+            return content.substring(0, 200).trim() + '...'
+          }
+          const start = Math.max(0, index - 100)
+          const end = Math.min(content.length, index + searchQuery.length + 100)
+          const excerpt = content.substring(start, end).trim()
+          return (start > 0 ? '...' : '') + excerpt + (end < content.length ? '...' : '')
+        }
+
+        if (!fs.existsSync(langDir)) {
+          return JSON.stringify({
+            success: true,
+            count: 0,
+            message: 'No documentation found for the requested language',
+            results: [],
+          })
+        }
+
+        const markdownFiles = getAllMarkdownFiles(langDir)
+        const results: { title: string; url: string; excerpt: string }[] = []
+        const queryLower = query.toLowerCase()
+
+        for (const filePath of markdownFiles) {
+          const content = fs.readFileSync(filePath, 'utf8')
+          const contentLower = content.toLowerCase()
+
+          if (contentLower.includes(queryLower)) {
+            const title = extractTitle(content)
+            const relativePath = path.relative(langDir, filePath)
+            const slug = relativePath.replace('.md', '').split(path.sep)
+            const url = `/documentation/${lang}/${slug.join('/')}`
+            const excerpt = createExcerpt(content, query)
+
+            results.push({ title, url, excerpt })
+          }
+        }
+
+        // Sort by title match first
+        results.sort((a, b) => {
+          const aTitleMatch = a.title.toLowerCase().includes(queryLower)
+          const bTitleMatch = b.title.toLowerCase().includes(queryLower)
+          if (aTitleMatch && !bTitleMatch) return -1
+          if (!aTitleMatch && bTitleMatch) return 1
+          return 0
+        })
+
+        return JSON.stringify({
+          success: true,
+          count: results.length,
+          message: results.length > 0
+            ? `Found ${results.length} documentation article(s) matching "${query}"`
+            : `No documentation found for "${query}". Try different search terms.`,
+          results: results.slice(0, 5),
+        })
+      }
+
+      // ============================================================================
       // DELETE OPERATIONS (with confirmation pattern)
       // ============================================================================
       case 'delete_person': {
@@ -1710,6 +1821,12 @@ You: "Done! John Smith has been removed from the directory."
 - List category tags
 - List event presets
 - Get Mass schedule templates
+
+### Documentation & Help
+- Search user documentation for "how to" guides and feature explanations
+- Find help articles about using Outward Sign features
+- When users ask "how do I...", "where can I find...", or need help with a feature, search the documentation first
+- Provide links to relevant documentation articles
 
 ## Navigation Hints - When Something Isn't Possible
 

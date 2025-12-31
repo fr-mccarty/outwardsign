@@ -83,7 +83,7 @@ function SortableFieldItem({
       </button>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">{field.name}</span>
           {field.required && (
             <span className="text-xs text-destructive">*</span>
@@ -139,6 +139,11 @@ export function FieldsListClient({ eventType, initialFields }: FieldsListClientP
   const [fieldToEdit, setFieldToEdit] = useState<InputFieldDefinition | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [fieldToDelete, setFieldToDelete] = useState<InputFieldDefinition | null>(null)
+
+  // For mass-liturgy event types, split fields into two groups
+  const isMassLiturgy = eventType.system_type === 'mass-liturgy'
+  const liturgyFields = isMassLiturgy ? items.filter(f => !f.is_per_calendar_event) : items
+  const perMassFields = isMassLiturgy ? items.filter(f => f.is_per_calendar_event) : []
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -249,7 +254,7 @@ export function FieldsListClient({ eventType, initialFields }: FieldsListClientP
         </Button>
       </div>
 
-      {/* Fields List */}
+      {/* Fields List - Split view for mass-liturgy, single view for others */}
       {items.length === 0 ? (
         <div className="text-center py-12 border rounded-md bg-muted/30">
           <p className="text-muted-foreground mb-4">
@@ -260,7 +265,77 @@ export function FieldsListClient({ eventType, initialFields }: FieldsListClientP
             {t('eventType.fields.addField')}
           </Button>
         </div>
+      ) : isMassLiturgy ? (
+        /* Two-section layout for Mass Liturgy event types */
+        <div className="space-y-8">
+          {/* Liturgy-Level Fields Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">{t('eventType.fields.massFieldLevels.liturgyLevelTitle')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t('eventType.fields.massFieldLevels.liturgyLevelDescription')}</p>
+            {liturgyFields.length === 0 ? (
+              <div className="text-center py-8 border rounded-md bg-muted/30">
+                <p className="text-muted-foreground text-sm">{t('eventType.fields.massFieldLevels.noLiturgyFields')}</p>
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={liturgyFields.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {liturgyFields.map((field) => (
+                      <SortableFieldItem
+                        key={field.id}
+                        field={field}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteClick}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
+
+          {/* Per-Mass Fields Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">{t('eventType.fields.massFieldLevels.perMassTitle')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t('eventType.fields.massFieldLevels.perMassDescription')}</p>
+            {perMassFields.length === 0 ? (
+              <div className="text-center py-8 border rounded-md bg-muted/30">
+                <p className="text-muted-foreground text-sm">{t('eventType.fields.massFieldLevels.noPerMassFields')}</p>
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={perMassFields.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {perMassFields.map((field) => (
+                      <SortableFieldItem
+                        key={field.id}
+                        field={field}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteClick}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
+        </div>
       ) : (
+        /* Standard single-list layout for non-mass event types */
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

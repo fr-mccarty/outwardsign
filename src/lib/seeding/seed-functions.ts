@@ -252,17 +252,22 @@ export async function seedMasses(
     const dayName = dayNames[dayOfWeek]
     const key = `${dayName}_${time}`
 
-    // Try to get from mass_times_template_items
+    // Base defaults - presider and homilist are ALWAYS required (1 each)
+    const baseDefaults: RoleQuantities = {
+      presider: 1,
+      homilist: 1,
+    }
+
+    // Try to get from mass_times_template_items, merge with base defaults
     if (roleQuantitiesByDayTime[key]) {
-      return roleQuantitiesByDayTime[key]
+      return { ...baseDefaults, ...roleQuantitiesByDayTime[key] }
     }
 
     // Fallback: use minimal defaults (only 1 per role) if no template exists
     // This prevents overfilling when no quantities are defined
     if (isSunday) {
       return {
-        presider: 1,
-        homilist: 1,
+        ...baseDefaults,
         lector: 1,
         eucharistic_minister: 1,
         altar_server: 1,
@@ -273,8 +278,7 @@ export async function seedMasses(
       }
     } else {
       return {
-        presider: 1,
-        homilist: 1,
+        ...baseDefaults,
         lector: 1,
         eucharistic_minister: 1,
         altar_server: 1,

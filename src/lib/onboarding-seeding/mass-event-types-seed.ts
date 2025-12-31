@@ -54,8 +54,9 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // Note: Fields with is_per_calendar_event=true are minister roles assigned per Mass time
   const sundayMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
-    { name: 'Homilist', property_name: 'homilist', type: 'person', required: false, order: 2 },
+    // Presider and Homilist are per-mass-time (different priest/deacon for each Mass)
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, is_per_calendar_event: true, order: 1 },
+    { name: 'Homilist', property_name: 'homilist', type: 'person', required: false, is_per_calendar_event: true, order: 2 },
     // Minister roles (is_per_calendar_event=true means assigned per Mass time)
     { name: 'Lector', property_name: 'lector', type: 'person', required: false, is_per_calendar_event: true, order: 3 },
     { name: 'EMHC', property_name: 'emhc', type: 'person', required: false, is_per_calendar_event: true, order: 4 },
@@ -180,7 +181,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // Note: Fields with is_per_calendar_event=true are minister roles assigned per Mass time
   const dailyMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    // Presider is per-mass-time (different priest for each Mass)
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, is_per_calendar_event: true, order: 1 },
     // Minister roles (is_per_calendar_event=true means assigned per Mass time)
     { name: 'Lector', property_name: 'lector', type: 'person', required: false, is_per_calendar_event: true, order: 2 },
     { name: 'EMHC', property_name: 'emhc', type: 'person', required: false, is_per_calendar_event: true, order: 3 },

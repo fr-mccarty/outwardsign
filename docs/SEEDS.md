@@ -1,202 +1,241 @@
 # Database Seeding
 
-This document explains how to populate the database with sample data for testing and development.
+This document explains the seeding architecture and how to populate the database with data.
 
-## Overview
+## Three Seeders
 
-The seeding system uses a **shared module** that provides consistent sample data for both development and production environments. Both the dev seeder (CLI) and the UI seeder (Settings button) use the exact same code.
+The system has three distinct seeders for different use cases:
+
+| Seeder | Trigger | Purpose | Cleanup |
+|--------|---------|---------|---------|
+| **Dev Seeder** | `npm run db:fresh` | Complete reset for development | `db:fresh` resets all tables |
+| **Onboarding Seeder** | Parish creation | Foundational data for new parishes | None (runs once) |
+| **UI Demo Seeder** | Settings button | Demo parish with sample data | Cleans demo data first |
+
+---
+
+## What Each Seeder Creates
+
+### Onboarding Data (Foundational)
+
+Created when a new parish is onboarded. No individual/personal data.
+
+| Data | Description |
+|------|-------------|
+| Groups | Parish Council, Finance Council, etc. |
+| Group Roles | Leader, Member, Secretary, etc. |
+| Event Types | Mass, Wedding, Funeral, Baptism, etc. |
+| Locations | Church, Parish Hall, Funeral Home |
+| Petition Templates | Default prayers for each module |
+| Category Tags | Organization tags |
+| Mass Times Templates | Sunday, Daily, Holiday schedules |
+| Content | Prayers, instructions (not readings) |
+| Event Presets | Religious Education, Staff Meeting, etc. |
+
+### Demo Data (Sample Content)
+
+Created by the UI Demo Seeder and Dev Seeder. Individual/personal data.
+
+| Data | Count | Description |
+|------|-------|-------------|
+| People | 20 | Sample parishioners |
+| Families | 15 | Family units with relationships |
+| Group Memberships | 7 | People assigned to groups |
+| Masses | 20 | Sunday + Daily Masses |
+| Mass Intentions | 12 | Linked and standalone |
+| Weddings | 1 | Fully populated with readings |
+| Funerals | 1 | Fully populated with readings |
+| Special Liturgies | 3+ | Baptisms, Quinceaneras, Presentations |
+
+Plus JSONB data: parish settings, role quantities, custom lists, blackout dates, notifications, calendar visibility.
+
+---
+
+## Running Seeders
+
+### 1. Dev Seeder (CLI)
+
+**For development database reset:**
+
+```bash
+npm run db:fresh -- -y
+```
+
+This command:
+1. Resets the database (truncates all tables)
+2. Applies migrations
+3. Runs the dev seeder which:
+   - Creates storage buckets
+   - Creates dev user and parish
+   - Runs **Onboarding Seeder** (foundational data)
+   - Runs **Demo Seeder** (sample content)
+   - Creates dev user person record
+   - Uploads avatar images
+
+### 2. Onboarding Seeder
+
+**Runs automatically when a parish is created.**
+
+Code location: `src/lib/onboarding-seeding/parish-seed-data.ts`
+
+Called by:
+- `createParishWithSuperAdmin()` during onboarding flow
+- `createParish()` server action
+- Dev seeder
+
+### 3. UI Demo Seeder
+
+**For creating a demo parish to share with others:**
+
+Navigate to **Settings > Developer Tools** and click "Seed Sample Data".
+
+This:
+1. **Cleans up** existing demo data (people, families, events, etc.)
+2. **Seeds fresh** demo data
+
+Can be pressed multiple times - always results in a fresh set of demo data.
+
+Code location: `src/lib/actions/seed-data.ts`
+
+---
 
 ## Architecture
 
 ```
-src/lib/seeding/                    # Shared seeding module
+src/lib/seeding/                    # Shared seeding module (demo data)
 ├── index.ts                        # Public exports
-├── types.ts                        # Shared types (SeederContext, CreatedPerson, etc.)
-├── sample-data.ts                  # Sample data arrays (people, families, hymns)
+├── types.ts                        # Shared types
+├── sample-data.ts                  # Sample data arrays
 ├── seed-functions.ts               # Individual seed functions
-└── run-seeders.ts                  # ⭐ ORCHESTRATOR - single source of truth
+├── run-seeders.ts                  # Orchestrator for demo seeding
+└── cleanup.ts                      # Cleanup function for UI seeder
+
+src/lib/onboarding-seeding/         # Onboarding seeding module (foundational data)
+├── parish-seed-data.ts             # Main orchestrator
+├── groups-seed.ts                  # Groups
+├── event-types-seed.ts             # Event types
+├── locations-seed.ts               # Locations
+├── content-seed.ts                 # Content (prayers, readings)
+└── ...                             # Other seed files
 
 scripts/
-├── dev-seed.ts                     # Dev seeder entry point (calls shared module)
-└── dev-seeders/
-    ├── index.ts                    # Re-exports + dev-specific functions
-    ├── seed-people.ts              # Dev-only: avatars, dev user person
-    └── types.ts                    # Dev-specific types
+├── dev-seed.ts                     # Dev seeder entry point
+└── dev-seeders/                    # Dev-specific functions (avatars)
 
 src/lib/actions/
-└── seed-data.ts                    # Production seeder (server action)
+└── seed-data.ts                    # UI demo seeder (server action)
 ```
 
-## Running Seeders
+---
 
-### Development Seeder (CLI)
+## Data Preservation
 
-```bash
-npm run seed:dev
-```
+### Preserved (Never Deleted by Cleanup)
 
-This runs the full development seeder which:
-1. Creates storage buckets
-2. Creates/finds dev user and parish
-3. Runs onboarding seeding (production parish data)
-4. Runs shared seeders (from `src/lib/seeding/`)
-5. Creates dev user person record with portal access
-6. Uploads avatar images (dev-only, requires Node.js fs)
+**Infrastructure:**
+- `parishes`
+- `parish_users`
 
-### Production Seeder (UI)
+**Onboarding Data:**
+- `groups`, `group_roles`
+- `event_types`, `input_field_definitions`
+- `scripts`, `script_sections`
+- `locations`
+- `petition_templates`
+- `category_tags`
+- `mass_times_templates`, `mass_times_template_items`
+- `contents`
+- `event_presets`
 
-Navigate to **Settings > Developer Tools** and click the "Seed Sample Data" button.
+### Deleted by Cleanup (Demo Data)
 
-This runs the same shared seeders as the dev seeder, minus:
-- Avatar uploads (not supported in server actions)
-- Dev user person creation (dev-only)
+- `people`, `families`, `family_members`
+- `group_members`
+- `parish_events`, `calendar_events`
+- `people_event_assignments`
+- `mass_intentions`
+- `person_blackout_dates`
+- `parishioner_notifications`
 
-## What Gets Seeded
-
-### Core Data
-| Data | Count | Description |
-|------|-------|-------------|
-| People | 20 | Sample parishioners with varied demographics |
-| Families | 15 | Family units with members and relationships |
-| Group Memberships | 7 | People assigned to ministry groups |
-| Masses | 20 | 8 Sunday Masses + 12 Daily Masses |
-| Mass Intentions | 12 | Linked and standalone intentions |
-| Weddings | 1 | Fully populated with readings |
-| Funerals | 1 | Fully populated with readings |
-
-### Comprehensive Data (JSONB columns)
-| Data | Description |
-|------|-------------|
-| Parish Settings | Quick amounts for donations and intentions |
-| Mass Times Role Quantities | Minister requirements per Mass time |
-| Custom Lists | Music styles, flower colors, venues, etc. |
-| Person Blackout Dates | Unavailability periods |
-| Parishioner Notifications | Sample ministry messages |
-| Event Presets | Wedding, funeral, and Mass templates |
-| Calendar Visibility | Public/private event settings |
+---
 
 ## Adding New Seeders
 
-When adding a new seeder, update **one file**: `src/lib/seeding/run-seeders.ts`
-
-### Step 1: Create the Seed Function
-
-Add your function to `src/lib/seeding/seed-functions.ts`:
-
-```typescript
-export async function seedMyNewThing(
-  ctx: SeederContext,
-  people: CreatedPerson[]  // if needed
-): Promise<{ itemsCreated: number }> {
-  const { supabase, parishId } = ctx
-
-  // Your seeding logic here
-  const { data, error } = await supabase
-    .from('my_table')
-    .insert([...])
-    .select()
-
-  return { itemsCreated: error ? 0 : (data?.length || 0) }
-}
-```
-
-### Step 2: Add to Orchestrator
+### For Demo Data
 
 Update `src/lib/seeding/run-seeders.ts`:
 
 ```typescript
 // 1. Import your function
-import {
-  // ... existing imports
-  seedMyNewThing,
-} from './seed-functions'
+import { seedMyNewThing } from './seed-functions'
 
 // 2. Update SeederCounts interface
 export interface SeederCounts {
-  // ... existing counts
+  // ... existing
   myNewThingCount: number
 }
 
-// 3. Call your function in runAllSeeders()
-export async function runAllSeeders(...) {
-  // ... existing seeders
-
-  // ADD NEW SEEDERS HERE
-  const { itemsCreated: myNewThingCount } = await seedMyNewThing(ctx, people)
-
-  return {
-    counts: {
-      // ... existing counts
-      myNewThingCount,
-    }
-  }
-}
+// 3. Call in runAllSeeders()
+const { itemsCreated } = await seedMyNewThing(ctx, people)
 ```
 
-### Step 3: Export (Optional)
+### For Onboarding Data
 
-If you need direct access to the function, export it from `src/lib/seeding/index.ts`:
+Update `src/lib/onboarding-seeding/parish-seed-data.ts`:
 
 ```typescript
-export {
-  // ... existing exports
-  seedMyNewThing,
-} from './seed-functions'
+// Add your seeding function call
+await seedMyNewFoundationalThing(supabase, parishId)
 ```
 
-## Console Helper Functions
+### For Cleanup
 
-**CRITICAL:** All seeder console output MUST use helper functions from `src/lib/utils/console.ts`.
+If your new demo data needs cleanup, update `src/lib/seeding/cleanup.ts`:
 
 ```typescript
-import { logSuccess, logWarning, logError, logInfo } from '@/lib/utils/console'
-
-logInfo('Creating sample data...')      // Section headers
-logSuccess('Created 25 people')         // Success with counts (prefixed with [OK])
-logWarning('Skipping duplicate')        // Non-critical issues (prefixed with ⚠️)
-logError('Failed to create')            // Critical failures (prefixed with ❌)
+// Add delete in correct FK order
+await supabase
+  .from('my_new_table')
+  .delete()
+  .eq('parish_id', parishId)
 ```
 
-### Character Validation
-
-Console helpers enforce strict character validation:
-- **Allowed:** Letters (a-z, A-Z), numbers, Spanish accents (ñÑáéíóúÁÉÍÓÚüÜ), whitespace, standard symbols
-- **Prohibited:** Emojis and unicode symbols (except ⚠️ and ❌ added by helpers)
+---
 
 ## Sample Data Location
 
-All sample data is defined in `src/lib/seeding/sample-data.ts`:
+All sample data arrays are in `src/lib/seeding/sample-data.ts`:
 
 ```typescript
-// People with varied demographics
 export const SAMPLE_PEOPLE: SamplePerson[] = [...]
-
-// Families with relationships
 export const SAMPLE_FAMILIES: FamilyDefinition[] = [...]
-
-// Hymn arrays for Masses
 export const ENTRANCE_HYMNS = [...]
-export const OFFERTORY_HYMNS = [...]
-export const COMMUNION_HYMNS = [...]
-export const RECESSIONAL_HYMNS = [...]
-
-// Mass intention texts
 export const INTENTION_TEXTS = [...]
 ```
 
-## Important Notes
-
-- **Development Only**: Seeders are for development/testing only
-- **Not Idempotent**: Running multiple times creates duplicate data
-- **Parish Required**: Both seeders require an existing parish
-- **Shared Code**: Always update `run-seeders.ts` when adding seeders
-- **Avatar Limitation**: Avatar uploads only work in dev seeder (requires Node.js fs)
+---
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| No parish found | Create a parish first via onboarding or SQL |
-| Foreign key violations | Run `npm run db:fresh` to reset and apply migrations |
-| Permission errors | Check Supabase connection and service role key |
-| Avatar upload fails | Verify image files exist in `public/team/` |
+| Group memberships = 0 | Ensure onboarding ran first (creates groups/roles) |
+| FK violations | Run `npm run db:fresh -- -y` to fully reset |
+| UI seeder fails | Check browser console for server action errors |
+| Duplicate data | UI seeder now cleans first; for dev use `db:fresh` |
+| Missing avatars | Avatars only work in dev seeder (requires Node.js fs) |
+
+---
+
+## Console Logging
+
+All seeder output must use helpers from `src/lib/utils/console.ts`:
+
+```typescript
+import { logSuccess, logWarning, logError, logInfo } from '@/lib/utils/console'
+
+logInfo('Creating sample data...')
+logSuccess('Created 25 people')
+logWarning('Skipping duplicate')
+logError('Failed to create')
+```

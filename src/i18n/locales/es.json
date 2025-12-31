@@ -465,8 +465,11 @@
     "errorUpdating": "No se pudo actualizar la intención de misa. Por favor, intenta nuevamente."
   },
   "masses": {
-    "title": "Misas",
-    "description": "Cada Liturgia de Misa agrupa varias misas que comparten las mismas lecturas, música y contenido litúrgico.",
+    "title": "Configuración de Misas",
+    "description": "Configura tipos de eventos de Misa, campos y scripts",
+    "createTitle": "Crear Tipo de Misa",
+    "explanation": "Configura los tipos de Misa disponibles en tu parroquia. Cada tipo define los campos y scripts utilizados al crear liturgias de Misa.",
+    "examples": "Ejemplos: Misa Dominical, Misa Diaria, Misa de Vigilia",
     "searchPlaceholder": "Buscar por presidente, homilista o nombre del evento...",
     "nameOfMass": "Nombre de la Misa",
     "unnamedMass": "Misa sin nombre",
@@ -706,6 +709,9 @@
       "title": "Campos Personalizados",
       "description": "Define qué datos recopilar para eventos de este tipo",
       "explanation": "Los campos personalizados definen qué datos recopilar para {eventTypeName}. Estos campos aparecerán en los formularios de creación de eventos.",
+      "howFieldsWork": "Cómo Funcionan los Campos Personalizados",
+      "fieldsToPlaceholders": "Los campos que crees aquí se pueden usar como marcadores dinámicos en tus guiones de ceremonia. Por ejemplo, un campo \"Novia\" te permite insertar '{{bride.first_name}}' en el contenido de tu guión.",
+      "configureScripts": "Configurar guiones",
       "addField": "Agregar Campo Personalizado",
       "editField": "Editar Campo Personalizado",
       "addFieldDescription": "Agregar un nuevo campo personalizado a este tipo de evento",
@@ -733,6 +739,17 @@
         "keyPersonHelp": "Hacer que este campo de persona sea buscable en las listas de eventos",
         "primaryLabel": "Evento de Calendario Principal",
         "primaryHelp": "Marcar este como el evento de calendario principal para este tipo de evento"
+      },
+      "massFieldLevels": {
+        "title": "Campos de Liturgia vs. Por Misa",
+        "liturgyLevelTitle": "Campos a Nivel de Liturgia",
+        "liturgyLevel": "Nivel de Liturgia",
+        "liturgyLevelDescription": "Compartidos en todos los horarios de Misa (ej., himnos, lecturas, anuncios)",
+        "noLiturgyFields": "No hay campos de nivel de liturgia definidos",
+        "perMassTitle": "Campos Por Misa",
+        "perMass": "Por Misa",
+        "perMassDescription": "Asignados individualmente para cada horario de Misa (ej., presidente, lector, EMHC)",
+        "noPerMassFields": "No hay campos por misa definidos"
       }
     },
     "scripts": {

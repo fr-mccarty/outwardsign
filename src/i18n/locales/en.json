@@ -466,8 +466,11 @@
     "errorUpdating": "Failed to update mass intention. Please try again."
   },
   "masses": {
-    "title": "Masses",
-    "description": "Each Mass Liturgy groups multiple masses that share the same readings, music, and liturgical content.",
+    "title": "Mass Configuration",
+    "description": "Configure Mass event types, fields, and scripts",
+    "createTitle": "Create Mass Type",
+    "explanation": "Configure the Mass types available in your parish. Each type defines the fields and scripts used when creating Mass liturgies.",
+    "examples": "Examples: Sunday Mass, Daily Mass, Vigil Mass",
     "searchPlaceholder": "Search by presider, homilist, or event name...",
     "nameOfMass": "Name of Mass",
     "unnamedMass": "Unnamed Mass",
@@ -714,7 +717,7 @@
       "description": "Define what data to collect for events of this type",
       "explanation": "Custom fields define what data to collect for {eventTypeName}. These fields will appear on event creation forms.",
       "howFieldsWork": "How Custom Fields Work",
-      "fieldsToPlaceholders": "Fields you create here can be used as dynamic placeholders in your ceremony scripts. For example, a \"Bride\" field lets you insert {{bride.first_name}} in your script content.",
+      "fieldsToPlaceholders": "Fields you create here can be used as dynamic placeholders in your ceremony scripts. For example, a \"Bride\" field lets you insert '{{bride.first_name}}' in your script content.",
       "configureScripts": "Configure scripts",
       "addField": "Add Custom Field",
       "editField": "Edit Custom Field",
@@ -743,6 +746,17 @@
         "keyPersonHelp": "Make this person field searchable in event lists",
         "primaryLabel": "Primary Calendar Event",
         "primaryHelp": "Mark this as the main calendar event for this event type"
+      },
+      "massFieldLevels": {
+        "title": "Liturgy vs. Per-Mass Fields",
+        "liturgyLevelTitle": "Liturgy-Level Fields",
+        "liturgyLevel": "Liturgy Level",
+        "liturgyLevelDescription": "Shared across all Mass times (e.g., hymns, readings, announcements)",
+        "noLiturgyFields": "No liturgy-level fields defined",
+        "perMassTitle": "Per-Mass Fields",
+        "perMass": "Per Mass",
+        "perMassDescription": "Assigned individually for each Mass time (e.g., presider, lector, EMHC)",
+        "noPerMassFields": "No per-mass fields defined"
       }
     },
     "scripts": {
