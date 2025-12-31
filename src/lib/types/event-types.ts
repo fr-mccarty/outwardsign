@@ -46,6 +46,7 @@ export interface EventType {
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
   system_type: SystemType         // System type for UI organization (mass, special-liturgy, event)
+  show_on_public_calendar: boolean // Whether events appear in public .ics calendar feeds
   // Note: role_definitions removed - roles are now stored as input_field_definitions with type='person'
   // (per unified-event-assignments requirements)
   deleted_at: string | null
@@ -255,6 +256,7 @@ export interface CreateEventTypeData {
   icon: string
   slug?: string | null
   system_type: SystemType
+  show_on_public_calendar?: boolean
   // order calculated automatically
 }
 
@@ -264,6 +266,7 @@ export interface UpdateEventTypeData {
   icon?: string
   slug?: string | null
   system_type?: SystemType
+  show_on_public_calendar?: boolean
 }
 
 export interface CreateInputFieldDefinitionData {

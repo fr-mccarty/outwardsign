@@ -294,6 +294,7 @@ export interface EventType {
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
   system_type: 'mass-liturgy' | 'special-liturgy' | 'parish-event' // System type for categorization
+  show_on_public_calendar: boolean // Whether events appear in public .ics calendar feeds
   deleted_at: string | null
   created_at: string
   updated_at: string

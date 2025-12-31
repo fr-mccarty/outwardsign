@@ -11,6 +11,7 @@ CREATE TABLE event_types (
   "order" INTEGER NOT NULL DEFAULT 0,
   slug TEXT,
   system_type TEXT NOT NULL DEFAULT 'parish-event',
+  show_on_public_calendar BOOLEAN NOT NULL DEFAULT false,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -33,10 +34,12 @@ CREATE INDEX idx_event_types_parish_id ON event_types(parish_id);
 CREATE INDEX idx_event_types_order ON event_types(parish_id, "order") WHERE deleted_at IS NULL;
 CREATE INDEX idx_event_types_slug ON event_types(parish_id, slug) WHERE deleted_at IS NULL;
 CREATE INDEX idx_event_types_system_type ON event_types(parish_id, system_type) WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_types_public_calendar ON event_types(parish_id, show_on_public_calendar) WHERE deleted_at IS NULL;
 
 -- Column comments
 COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
 COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass-liturgy, special-liturgy, parish-event)';
+COMMENT ON COLUMN event_types.show_on_public_calendar IS 'Whether events of this type should be included in public calendar feeds (.ics). Defaults to false for privacy.';
 
 -- RLS Policies
 -- Parish members can read event types for their parish
