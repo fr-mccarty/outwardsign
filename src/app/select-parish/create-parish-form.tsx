@@ -30,7 +30,8 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
     defaultValues: {
       name: '',
       city: '',
-      state: ''
+      state: '',
+      country: ''
     }
   })
 
@@ -68,9 +69,9 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create New Parish</CardTitle>
+        <CardTitle>Create Your Parish</CardTitle>
         <CardDescription>
-          Create a new parish and become its administrator
+          Enter your parish information to get started. You&apos;ll be assigned as the parish administrator.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,8 +81,9 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             label="Parish Name"
             value={formData.name}
             onChange={(value) => setValue('name', value)}
-            placeholder="St. Mary's Catholic Church"
+            placeholder="e.g., St. Mary's Catholic Church"
             required
+            autoFocus
             error={errors.name?.message}
           />
 
@@ -90,7 +92,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             label="City"
             value={formData.city}
             onChange={(value) => setValue('city', value)}
-            placeholder="New York"
+            placeholder="e.g., Boston"
             required
             error={errors.city?.message}
           />
@@ -98,12 +100,20 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
           <FormInput
             id="state"
             label="State"
-            value={formData.state}
+            value={formData.state || ''}
             onChange={(value) => setValue('state', value)}
-            placeholder="NY"
-            maxLength={2}
-            required
+            placeholder="e.g., Massachusetts"
             error={errors.state?.message}
+          />
+
+          <FormInput
+            id="country"
+            label="Country"
+            value={formData.country}
+            onChange={(value) => setValue('country', value)}
+            placeholder="e.g., United States"
+            required
+            error={errors.country?.message}
           />
 
           <div className="flex gap-2 pt-4">

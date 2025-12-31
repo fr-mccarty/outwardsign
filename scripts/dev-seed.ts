@@ -194,34 +194,9 @@ async function seedDevData() {
   }
 
   // =====================================================
-  // Seed Onboarding Data (always reseed for dev)
-  // =====================================================
-  logInfo('')
-  logInfo('Cleaning up existing onboarding data...')
-
-  // Delete in correct order due to FK constraints
-  // 1. Delete script_sections (FK to scripts)
-  await supabase.from('script_sections').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  // 2. Delete scripts (FK to event_types)
-  await supabase.from('scripts').delete().eq('parish_id', parishId)
-  // 3. Delete input_field_definitions (FK to event_types)
-  await supabase.from('input_field_definitions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  // 4. Delete event_types
-  await supabase.from('event_types').delete().eq('parish_id', parishId)
-  // 5. Delete other parish data
-  await supabase.from('petition_templates').delete().eq('parish_id', parishId)
-  await supabase.from('group_roles').delete().eq('parish_id', parishId)
-  // 6. Delete tag_assignments before category_tags
-  await supabase.from('tag_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await supabase.from('category_tags').delete().eq('parish_id', parishId)
-  // 7. Delete contents (must be before seedParishData which seeds non-reading content)
-  await supabase.from('contents').delete().eq('parish_id', parishId)
-
-  logSuccess('Cleaned up existing data')
-
-  // =====================================================
   // ONBOARDING SEEDING
   // (This is what production parishes get during onboarding)
+  // Note: No cleanup needed - db:fresh resets all tables
   // =====================================================
   logInfo('')
   logInfo('=' .repeat(60))

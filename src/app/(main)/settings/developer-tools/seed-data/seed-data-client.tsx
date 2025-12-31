@@ -132,7 +132,7 @@ export function SeedDataClient() {
               Click the button below to populate your parish with sample data. This process typically
               takes 10-30 seconds depending on your connection.
             </p>
-            <p className="text-destructive">
+            <p className="text-warning">
               <strong>Note:</strong> Seeding is additive and won&apos;t delete existing data. Running
               multiple times may create duplicate records.
             </p>

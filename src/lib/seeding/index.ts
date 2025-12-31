@@ -41,3 +41,9 @@ export {
   type SeederCounts,
   type SeederResult,
 } from './run-seeders'
+
+// Cleanup (for UI demo seeder to reset before re-seeding)
+export {
+  cleanupDemoData,
+  type CleanupResult,
+} from './cleanup'

@@ -43,7 +43,8 @@
 | `bg-card` / `text-card-foreground` | Card components |
 | `bg-muted` / `text-muted-foreground` | Secondary sections |
 | `bg-primary` / `text-primary-foreground` | Primary actions |
-| `bg-destructive` / `text-destructive-foreground` | Delete actions |
+| `bg-destructive` / `text-destructive-foreground` | Delete/error actions |
+| `bg-warning` / `text-warning` | Warning messages |
 | `border` | All borders |
 
 ### 4. NEVER Use dark: Utilities (FORBIDDEN)
@@ -83,9 +84,10 @@ className="text-foreground"
 <Home className="h-5 w-5 text-muted-foreground" />
 <Church className="h-5 w-5 text-muted-foreground" />
 
-// Status feedback (colors allowed)
+// Status feedback (use semantic tokens)
 <CheckCircle className="h-5 w-5 text-green-600" /> // Success status
 <AlertCircle className="h-5 w-5 text-destructive" /> // Error status
+<AlertTriangle className="h-5 w-5 text-warning" /> // Warning status
 ```
 
 ### 6. Font Family (FORBIDDEN)

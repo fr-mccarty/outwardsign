@@ -12,7 +12,7 @@
 
 import { createAuthenticatedClientWithPermissions } from '@/lib/actions/server-action-utils'
 import { seedReadingsForParish } from '@/lib/onboarding-seeding/content-seed'
-import { runAllSeeders, type SeederCounts } from '@/lib/seeding'
+import { runAllSeeders, cleanupDemoData, type SeederCounts } from '@/lib/seeding'
 
 // =====================================================
 // Seeding Result Type
@@ -34,10 +34,13 @@ export async function seedSampleData(): Promise<SeedDataResult> {
   const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
 
   try {
-    // 1. Seed Scripture Readings (from onboarding seeder)
+    // 1. Clean up existing demo data (allows button to be pressed multiple times)
+    await cleanupDemoData(supabase, parishId)
+
+    // 2. Seed Scripture Readings (from onboarding seeder)
     await seedReadingsForParish(supabase, parishId)
 
-    // 2. Run all shared seeders
+    // 3. Run all shared seeders
     const result = await runAllSeeders(supabase, parishId)
 
     return {

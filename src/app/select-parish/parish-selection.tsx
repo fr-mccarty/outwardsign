@@ -98,26 +98,6 @@ export function ParishSelection() {
     setShowCreateForm(true)
   }
 
-  async function handleCreateTestParish() {
-    setSelecting('test')
-    
-    try {
-      const result = await createTestParish()
-      toast.success('Test parish created successfully!')
-      
-      // Set the test parish as selected
-      await setSelectedParish(result.parish.id)
-      
-      // Redirect to dashboard
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Error creating test parish:', error)
-      toast.error('Failed to create test parish')
-    } finally {
-      setSelecting(null)
-    }
-  }
-
   if (loading) {
     return (
       <div className="space-y-4">
@@ -198,15 +178,6 @@ export function ParishSelection() {
                 <div className="space-y-3">
                   <Button onClick={handleCreateParish} className="w-full">
                     Create New Parish
-                  </Button>
-
-                  <Button
-                    onClick={handleCreateTestParish}
-                    variant="outline"
-                    className="w-full"
-                    disabled={selecting === 'test'}
-                  >
-                    {selecting === 'test' ? 'Creating...' : 'Create Test Parish (Development)'}
                   </Button>
 
                   <div className="text-sm text-muted-foreground">
