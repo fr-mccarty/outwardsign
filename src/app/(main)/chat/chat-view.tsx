@@ -4,10 +4,9 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/content-card'
-import { Send, BookOpen } from 'lucide-react'
+import { Send } from 'lucide-react'
 import { staffChatWithAI } from './actions'
 import type { ChatMessage } from './actions'
-import Link from 'next/link'
 
 interface ChatViewProps {
   userId: string
@@ -86,6 +85,7 @@ export function ChatView({ userId }: ChatViewProps) {
     { label: 'List Groups', message: 'Show me all the ministry groups' },
     { label: 'Mass Intentions', message: 'Show me unfulfilled Mass intentions' },
     { label: 'Content Library', message: 'Search the content library for readings' },
+    { label: 'Documentation', message: 'Search the documentation for help' },
   ]
 
   return (
@@ -102,12 +102,6 @@ export function ChatView({ userId }: ChatViewProps) {
             {action.label}
           </Button>
         ))}
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/documentation" target="_blank">
-            <BookOpen className="h-4 w-4 mr-2" />
-            Documentation
-          </Link>
-        </Button>
       </div>
 
       {/* Messages Area */}

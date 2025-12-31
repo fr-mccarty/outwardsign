@@ -13,6 +13,7 @@ export type DayType = 'IS_DAY' | 'DAY_BEFORE'
 export interface MassTimesTemplateItem {
   id: string
   mass_times_template_id: string
+  event_type_id?: string // Links to event type that defines available roles
   time: string
   day_type: DayType
   presider_id?: string
@@ -27,6 +28,7 @@ export interface MassTimesTemplateItem {
 // Create data interface
 export interface CreateTemplateItemData {
   mass_times_template_id: string
+  event_type_id?: string
   time: string
   day_type: DayType
   presider_id?: string
@@ -38,6 +40,7 @@ export interface CreateTemplateItemData {
 
 // Update data interface
 export interface UpdateTemplateItemData {
+  event_type_id?: string
   time?: string
   day_type?: DayType
   presider_id?: string
