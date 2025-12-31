@@ -55,7 +55,7 @@ export function SeedDataClient() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <Users className="h-5 w-5 text-blue-500 mt-0.5" />
+              <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">People</p>
                 <p className="text-sm text-muted-foreground">
@@ -64,7 +64,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <Home className="h-5 w-5 text-green-500 mt-0.5" />
+              <Home className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Families</p>
                 <p className="text-sm text-muted-foreground">
@@ -73,7 +73,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <Church className="h-5 w-5 text-purple-500 mt-0.5" />
+              <Church className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Masses</p>
                 <p className="text-sm text-muted-foreground">
@@ -82,7 +82,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <Heart className="h-5 w-5 text-red-500 mt-0.5" />
+              <Heart className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Mass Intentions</p>
                 <p className="text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <HeartHandshake className="h-5 w-5 text-pink-500 mt-0.5" />
+              <HeartHandshake className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Weddings</p>
                 <p className="text-sm text-muted-foreground">
@@ -100,7 +100,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <Cross className="h-5 w-5 text-gray-500 mt-0.5" />
+              <Cross className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Funerals</p>
                 <p className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ export function SeedDataClient() {
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
-              <BookOpen className="h-5 w-5 text-amber-500 mt-0.5" />
+              <BookOpen className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">Scripture Readings</p>
                 <p className="text-sm text-muted-foreground">
@@ -132,7 +132,7 @@ export function SeedDataClient() {
               Click the button below to populate your parish with sample data. This process typically
               takes 10-30 seconds depending on your connection.
             </p>
-            <p className="text-amber-600 dark:text-amber-400">
+            <p className="text-destructive">
               <strong>Note:</strong> Seeding is additive and won&apos;t delete existing data. Running
               multiple times may create duplicate records.
             </p>

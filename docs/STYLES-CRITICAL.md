@@ -59,7 +59,36 @@ className="text-gray-900 dark:text-gray-100"
 className="text-foreground"
 ```
 
-### 5. Font Family (FORBIDDEN)
+### 5. Colors Reserved for Specific Uses (REQUIRED)
+
+**Colors should ONLY be used for:**
+1. **Liturgical Colors** - Green, White, Red, Purple, Rose, Black for liturgical seasons/occasions
+2. **Status Indicators** - Success (green), Error (red/destructive), Warning states
+
+**NEVER use colors for:**
+- Decorative icons
+- Visual differentiation of UI elements
+- "Making things look nice"
+
+❌ **WRONG:**
+```tsx
+<Users className="h-5 w-5 text-blue-500" />
+<Home className="h-5 w-5 text-green-500" />
+<Church className="h-5 w-5 text-purple-500" />
+```
+
+✅ **CORRECT:**
+```tsx
+<Users className="h-5 w-5 text-muted-foreground" />
+<Home className="h-5 w-5 text-muted-foreground" />
+<Church className="h-5 w-5 text-muted-foreground" />
+
+// Status feedback (colors allowed)
+<CheckCircle className="h-5 w-5 text-green-600" /> // Success status
+<AlertCircle className="h-5 w-5 text-destructive" /> // Error status
+```
+
+### 6. Font Family (FORBIDDEN)
 **NEVER modify font-family** except in print views (`app/print/`).
 
 System font stack is used everywhere:
