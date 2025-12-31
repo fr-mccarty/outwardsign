@@ -52,12 +52,14 @@ export const ADMIN_ONLY_TOOLS: Set<string> = new Set([
   'delete_event_preset',
 
   // Group Roles Management
+  'list_group_roles',
   'create_group_role',
   'update_group_role',
   'delete_group_role',
 
-  // Groups Management (create/delete - update is staff)
+  // Groups Management
   'create_group',
+  'update_group',
   'delete_group',
 
   // Locations Management
