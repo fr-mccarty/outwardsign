@@ -1329,7 +1329,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
 <p><strong>Time:</strong> {{event_date.time}}</p>
 <p><strong>Location:</strong> {{event_date.location}}</p>
 <p><strong>Coordinator:</strong> {{event_coordinator.full_name}}</p>
-<p><strong>Fundraising Goal:</strong> $` + `{{fundraising_goal}}</p>`,
+<p><strong>Fundraising Goal:</strong> \${{fundraising_goal}}</p>`,
       page_break_after: false,
       order: 0
     },
