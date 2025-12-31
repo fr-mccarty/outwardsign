@@ -64,6 +64,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'VenusAndMars',
       slug: 'weddings',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 1
     })
     .select()
@@ -438,6 +439,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'Cross',
       slug: 'funerals',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 2
     })
     .select()
@@ -795,6 +797,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'Droplet',
       slug: 'baptisms',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 3
     })
     .select()
@@ -906,6 +909,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'BookHeart',
       slug: 'quinceaneras',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 4
     })
     .select()
@@ -1024,6 +1028,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'HandHeartIcon',
       slug: 'presentations',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 5
     })
     .select()
@@ -1142,6 +1147,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'Book',
       slug: 'bible-studies',
       system_type: 'parish-event',
+      show_on_public_calendar: true,
       order: 6
     })
     .select()
@@ -1383,6 +1389,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       icon: 'GraduationCap',
       slug: 'religious-education',
       system_type: 'parish-event',
+      show_on_public_calendar: true,
       order: 8
     })
     .select()

@@ -100,6 +100,7 @@ export interface CreateLiturgyPlanData {
 export interface Parish {
   id: string
   name: string
+  slug?: string | null
   city: string
   state?: string | null
   country?: string
@@ -112,6 +113,7 @@ export interface ParishSettings {
   mass_intention_offering_quick_amount: Array<{amount: number, label: string}>
   donations_quick_amount: Array<{amount: number, label: string}>
   liturgical_locale: string
+  public_calendar_enabled: boolean
   created_at: string
   updated_at: string
 }

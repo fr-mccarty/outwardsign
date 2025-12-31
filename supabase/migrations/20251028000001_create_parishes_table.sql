@@ -2,6 +2,7 @@
 CREATE TABLE parishes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
+  slug TEXT,  -- URL-friendly identifier, auto-set on onboarding
   city TEXT NOT NULL,
   state TEXT,
   country TEXT NOT NULL,
@@ -19,6 +20,9 @@ GRANT ALL ON parishes TO service_role;
 
 -- Add index for lookups
 CREATE INDEX idx_parishes_name ON parishes(name);
+
+-- Unique index for slug (only for non-null slugs)
+CREATE UNIQUE INDEX idx_parishes_slug ON parishes(slug) WHERE slug IS NOT NULL;
 
 -- Permanent INSERT policy - allows authenticated users to create parishes
 -- Must apply to both anon and authenticated roles (server-side uses authenticated)

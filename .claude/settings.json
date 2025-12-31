@@ -1,13 +1,15 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)"
+    ],
     "deny": [
       "Read(.env)",
       "mcp__supabase__*",
       "Bash(supabase db push:*)",
-      "Bash(supabase db reset:*)",
-      "Bash(git push:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(supabase db reset:*)"
     ]
   },
   "hooks": {

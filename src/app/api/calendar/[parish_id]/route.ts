@@ -9,14 +9,14 @@ export const dynamic = 'force-dynamic'
  * Returns an iCalendar feed of future events for event types
  * that have show_on_public_calendar enabled.
  *
- * URL: /api/calendar/[parish_id]
+ * URL: /api/calendar/[parish_slug]
  * Content-Type: text/calendar
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ parish_id: string }> }
 ) {
-  const { parish_id } = await params
+  const { parish_id: parish_slug } = await params
 
   // Use service role to bypass RLS for public calendar access
   const supabase = createClient(
@@ -24,16 +24,27 @@ export async function GET(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  // Get parish info for calendar name
+  // Get parish info by slug for calendar name
   const { data: parish, error: parishError } = await supabase
     .from('parishes')
-    .select('id, name, city, state')
-    .eq('id', parish_id)
+    .select('id, name, slug, city, state')
+    .eq('slug', parish_slug)
     .is('deleted_at', null)
     .single()
 
   if (parishError || !parish) {
     return new NextResponse('Parish not found', { status: 404 })
+  }
+
+  // Check if public calendar is enabled for this parish
+  const { data: parishSettings } = await supabase
+    .from('parish_settings')
+    .select('public_calendar_enabled')
+    .eq('parish_id', parish.id)
+    .single()
+
+  if (!parishSettings?.public_calendar_enabled) {
+    return new NextResponse('Public calendar is not enabled for this parish', { status: 403 })
   }
 
   // Get future calendar events for event types with show_on_public_calendar = true
@@ -50,18 +61,15 @@ export async function GET(
       location:locations(name, street, city, state),
       master_event:master_events!inner(
         id,
-        name,
-        parish_event:parish_events!inner(
+        field_values,
+        event_type:event_types!inner(
           id,
-          event_type:event_types!inner(
-            id,
-            name,
-            show_on_public_calendar
-          )
+          name,
+          show_on_public_calendar
         )
       )
     `)
-    .eq('parish_id', parish_id)
+    .eq('parish_id', parish.id)
     .eq('show_on_calendar', true)
     .is('deleted_at', null)
     .gte('start_datetime', now)
@@ -74,7 +82,7 @@ export async function GET(
 
   // Filter to only events with show_on_public_calendar = true
   const publicEvents = (calendarEvents || []).filter((event: any) => {
-    return event.master_event?.parish_event?.event_type?.show_on_public_calendar === true
+    return event.master_event?.event_type?.show_on_public_calendar === true
   })
 
   // Generate .ics content
@@ -126,11 +134,12 @@ function generateEventICS(event: any): string[] {
   const lines: string[] = []
 
   const masterEvent = event.master_event
-  const eventType = masterEvent?.parish_event?.event_type
+  const eventType = masterEvent?.event_type
   const location = event.location
+  const fieldValues = masterEvent?.field_values || {}
 
-  // Event title: "Event Type Name: Event Name" or just "Event Name"
-  const title = masterEvent?.name || eventType?.name || 'Event'
+  // Event title: Use event name from field_values, or event type name
+  const title = fieldValues?.name || fieldValues?.event_name || eventType?.name || 'Event'
 
   // UID must be globally unique
   const uid = `${event.id}@outwardsign.church`

@@ -9,28 +9,32 @@
 -- IMPORTANT: This is for development only. In production, users/parishes are created through the application.
 
 -- Create a default test parish
-INSERT INTO parishes (id, name, city, state, country, created_at)
+INSERT INTO parishes (id, name, slug, city, state, country, created_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
   'St. Mary''s Catholic Church',
+  'st-marys-catholic-church',
   'Springfield',
   'Illinois',
   'United States',
   now()
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  slug = EXCLUDED.slug;
 
 -- Create parish settings for the default parish
-INSERT INTO parish_settings (parish_id, mass_intention_offering_quick_amount, donations_quick_amount, liturgical_locale, created_at, updated_at)
+INSERT INTO parish_settings (parish_id, mass_intention_offering_quick_amount, donations_quick_amount, liturgical_locale, public_calendar_enabled, created_at, updated_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
   '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}]'::JSONB,
   '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}, {"amount": 10000, "label": "$100"}]'::JSONB,
   'en_US',
+  true,
   now(),
   now()
 )
-ON CONFLICT (parish_id) DO NOTHING;
+ON CONFLICT (parish_id) DO UPDATE SET
+  public_calendar_enabled = EXCLUDED.public_calendar_enabled;
 
 -- Create a test user using Supabase's auth.users table structure
 -- This approach properly sets up the user for email/password authentication

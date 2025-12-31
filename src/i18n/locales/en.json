@@ -572,6 +572,9 @@
     "deleteTemplate": "Delete Template",
     "parishSettings": "Parish Settings",
     "parishSettingsDescription": "Update your parish name, address, contact information, and other administrative details that appear on printed documents.",
+    "parish": {
+      "general": "General Settings"
+    },
     "manageParish": "Manage Parish",
     "contentLibrary": "Content Library",
     "contentLibraryDescription": "Manage reusable liturgical content like readings, prayers, and ceremony text.",

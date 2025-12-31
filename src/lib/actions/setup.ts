@@ -179,6 +179,46 @@ export async function updateParish(parishId: string, data: UpdateParishData) {
   }
 }
 
+/**
+ * Check if a parish slug is available
+ * @param slug - The slug to check
+ * @param excludeParishId - Optional parish ID to exclude (for updates)
+ * @returns true if available, false if taken
+ */
+export async function checkSlugAvailability(slug: string, excludeParishId?: string): Promise<boolean> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  try {
+    let query = supabase
+      .from('parishes')
+      .select('id')
+      .eq('slug', slug)
+      .is('deleted_at', null)
+
+    if (excludeParishId) {
+      query = query.neq('id', excludeParishId)
+    }
+
+    const { data, error } = await query.maybeSingle()
+
+    if (error) {
+      logError('Error checking slug availability: ' + error.message)
+      return false
+    }
+
+    // If no data found, slug is available
+    return data === null
+  } catch (error) {
+    logError('Error checking slug availability: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    return false
+  }
+}
+
 export async function getParishSettings(parishId: string) {
   const supabase = await createClient()
   
@@ -250,6 +290,7 @@ export async function updateParishSettings(parishId: string, data: {
   mass_intention_offering_quick_amount?: Array<{amount: number, label: string}>
   donations_quick_amount?: Array<{amount: number, label: string}>
   liturgical_locale?: string
+  public_calendar_enabled?: boolean
 }) {
   const supabase = await createClient()
 
@@ -277,6 +318,7 @@ export async function updateParishSettings(parishId: string, data: {
         mass_intention_offering_quick_amount: data.mass_intention_offering_quick_amount,
         donations_quick_amount: data.donations_quick_amount,
         liturgical_locale: data.liturgical_locale,
+        public_calendar_enabled: data.public_calendar_enabled,
         updated_at: new Date().toISOString()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       }).filter(([_key, value]) => value !== undefined)

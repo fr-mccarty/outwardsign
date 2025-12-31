@@ -33,6 +33,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       icon: 'Flame',
       slug: 'easter-vigil',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 201
     })
     .select()
@@ -144,6 +145,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       icon: 'Wheat',
       slug: 'holy-thursday',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 202
     })
     .select()
@@ -255,6 +257,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       icon: 'Cross',
       slug: 'good-friday',
       system_type: 'special-liturgy',
+      show_on_public_calendar: true,
       order: 203
     })
     .select()

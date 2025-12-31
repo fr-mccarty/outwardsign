@@ -571,6 +571,9 @@
     "deleteTemplate": "Eliminar Plantilla",
     "parishSettings": "Configuración de Parroquia",
     "parishSettingsDescription": "Actualiza el nombre, dirección, información de contacto y otros detalles administrativos de tu parroquia que aparecen en documentos impresos.",
+    "parish": {
+      "general": "Configuración General"
+    },
     "manageParish": "Administrar Parroquia",
     "contentLibrary": "Biblioteca de Contenido",
     "contentLibraryDescription": "Administra contenido litúrgico reutilizable como lecturas, oraciones y texto de ceremonias.",

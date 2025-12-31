@@ -37,6 +37,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'Church',
       slug: 'sunday-mass',
       system_type: 'mass-liturgy',
+      show_on_public_calendar: true,
       order: 100 // After other event types
     })
     .select()
@@ -162,6 +163,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'CalendarDays',
       slug: 'daily-mass',
       system_type: 'mass-liturgy',
+      show_on_public_calendar: true,
       order: 101
     })
     .select()

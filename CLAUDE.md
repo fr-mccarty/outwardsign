@@ -70,7 +70,6 @@ When you encounter a choice, work through these questions in order:
 - When the task contradicts what you're finding in the code
 - When you discover the task is significantly larger than described
 - When tests fail and you're unsure why
-- **Git commits** - you don't have permission, instruct user to commit
 - **Modifying `src/components/ui/`** - these are shadcn/ui vendor components; create custom components elsewhere instead
 
 ### After Acting Independently, Report
@@ -155,9 +154,11 @@ These are project-specific constraints that override general patterns.
 
 ### Git Operations
 
-- **NEVER use `git add` or `git commit`** - you don't have permission
-- Read-only commands only: `git status`, `git log`, `git show`, `git diff`, `git branch`
-- Instruct user to run staging/commit commands manually
+- **Git commits and pushes allowed** when the user explicitly requests it
+- Follow the standard commit process: check status, diff, recent commits for style, then commit
+- Use conventional commit messages with clear descriptions
+- Always include the Claude Code attribution footer in commits
+- **NEVER force push** or use destructive git commands without explicit permission
 
 ### Build Process
 
