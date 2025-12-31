@@ -29,6 +29,10 @@ import { deletePerson } from '@/lib/actions/people'
 import { deleteFamily } from '@/lib/actions/families'
 import { deleteEvent, getEvent } from '@/lib/actions/events'
 import { successResponse, errorResponse, confirmationRequired, logAIActivity } from '@/lib/ai-tools/shared'
+import { adminTools } from '@/lib/ai-tools/admin-tools'
+import { executeAdminTool } from '@/lib/ai-tools/admin-tool-executor'
+import { canExecuteTool, filterToolsByPermission, getToolRestrictionMessage, ADMIN_ONLY_TOOLS } from '@/lib/ai-tools/tool-permissions'
+import { getUserParishRole } from '@/lib/auth/permissions'
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -651,9 +655,23 @@ const tools: Anthropic.Tool[] = [
 async function executeTool(
   toolName: string,
   toolInput: Record<string, unknown>,
-  context: { userId: string; parishId: string }
+  context: { userId: string; parishId: string; userRoles: string[] }
 ): Promise<string> {
   try {
+    // Check if user has permission to execute this tool
+    if (!canExecuteTool(toolName, context.userRoles)) {
+      return JSON.stringify({
+        success: false,
+        error: getToolRestrictionMessage(toolName),
+        requires_permission: 'admin',
+      })
+    }
+
+    // Check if this is an admin-only tool
+    if (ADMIN_ONLY_TOOLS.has(toolName)) {
+      return executeAdminTool(toolName, toolInput, context)
+    }
+
     switch (toolName) {
       // ============================================================================
       // PEOPLE & DIRECTORY
@@ -1721,9 +1739,11 @@ async function executeTool(
 // SYSTEM PROMPT
 // ============================================================================
 
-function getSystemPrompt(): string {
+function getSystemPrompt(userRoles: string[] = []): string {
   const today = new Date().toISOString().split('T')[0]
-  return `You are a helpful parish management assistant for Catholic parishes. You help staff search for and manage parish data including people, events, calendar, Masses, families, groups, and more.
+  const isAdmin = userRoles.includes('admin')
+
+  let prompt = `You are a helpful parish management assistant for Catholic parishes. You help staff search for and manage parish data including people, events, calendar, Masses, families, groups, and more.
 
 Today's date is ${today}.
 
@@ -1882,6 +1902,58 @@ Do not modify user passwords, auth settings, or sensitive configuration without 
 - Include relevant IDs when discussing specific records (helpful for follow-up actions)
 - When showing people, include their full name and any relevant contact info
 - Use markdown formatting for navigation hints (bold for sidebar items)`
+
+  // Add admin-only documentation if user is an admin
+  if (isAdmin) {
+    prompt += `
+
+## Admin-Only Tools
+
+As an admin, you have access to additional tools for managing parish settings:
+
+### Category Tags Management
+- **create_category_tag**: Create new category tags for organizing content
+- **update_category_tag**: Update existing category tags
+- **delete_category_tag**: Delete category tags (requires confirmation, cannot delete if in use)
+- **reorder_category_tags**: Reorder category tags by providing IDs in desired order
+
+### Custom Lists Management
+- **create_custom_list**: Create new custom lists (e.g., "Music Selections")
+- **update_custom_list**: Rename custom lists
+- **delete_custom_list**: Delete custom lists (requires confirmation, cannot delete if used by fields)
+- **create_custom_list_item**: Add items to a custom list
+- **update_custom_list_item**: Update list item values
+- **delete_custom_list_item**: Remove items from a list (requires confirmation)
+- **reorder_custom_list_items**: Reorder items in a list
+
+### Mass Times Templates Management
+- **create_mass_times_template**: Create new Mass schedule templates
+- **update_mass_times_template**: Update template name, description, day, or active status
+- **delete_mass_times_template**: Delete Mass schedule templates (requires confirmation)
+
+### Group Roles Management
+- **list_group_roles**: List all group/ministry roles
+- **create_group_role**: Create new group roles (Leader, Coordinator, etc.)
+- **update_group_role**: Update role name, description, or status
+- **delete_group_role**: Delete group roles (requires confirmation)
+
+### Locations Management
+- **create_location**: Create new parish locations/venues
+- **update_location**: Update location details
+- **delete_location**: Delete locations (requires confirmation)
+
+### Groups/Ministries Management
+- **create_group**: Create new groups or ministries
+- **update_group**: Update group name, description, or status
+- **delete_group**: Delete groups (requires confirmation)
+
+### Admin Tool Guidelines
+- All delete operations require explicit user confirmation
+- For parish-level settings (parish name, address) and user management, direct users to the Settings UI
+- Changes made through these tools are logged in the activity log`
+  }
+
+  return prompt
 }
 
 // ============================================================================
@@ -1909,6 +1981,14 @@ export async function staffChatWithAI(
 
     // 2. Get parish context
     const parishId = await requireSelectedParish()
+
+    // 2b. Get user roles for permission checking
+    const userParish = await getUserParishRole(userId, parishId)
+    const userRoles = userParish?.roles || []
+
+    // 2c. Combine base tools with admin tools, filtered by user permissions
+    const allTools = [...tools, ...adminTools]
+    const availableTools = filterToolsByPermission(allTools, userRoles)
 
     // 3. Rate limiting
     const rateLimitResult = rateLimit(`staff-chat:${userId}`, RATE_LIMITS.chat)
@@ -1950,13 +2030,13 @@ export async function staffChatWithAI(
       content: message,
     })
 
-    // 6. Call Claude API with tools
+    // 6. Call Claude API with tools (filtered by user permissions)
     let response = await anthropic.messages.create({
       model: CLAUDE_MODEL,
       max_tokens: 4096,
-      system: getSystemPrompt(),
+      system: getSystemPrompt(userRoles),
       messages,
-      tools,
+      tools: availableTools,
     })
 
     // 7. Agentic tool loop - keep going while Claude wants to use tools
@@ -1969,7 +2049,7 @@ export async function staffChatWithAI(
       // Execute each tool and collect results
       const toolResults: Anthropic.ToolResultBlockParam[] = []
       for (const toolUse of toolUseBlocks) {
-        const result = await executeTool(toolUse.name, toolUse.input as Record<string, unknown>, { userId, parishId })
+        const result = await executeTool(toolUse.name, toolUse.input as Record<string, unknown>, { userId, parishId, userRoles })
         toolResults.push({
           type: 'tool_result',
           tool_use_id: toolUse.id,
@@ -1981,7 +2061,7 @@ export async function staffChatWithAI(
       response = await anthropic.messages.create({
         model: CLAUDE_MODEL,
         max_tokens: 4096,
-        system: getSystemPrompt(),
+        system: getSystemPrompt(userRoles),
         messages: [
           ...messages,
           {
@@ -1993,7 +2073,7 @@ export async function staffChatWithAI(
             content: toolResults,
           },
         ],
-        tools,
+        tools: availableTools,
       })
     }
 
