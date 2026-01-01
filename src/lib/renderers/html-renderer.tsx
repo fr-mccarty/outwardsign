@@ -315,8 +315,8 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
             ...applyResolvedStyle(valueStyle, isPrintMode),
             whiteSpace: 'pre-wrap'
           }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             {sanitizedAvatarUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={sanitizedAvatarUrl}
                 alt="Avatar"
