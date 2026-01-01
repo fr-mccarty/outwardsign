@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { PageContainer } from '@/components/page-container'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/content-card'
 import { Plus, Trash2, List, ChevronRight } from 'lucide-react'
@@ -11,7 +10,6 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import Link from 'next/link'
-import { useBreadcrumbs } from '@/components/breadcrumb-context'
 
 interface CustomListsListClientProps {
   initialData: CustomList[]
@@ -19,18 +17,9 @@ interface CustomListsListClientProps {
 
 export function CustomListsListClient({ initialData }: CustomListsListClientProps) {
   const router = useRouter()
-  const { setBreadcrumbs } = useBreadcrumbs()
   const [lists, setLists] = useState<CustomList[]>(initialData)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [listToDelete, setListToDelete] = useState<CustomList | null>(null)
-
-  useEffect(() => {
-    setBreadcrumbs([
-      { label: 'Dashboard', href: '/dashboard' },
-      { label: 'Settings', href: '/settings' },
-      { label: 'Custom Lists' }
-    ])
-  }, [setBreadcrumbs])
 
   const handleDelete = async () => {
     if (!listToDelete) return
@@ -55,18 +44,17 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
   }
 
   return (
-    <PageContainer
-      title="Custom Lists"
-      description="Manage custom lists for event field options. Create lists like song choices, reading selections, or any custom options."
-      primaryAction={
+    <>
+      {/* Create Button */}
+      <div className="flex justify-end mb-4">
         <Button asChild>
           <Link href="/settings/custom-lists/create">
             <Plus className="h-4 w-4 mr-2" />
             Create Custom List
           </Link>
         </Button>
-      }
-    >
+      </div>
+
       {lists.length === 0 ? (
         <Card>
           <CardContent className="py-12">
@@ -132,6 +120,6 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
         title="Delete Custom List"
         description={`Are you sure you want to delete "${listToDelete?.name}"? This action cannot be undone. If this list is used in event type field definitions, you must remove those field definitions first.`}
       />
-    </PageContainer>
+    </>
   )
 }

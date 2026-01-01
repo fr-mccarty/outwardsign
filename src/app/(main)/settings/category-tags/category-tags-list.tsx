@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   DndContext,
@@ -21,12 +21,10 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { Plus, Tag, Trash2, Edit, GripVertical } from 'lucide-react'
-import { PageContainer } from '@/components/page-container'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { deleteCategoryTag, reorderCategoryTags } from '@/lib/actions/category-tags'
 import type { CategoryTagWithUsageCount } from '@/lib/types'
 import { toast } from 'sonner'
-import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
 
 interface CategoryTagsListProps {
@@ -109,18 +107,9 @@ function SortableTagItem({
 
 export function CategoryTagsList({ initialTags }: CategoryTagsListProps) {
   const router = useRouter()
-  const { setBreadcrumbs } = useBreadcrumbs()
   const [items, setItems] = useState<CategoryTagWithUsageCount[]>(initialTags)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [tagToDelete, setTagToDelete] = useState<CategoryTagWithUsageCount | null>(null)
-
-  useEffect(() => {
-    setBreadcrumbs([
-      { label: 'Dashboard', href: '/dashboard' },
-      { label: 'Settings', href: '/settings' },
-      { label: 'Category Tags' }
-    ])
-  }, [setBreadcrumbs])
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -190,18 +179,17 @@ export function CategoryTagsList({ initialTags }: CategoryTagsListProps) {
   }
 
   return (
-    <PageContainer
-      title="Category Tags"
-      description="Manage tags for organizing content and petitions. Drag to reorder."
-      primaryAction={
+    <>
+      {/* Create Tag button */}
+      <div className="flex justify-end mb-4">
         <Button asChild>
           <Link href="/settings/category-tags/create">
             <Plus className="mr-2 h-4 w-4" />
             Create Tag
           </Link>
         </Button>
-      }
-    >
+      </div>
+
       {items.length === 0 ? (
         <div className="border rounded-lg p-4 bg-muted/30">
           <div className="text-center py-12">
@@ -259,6 +247,6 @@ export function CategoryTagsList({ initialTags }: CategoryTagsListProps) {
         cancelLabel="Cancel"
         variant="destructive"
       />
-    </PageContainer>
+    </>
   )
 }

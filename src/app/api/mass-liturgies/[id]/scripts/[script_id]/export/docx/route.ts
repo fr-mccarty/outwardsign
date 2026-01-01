@@ -123,11 +123,7 @@ export async function GET(
         fieldValues: mass.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,
-        parish: mass.calendar_events?.[0]?.location ? {
-          name: 'Parish', // TODO: Get actual parish name if needed
-          city: mass.calendar_events[0].location.city || '',
-          state: mass.calendar_events[0].location.state || ''
-        } : undefined,
+        parish: mass.parish,
         format: 'word'
       })
 

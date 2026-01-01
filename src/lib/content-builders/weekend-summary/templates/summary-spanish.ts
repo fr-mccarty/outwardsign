@@ -45,9 +45,25 @@ export function buildSummarySpanish(
     })
   }
 
-  // TODO: Agregar eventos dinámicos (sacramentos) cuando estén integrados
-  // Los sacramentos han sido migrados a un sistema de eventos dinámicos
-  // Esta plantilla se actualizará para obtener datos de eventos dinámicos
+  // Agregar sacramentos del sistema de eventos dinámicos
+  if (data.sacraments && data.sacraments.length > 0) {
+    data.sacraments.forEach(sacrament => {
+      const startDate = sacrament.startDatetime.split('T')[0]
+      const startTime = sacrament.startDatetime.split('T')[1]?.substring(0, 5) || ''
+      const location = sacrament.location || 'Ubicación no definida'
+      const title = sacrament.title !== sacrament.eventType
+        ? `${sacrament.title} ${sacrament.eventType}`
+        : sacrament.eventType
+
+      allEvents.push({
+        date: startDate,
+        time: startTime,
+        sortKey: `${startDate} ${startTime}`,
+        type: sacrament.eventType,
+        text: `${formatDatePretty(startDate)} ${formatTime(startTime)} — ${title} — ${location}`,
+      })
+    })
+  }
 
   // Ordenar todos los eventos por fecha y hora
   allEvents.sort((a, b) => a.sortKey.localeCompare(b.sortKey))

@@ -2,8 +2,13 @@ import { requireParishionerAuth } from '@/lib/parishioner-auth/middleware'
 import { CalendarView } from './calendar-view'
 import { getCalendarEvents } from './actions'
 
-export default async function ParishionerCalendarPage() {
-  const { personId } = await requireParishionerAuth()
+interface PageProps {
+  params: Promise<{ parish_slug: string }>
+}
+
+export default async function ParishionerCalendarPage({ params }: PageProps) {
+  const { parish_slug } = await params
+  const { personId } = await requireParishionerAuth(parish_slug)
 
   // Get events for next 90 days
   const startDate = new Date().toISOString().split('T')[0]

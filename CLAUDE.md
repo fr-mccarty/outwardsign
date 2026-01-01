@@ -108,6 +108,7 @@ When you complete significant work without asking, include a brief summary:
 | **Content builders/renderers** | [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md), [RENDERER.md](./docs/RENDERER.md) |
 | **Permission checks** | [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) |
 | **Event type config** | [EVENT_TYPE_CONFIGURATION.md](./docs/EVENT_TYPE_CONFIGURATION.md) |
+| **Mass configuration** | [MASS_CONFIGURATION.md](./docs/MASS_CONFIGURATION.md) |
 | **Use/create components** | [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) |
 | **Use dialogs** | [DIALOGS.md](./docs/DIALOGS.md) |
 

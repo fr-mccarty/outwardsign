@@ -3,15 +3,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-// Temporarily disabled - old modules removed in favor of dynamic events
-// import { getWeddings, WeddingWithRelations } from './weddings'
-// import { getBaptisms, BaptismWithRelations } from './baptisms'
-// import { getFunerals, FuneralWithRelations } from './funerals'
-// import { getPresentations, PresentationWithRelations } from './presentations'
-// import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
 import { getMasses, getMassRoles } from './mass-liturgies'
 import type { MassWithNames, ParishEventRoleWithRelations } from '@/lib/schemas/mass-liturgies'
 import { toLocalDateString } from '@/lib/utils/formatters'
+
+// Sacrament event interface for weekend summary
+export interface SacramentEvent {
+  id: string
+  eventType: string       // "Wedding", "Baptism", "Funeral", etc.
+  eventTypeSlug: string   // "wedding", "baptism", "funeral"
+  title: string           // Dynamic title from key persons (e.g., "Smith-Johnson")
+  startDatetime: string   // ISO datetime
+  location?: string
+}
 
 export interface WeekendSummaryParams {
   sundayDate: string // ISO date string (YYYY-MM-DD)
@@ -24,12 +28,8 @@ export interface WeekendSummaryData {
   sundayDate: string
   saturdayDate: string
 
-  // Sacraments - temporarily empty until migrated to dynamic events
-  // weddings: WeddingWithRelations[]
-  // baptisms: BaptismWithRelations[]
-  // funerals: FuneralWithRelations[]
-  // presentations: PresentationWithRelations[]
-  // quinceaneras: QuinceaneraWithRelations[]
+  // Sacraments from dynamic events system
+  sacraments: SacramentEvent[]
 
   // Masses
   masses: MassWithNames[]
@@ -65,31 +65,87 @@ export async function getWeekendSummaryData(
   const result: WeekendSummaryData = {
     sundayDate,
     saturdayDate,
-    // Sacraments temporarily disabled - will be replaced with dynamic events
-    // weddings: [],
-    // baptisms: [],
-    // funerals: [],
-    // presentations: [],
-    // quinceaneras: [],
+    sacraments: [],
     masses: [],
     massRoles: []
   }
 
-  // Sacraments temporarily disabled - will be replaced with dynamic events
-  // if (params.includeSacraments) {
-  //   // Fetch all sacraments that have events during the weekend
-  //   const [weddings, baptisms, funerals, presentations, quinceaneras] = await Promise.all([
-  //     getWeddings(),
-  //     getBaptisms(),
-  //     getFunerals(),
-  //     getPresentations(),
-  //     getQuinceaneras()
-  //   ])
-  //   ...
-  // }
+  // Fetch sacraments from dynamic events system
+  if (params.includeSacraments) {
+    const supabase = await createClient()
 
-  // Suppress unused variable warning
-  void params.includeSacraments
+    // Get special-liturgy and parish-event types that occur on the weekend
+    const { data: calendarEvents } = await supabase
+      .from('calendar_events')
+      .select(`
+        id,
+        start_datetime,
+        location:locations (name),
+        master_event:master_events!inner (
+          id,
+          field_values,
+          event_type:event_types!inner (
+            id,
+            name,
+            slug,
+            system_type,
+            input_field_definitions (
+              id,
+              name,
+              property_name,
+              type,
+              is_key_person
+            )
+          )
+        )
+      `)
+      .gte('start_datetime', `${saturdayDate}T00:00:00`)
+      .lte('start_datetime', `${sundayDate}T23:59:59`)
+      .eq('show_on_calendar', true)
+      .eq('is_cancelled', false)
+      .is('deleted_at', null)
+      .in('master_event.event_type.system_type', ['special-liturgy', 'parish-event'])
+      .order('start_datetime', { ascending: true })
+
+    if (calendarEvents) {
+      for (const event of calendarEvents) {
+        const masterEvent = event.master_event as any
+        const eventType = masterEvent?.event_type
+        const location = event.location as any
+
+        if (!eventType) continue
+
+        // Build title from key person fields
+        const keyPersonFields = eventType.input_field_definitions?.filter(
+          (f: any) => f.is_key_person && f.type === 'person'
+        ) || []
+
+        let title = ''
+        if (keyPersonFields.length > 0 && masterEvent.field_values) {
+          // For now, just use the field values directly
+          // In a full implementation, we'd resolve person IDs to names
+          const keyNames: string[] = []
+          for (const field of keyPersonFields) {
+            const personId = masterEvent.field_values[field.property_name]
+            if (personId) {
+              // We'd need to resolve person names here - for now use a placeholder
+              keyNames.push(field.name)
+            }
+          }
+          title = keyNames.join('-')
+        }
+
+        result.sacraments.push({
+          id: event.id,
+          eventType: eventType.name,
+          eventTypeSlug: eventType.slug,
+          title: title || eventType.name,
+          startDatetime: event.start_datetime,
+          location: location?.name,
+        })
+      }
+    }
+  }
 
   // Fetch masses if requested
   if (params.includeMasses) {

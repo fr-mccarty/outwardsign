@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
+import { buildDynamicTitle } from '@/lib/utils/dynamic-title'
 import { ParishEventEditClient } from './parish-event-edit-client'
 
 interface PageProps {
@@ -45,8 +46,8 @@ export default async function EditDynamicEventPage({ params }: PageProps) {
     redirect(`/special-liturgies/${eventType.slug}/${id}/edit`)
   }
 
-  // TODO: Build dynamic title from key person names once field resolution is implemented
-  const title = eventType.name
+  // Build dynamic title from key person names (e.g., "Smith-Johnson Wedding")
+  const title = buildDynamicTitle(event, eventType)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

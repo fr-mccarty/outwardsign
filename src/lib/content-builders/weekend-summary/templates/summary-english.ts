@@ -45,9 +45,25 @@ export function buildSummaryEnglish(
     })
   }
 
-  // TODO: Add dynamic events (sacraments) when integrated
-  // Sacraments have been migrated to a dynamic events system
-  // This template will be updated to pull from dynamic events
+  // Add sacraments from dynamic events system
+  if (data.sacraments && data.sacraments.length > 0) {
+    data.sacraments.forEach(sacrament => {
+      const startDate = sacrament.startDatetime.split('T')[0]
+      const startTime = sacrament.startDatetime.split('T')[1]?.substring(0, 5) || ''
+      const location = sacrament.location || 'Location not set'
+      const title = sacrament.title !== sacrament.eventType
+        ? `${sacrament.title} ${sacrament.eventType}`
+        : sacrament.eventType
+
+      allEvents.push({
+        date: startDate,
+        time: startTime,
+        sortKey: `${startDate} ${startTime}`,
+        type: sacrament.eventType,
+        text: `${formatDatePretty(startDate)} ${formatTime(startTime)} — ${title} — ${location}`,
+      })
+    })
+  }
 
   // Sort all events by date and time
   allEvents.sort((a, b) => a.sortKey.localeCompare(b.sortKey))

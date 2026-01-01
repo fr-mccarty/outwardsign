@@ -26,6 +26,11 @@ import {
   HelpCircle,
   ScrollText,
   MessageSquare,
+  BookOpen,
+  Tag,
+  Church,
+  FileText,
+  Wrench,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -330,14 +335,48 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupLabel>{t('nav.settings')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key="Settings">
-                <SidebarMenuButton asChild isActive={isRouteActive('/settings')} tooltip={t('nav.settings')}>
-                  <Link href="/settings" onClick={handleLinkClick}>
-                    <Settings />
-                    <span>{t('nav.settings')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <CollapsibleNavSection
+                name={t('nav.settings')}
+                icon={Settings}
+                items={[
+                  {
+                    title: t('settings.sections.personal'),
+                    url: "/settings/user",
+                    icon: User,
+                  },
+                  {
+                    title: t('settings.sections.massConfiguration'),
+                    url: "/settings/mass-configuration",
+                    icon: BookOpen,
+                  },
+                  {
+                    title: t('nav.specialLiturgies'),
+                    url: "/settings/special-liturgies",
+                    icon: Tag,
+                  },
+                  {
+                    title: t('settings.sections.parishEvents'),
+                    url: "/settings/parish-events",
+                    icon: Calendar,
+                  },
+                  {
+                    title: t('settings.sections.parish'),
+                    url: "/settings/parish",
+                    icon: Church,
+                  },
+                  {
+                    title: t('settings.sections.contentData'),
+                    url: "/settings/content-data",
+                    icon: FileText,
+                  },
+                  {
+                    title: t('settings.sections.developer'),
+                    url: "/settings/developer-tools",
+                    icon: Wrench,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <SidebarMenuItem key="Support">
                 <SidebarMenuButton asChild isActive={isRouteActive('/support')} tooltip={t('nav.support')}>

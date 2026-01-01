@@ -62,7 +62,8 @@ async function checkRateLimit(emailOrPhone: string): Promise<boolean> {
  */
 export async function generateMagicLink(
   email: string,
-  parishId: string
+  parishId: string,
+  parishSlug?: string
 ): Promise<MagicLinkResult> {
   // Validate environment variables at runtime
   validateEnv()
@@ -138,8 +139,19 @@ export async function generateMagicLink(
       }
     }
 
-    // Send email with magic link (include parish ID in URL)
-    const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}&parish=${person.parish_id}`
+    // Send email with magic link (include parish slug in URL for proper redirect)
+    // Get parish slug if not provided
+    let slugToUse = parishSlug
+    if (!slugToUse) {
+      const { data: parish } = await supabase
+        .from('parishes')
+        .select('slug')
+        .eq('id', person.parish_id)
+        .single()
+      slugToUse = parish?.slug || ''
+    }
+
+    const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}&slug=${slugToUse}`
 
     // Determine language preference (default to English)
     // TODO: Add language preference field to people table

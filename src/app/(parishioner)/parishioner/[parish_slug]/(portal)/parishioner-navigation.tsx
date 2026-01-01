@@ -10,23 +10,32 @@ import { useLanguage } from './language-context'
 interface ParishionerNavigationProps {
   variant: 'sidebar' | 'bottom-tabs'
   unreadCount?: number
+  parishSlug: string
+  parishName: string
 }
 
-export function ParishionerNavigation({ variant, unreadCount = 0 }: ParishionerNavigationProps) {
+export function ParishionerNavigation({
+  variant,
+  unreadCount = 0,
+  parishSlug,
+  parishName,
+}: ParishionerNavigationProps) {
+  const basePath = `/parishioner/${parishSlug}`
+
   const tabs = [
     {
       name: 'Calendar',
-      href: '/parishioner/calendar',
+      href: `${basePath}/calendar`,
       icon: Calendar,
     },
     {
       name: 'Chat',
-      href: '/parishioner/chat',
+      href: `${basePath}/chat`,
       icon: MessageCircle,
     },
     {
       name: 'Notifications',
-      href: '/parishioner/notifications',
+      href: `${basePath}/notifications`,
       icon: Bell,
       badge: unreadCount,
     },
@@ -76,7 +85,8 @@ export function ParishionerNavigation({ variant, unreadCount = 0 }: ParishionerN
   return (
     <div className="flex flex-col w-full p-4">
       <div className="mb-8">
-        <h2 className="text-lg font-semibold">Parishioner Portal</h2>
+        <h2 className="text-lg font-semibold">{parishName}</h2>
+        <p className="text-sm text-muted-foreground">Parishioner Portal</p>
       </div>
 
       <nav className="flex-1 space-y-2">

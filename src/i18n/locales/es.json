@@ -54,7 +54,8 @@
     "createGroup": "Crear Grupo",
     "createLocation": "Crear Ubicación",
     "reports": "Informes",
-    "massConfiguration": "Configuración de Misas"
+    "massConfiguration": "Configuración de Misas",
+    "massTypes": "Tipos de Misa"
   },
   "common": {
     "create": "Crear",
@@ -465,11 +466,12 @@
     "errorUpdating": "No se pudo actualizar la intención de misa. Por favor, intenta nuevamente."
   },
   "masses": {
-    "title": "Configuración de Misas",
-    "description": "Configura tipos de eventos de Misa, campos y scripts",
+    "title": "Tipos de Misa",
+    "description": "Define tipos de Misa y sus posiciones ministeriales",
     "createTitle": "Crear Tipo de Misa",
-    "explanation": "Configura los tipos de Misa disponibles en tu parroquia. Cada tipo define los campos y scripts utilizados al crear liturgias de Misa.",
-    "examples": "Ejemplos: Misa Dominical, Misa Diaria, Misa de Vigilia",
+    "explanation": "Los tipos de Misa definen las categorías de Misas en tu parroquia. Cada tipo especifica qué posiciones ministeriales (Presidente, Lector, etc.) están disponibles.",
+    "examples": "Ejemplos: Misa Dominical, Misa Diaria, Misa de Funeral",
+    "learnMore": "Después de crear tipos de Misa, configura Horarios de Misa para establecer horarios recurrentes y especificar cuántas de cada posición necesitas.",
     "searchPlaceholder": "Buscar por presidente, homilista o nombre del evento...",
     "nameOfMass": "Nombre de la Misa",
     "unnamedMass": "Misa sin nombre",
@@ -496,6 +498,52 @@
     "noMassIntentionLinked": "Aún no hay intención de misa vinculada",
     "noMassIntentionLinkedDescription": "Vincula una intención para especificar por quién se ofrece esta Misa.",
     "linkMassIntention": "Vincular Intención de Misa"
+  },
+  "massSchedules": {
+    "title": "Horarios de Misas",
+    "description": "Configurar horarios de misas recurrentes y posiciones ministeriales",
+    "detailDescription": "Configurar horarios de misas para este programa",
+    "detailExplanation": "Agrega horarios de misa a este programa y configura cuántos de cada posición ministerial se necesitan para cada misa.",
+    "explanation": "Los horarios de misas definen los horarios de misas recurrentes para tu parroquia. Cada horario puede tener múltiples horas de misa con requisitos específicos de posiciones ministeriales.",
+    "howItWorks": "Crea horarios para diferentes días (domingo, días de semana, etc.), luego agrega horarios de misa a cada uno. Cuando programes misas, estas plantillas se usarán para completar automáticamente las posiciones ministeriales.",
+    "createSchedule": "Crear Horario",
+    "configure": "Configurar",
+    "collapse": "Contraer",
+    "noSchedules": "Aún no hay horarios",
+    "noSchedulesMessage": "Crea tu primer horario de misas para comenzar a definir horarios de misas recurrentes y posiciones ministeriales.",
+    "addMassTime": "Agregar Hora de Misa",
+    "massTimeAdded": "Hora de misa agregada",
+    "massTimeAddError": "Error al agregar hora de misa",
+    "massTimeDeleted": "Hora de misa eliminada",
+    "massTimeDeleteError": "Error al eliminar hora de misa",
+    "massTimeUpdateError": "Error al actualizar hora de misa",
+    "eventTypeUpdated": "Tipo de misa actualizado",
+    "time": "Hora",
+    "dayType": "Tipo de Día",
+    "massType": "Tipo de Misa",
+    "selectMassType": "Seleccionar tipo de misa",
+    "sameDay": "Mismo Día",
+    "vigil": "Vigilia (Día Anterior)",
+    "ministryPositions": "Posiciones Ministeriales",
+    "noRolesDefined": "No hay posiciones ministeriales definidas para este tipo de misa.",
+    "selectMassTypeFirst": "Selecciona un tipo de misa para configurar posiciones ministeriales.",
+    "deleteMassTimeTitle": "Eliminar Hora de Misa",
+    "deleteMassTimeDescription": "¿Estás seguro de que deseas eliminar la hora de misa de las {time}? Esta acción no se puede deshacer.",
+    "noMassTimes": "Sin horarios de misa",
+    "noMassTimesMessage": "Agrega horarios de misa para definir cuándo se celebran las misas.",
+    "deleteTitle": "Eliminar Horario",
+    "deleteDescription": "¿Estás seguro de que deseas eliminar \"{name}\"? Esto eliminará todos los horarios de misa en este programa. Esta acción no se puede deshacer.",
+    "deleteSuccess": "Horario eliminado",
+    "deleteError": "Error al eliminar horario",
+    "createDescription": "Crear un nuevo horario de misas recurrente",
+    "scheduleDetails": "Detalles del Horario",
+    "namePlaceholder": "ej., Misas Dominicales, Misas de Entre Semana",
+    "dayOfWeek": "Día de la Semana",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "Descripción opcional para este horario",
+    "scheduleCreated": "Horario creado exitosamente",
+    "scheduleCreateError": "Error al crear horario",
+    "nameRequired": "El nombre es requerido"
   },
   "dashboard": {
     "title": "Panel",
@@ -544,6 +592,31 @@
   "settings": {
     "title": "Configuración",
     "description": "Configura tus preferencias de aplicación y administra tu cuenta",
+    "sections": {
+      "personal": "Configuración Personal",
+      "massConfiguration": "Configuración de Misas",
+      "massConfigurationDescription": "Configura los tipos de Misa primero, luego establece horarios con tiempos y posiciones ministeriales.",
+      "liturgyEvents": "Liturgia y Eventos",
+      "liturgyEventsDescription": "Configura liturgias especiales como Bodas y Funerales, eventos parroquiales y preajustes de eventos.",
+      "parishEvents": "Eventos Parroquiales",
+      "parishEventsDescription": "Configura tipos de eventos parroquiales y preajustes de eventos para programación rápida.",
+      "parish": "Parroquia",
+      "contentData": "Contenido y Datos",
+      "contentDataDescription": "Administra tu biblioteca de contenido, listas personalizadas, peticiones y etiquetas de categoría.",
+      "developer": "Desarrollador"
+    },
+    "massTypes": {
+      "title": "Tipos de Misa",
+      "subtitle": "Define qué tipos de misas existen",
+      "description": "Crea tipos de Misa (Dominical, Diaria, Funeral) y define las posiciones ministeriales disponibles para cada una.",
+      "button": "Administrar Tipos de Misa",
+      "stepBadge": "Paso 1",
+      "thenConfigure": "luego"
+    },
+    "massSchedules": {
+      "stepBadge": "Paso 2",
+      "subtitle": "Establece horarios y cantidades de posiciones"
+    },
     "userPreferences": "Preferencias de Usuario",
     "userPreferencesDescription": "Personaliza tu idioma, preferencias litúrgicas y configuraciones predeterminadas.",
     "configurePreferences": "Configurar Preferencias",
@@ -619,8 +692,11 @@
     "unableToLoadSettings": "No se Pueden Cargar las Configuraciones",
     "errorLoadingSettings": "Hubo un error al cargar tus configuraciones. Por favor, intenta nuevamente más tarde.",
     "massConfiguration": "Configuración de Misas",
-    "massConfigurationDescription": "Configura horarios recurrentes de Misas, asignaciones de roles y voluntarios del ministerio.",
+    "massConfigurationDescription": "Configura tipos de Misas, campos y guiones litúrgicos.",
     "manageMassConfiguration": "Administrar Configuración de Misas",
+    "massSchedulesCard": "Horarios de Misas",
+    "massSchedulesCardDescription": "Configura horarios de Misas recurrentes y requisitos de posiciones ministeriales.",
+    "manageMassSchedules": "Administrar Horarios de Misas",
     "massConfigurationHub": {
       "recurringScheduleDescription": "Configura horarios de Misas recurrentes para diferentes días de la semana.",
       "manageSchedule": "Administrar Horarios",
@@ -700,6 +776,10 @@
         "title": "Campos Personalizados",
         "description": "Define qué datos recopilar para este tipo de evento (nombres, fechas, ubicaciones, etc.)"
       },
+      "ministryPositions": {
+        "title": "Posiciones Ministeriales",
+        "description": "Define los roles litúrgicos disponibles para este tipo de Misa (Presidente, Lector, Ujier, etc.)"
+      },
       "scripts": {
         "title": "Guiones",
         "description": "Configurar guiones de ceremonia imprimibles para esta liturgia especial"
@@ -712,6 +792,9 @@
       "howFieldsWork": "Cómo Funcionan los Campos Personalizados",
       "fieldsToPlaceholders": "Los campos que crees aquí se pueden usar como marcadores dinámicos en tus guiones de ceremonia. Por ejemplo, un campo \"Novia\" te permite insertar '{{bride.first_name}}' en el contenido de tu guión.",
       "configureScripts": "Configurar guiones",
+      "massPositionsExplanation": "Cómo Funcionan las Posiciones Ministeriales",
+      "massPositionsHelp": "Las posiciones ministeriales definen los roles disponibles para este tipo de Misa. Después de agregar posiciones aquí, configura los Horarios de Misa para especificar cuántos de cada posición se necesitan para horarios específicos.",
+      "configureMassSchedules": "Configurar Horarios de Misa",
       "addField": "Agregar Campo Personalizado",
       "editField": "Editar Campo Personalizado",
       "addFieldDescription": "Agregar un nuevo campo personalizado a este tipo de evento",

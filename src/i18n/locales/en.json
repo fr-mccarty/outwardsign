@@ -54,7 +54,8 @@
     "createGroup": "Create Group",
     "createLocation": "Create Location",
     "reports": "Reports",
-    "massConfiguration": "Mass Configuration"
+    "massConfiguration": "Mass Configuration",
+    "massTypes": "Mass Types"
   },
   "common": {
     "create": "Create",
@@ -466,11 +467,12 @@
     "errorUpdating": "Failed to update mass intention. Please try again."
   },
   "masses": {
-    "title": "Mass Configuration",
-    "description": "Configure Mass event types, fields, and scripts",
+    "title": "Mass Types",
+    "description": "Define Mass types and their ministry positions",
     "createTitle": "Create Mass Type",
-    "explanation": "Configure the Mass types available in your parish. Each type defines the fields and scripts used when creating Mass liturgies.",
-    "examples": "Examples: Sunday Mass, Daily Mass, Vigil Mass",
+    "explanation": "Mass types define the categories of Masses in your parish. Each type specifies which ministry positions (Presider, Lector, etc.) are available.",
+    "examples": "Examples: Sunday Mass, Daily Mass, Funeral Mass",
+    "learnMore": "After creating Mass types, configure Mass Schedules to set up recurring times and specify how many of each position you need.",
     "searchPlaceholder": "Search by presider, homilist, or event name...",
     "nameOfMass": "Name of Mass",
     "unnamedMass": "Unnamed Mass",
@@ -497,6 +499,52 @@
     "noMassIntentionLinked": "No mass intention linked yet",
     "noMassIntentionLinkedDescription": "Link an intention to specify who this Mass is being offered for.",
     "linkMassIntention": "Link Mass Intention"
+  },
+  "massSchedules": {
+    "title": "Mass Schedules",
+    "description": "Configure recurring mass times and ministry positions",
+    "detailDescription": "Configure mass times for this schedule",
+    "detailExplanation": "Add mass times to this schedule and configure how many of each ministry position are needed for each mass.",
+    "explanation": "Mass schedules define the recurring mass times for your parish. Each schedule can have multiple mass times with specific ministry position requirements.",
+    "howItWorks": "Create schedules for different days (Sunday, weekdays, etc.), then add mass times to each. When you schedule masses, these templates will be used to auto-fill ministry positions.",
+    "createSchedule": "Create Schedule",
+    "configure": "Configure",
+    "collapse": "Collapse",
+    "noSchedules": "No schedules yet",
+    "noSchedulesMessage": "Create your first mass schedule to start defining recurring mass times and ministry positions.",
+    "addMassTime": "Add Mass Time",
+    "massTimeAdded": "Mass time added",
+    "massTimeAddError": "Failed to add mass time",
+    "massTimeDeleted": "Mass time deleted",
+    "massTimeDeleteError": "Failed to delete mass time",
+    "massTimeUpdateError": "Failed to update mass time",
+    "eventTypeUpdated": "Mass type updated",
+    "time": "Time",
+    "dayType": "Day Type",
+    "massType": "Mass Type",
+    "selectMassType": "Select mass type",
+    "sameDay": "Same Day",
+    "vigil": "Vigil (Day Before)",
+    "ministryPositions": "Ministry Positions",
+    "noRolesDefined": "No ministry positions defined for this mass type.",
+    "selectMassTypeFirst": "Select a mass type to configure ministry positions.",
+    "deleteMassTimeTitle": "Delete Mass Time",
+    "deleteMassTimeDescription": "Are you sure you want to delete the {time} mass time? This action cannot be undone.",
+    "noMassTimes": "No mass times",
+    "noMassTimesMessage": "Add mass times to define when masses are celebrated.",
+    "deleteTitle": "Delete Schedule",
+    "deleteDescription": "Are you sure you want to delete \"{name}\"? This will remove all mass times in this schedule. This action cannot be undone.",
+    "deleteSuccess": "Schedule deleted",
+    "deleteError": "Failed to delete schedule",
+    "createDescription": "Create a new recurring mass schedule",
+    "scheduleDetails": "Schedule Details",
+    "namePlaceholder": "e.g., Sunday Masses, Weekday Masses",
+    "dayOfWeek": "Day of Week",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional description for this schedule",
+    "scheduleCreated": "Schedule created successfully",
+    "scheduleCreateError": "Failed to create schedule",
+    "nameRequired": "Name is required"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -545,6 +593,31 @@
   "settings": {
     "title": "Settings",
     "description": "Configure your application preferences and manage your account",
+    "sections": {
+      "personal": "Personal Settings",
+      "massConfiguration": "Mass Configuration",
+      "massConfigurationDescription": "Configure Mass types first, then set up schedules with times and ministry positions.",
+      "liturgyEvents": "Liturgy & Events",
+      "liturgyEventsDescription": "Configure special liturgies like Weddings and Funerals, parish events, and event presets.",
+      "parishEvents": "Parish Events",
+      "parishEventsDescription": "Configure parish event types and event presets for quick scheduling.",
+      "parish": "Parish",
+      "contentData": "Content & Data",
+      "contentDataDescription": "Manage your content library, custom lists, petitions, and category tags.",
+      "developer": "Developer"
+    },
+    "massTypes": {
+      "title": "Mass Types",
+      "subtitle": "Define what kinds of masses exist",
+      "description": "Create Mass types (Sunday, Daily, Funeral) and define available ministry positions for each.",
+      "button": "Manage Mass Types",
+      "stepBadge": "Step 1",
+      "thenConfigure": "then"
+    },
+    "massSchedules": {
+      "stepBadge": "Step 2",
+      "subtitle": "Set times and position quantities"
+    },
     "userPreferences": "User Preferences",
     "userPreferencesDescription": "Customize your language, liturgical preferences, and default settings.",
     "configurePreferences": "Configure Preferences",
@@ -626,8 +699,11 @@
     "unableToLoadSettings": "Unable to Load Settings",
     "errorLoadingSettings": "There was an error loading your settings. Please try again later.",
     "massConfiguration": "Mass Configuration",
-    "massConfigurationDescription": "Configure recurring Mass schedules, role assignments, and ministry volunteers.",
+    "massConfigurationDescription": "Configure Mass types, fields, and liturgical scripts.",
     "manageMassConfiguration": "Manage Mass Configuration",
+    "massSchedulesCard": "Mass Schedules",
+    "massSchedulesCardDescription": "Configure recurring Mass times and ministry position requirements.",
+    "manageMassSchedules": "Manage Mass Schedules",
     "massConfigurationHub": {
       "recurringScheduleDescription": "Set up recurring Mass times for different days of the week.",
       "manageSchedule": "Manage Schedule",
@@ -707,6 +783,10 @@
         "title": "Custom Fields",
         "description": "Define what data to collect for this event type (names, dates, locations, etc.)"
       },
+      "ministryPositions": {
+        "title": "Ministry Positions",
+        "description": "Define the liturgical roles available for this Mass type (Presider, Lector, Usher, etc.)"
+      },
       "scripts": {
         "title": "Scripts",
         "description": "Configure printable ceremony scripts for this special liturgy"
@@ -719,6 +799,9 @@
       "howFieldsWork": "How Custom Fields Work",
       "fieldsToPlaceholders": "Fields you create here can be used as dynamic placeholders in your ceremony scripts. For example, a \"Bride\" field lets you insert '{{bride.first_name}}' in your script content.",
       "configureScripts": "Configure scripts",
+      "massPositionsExplanation": "How Ministry Positions Work",
+      "massPositionsHelp": "Ministry positions define the roles available for this Mass type. After adding positions here, configure Mass Schedules to specify how many of each position are needed for specific mass times.",
+      "configureMassSchedules": "Configure Mass Schedules",
       "addField": "Add Custom Field",
       "editField": "Edit Custom Field",
       "addFieldDescription": "Add a new custom field to this event type",

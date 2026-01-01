@@ -18,7 +18,6 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Trash2, GripVertical, Info, type LucideIcon } from 'lucide-react'
@@ -169,18 +168,17 @@ export function SpecialLiturgiesListClient({ initialData }: SpecialLiturgiesList
   }
 
   return (
-    <PageContainer
-      title={t('title')}
-      description={t('description')}
-      primaryAction={
+    <>
+      {/* Create Button */}
+      <div className="flex justify-end mb-4">
         <Button asChild>
           <Link href="/settings/special-liturgies/create">
             <Plus className="h-4 w-4 mr-2" />
             {t('createTitle')}
           </Link>
         </Button>
-      }
-    >
+      </div>
+
       {/* Explanatory Alert */}
       <Alert className="mb-6">
         <Info className="h-4 w-4" />
@@ -236,6 +234,6 @@ export function SpecialLiturgiesListClient({ initialData }: SpecialLiturgiesList
         title="Delete Special Liturgy Type"
         description={`Are you sure you want to delete "${eventTypeToDelete?.name}"? This action cannot be undone. Events using this type will no longer have an assigned type.`}
       />
-    </PageContainer>
+    </>
   )
 }

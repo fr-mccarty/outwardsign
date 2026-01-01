@@ -11,9 +11,10 @@ import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 interface MagicLinkLoginFormProps {
   parishId: string
+  parishSlug: string
 }
 
-export function MagicLinkLoginForm({ parishId }: MagicLinkLoginFormProps) {
+export function MagicLinkLoginForm({ parishId, parishSlug }: MagicLinkLoginFormProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -23,7 +24,7 @@ export function MagicLinkLoginForm({ parishId }: MagicLinkLoginFormProps) {
     setIsLoading(true)
     setMessage(null)
 
-    const result = await generateMagicLink(email.trim(), parishId)
+    const result = await generateMagicLink(email.trim(), parishId, parishSlug)
 
     if (result.success) {
       setMessage({ type: 'success', text: result.message })

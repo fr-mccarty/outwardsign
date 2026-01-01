@@ -50,9 +50,46 @@ export async function getCalendarEvents(
     const familyPersonIds = familyMembers?.map((fm) => fm.person_id) || []
     const allPersonIds = [personId, ...familyPersonIds]
 
-    // 2. Get parish events (via visibility settings)
-    // TODO: Implement parish events fetching with visibility logic
-    // For now, skip this to keep implementation simple
+    // 2. Get parish events (calendar_events where show_on_calendar = true)
+    const { data: parishEvents } = await supabase
+      .from('calendar_events')
+      .select(`
+        id,
+        start_datetime,
+        end_datetime,
+        is_all_day,
+        is_cancelled,
+        location:locations (name),
+        master_event:master_events (
+          id,
+          event_type:event_types (name)
+        )
+      `)
+      .eq('parish_id', session.parishId)
+      .eq('show_on_calendar', true)
+      .eq('is_cancelled', false)
+      .is('deleted_at', null)
+      .gte('start_datetime', startDate)
+      .lte('start_datetime', endDate)
+      .order('start_datetime', { ascending: true })
+
+    if (parishEvents) {
+      for (const parishEvent of parishEvents) {
+        const masterEvent = parishEvent.master_event as any
+        const location = parishEvent.location as any
+        const eventTypeName = masterEvent?.event_type?.name || 'Event'
+        const eventStart = new Date(parishEvent.start_datetime)
+
+        events.push({
+          id: parishEvent.id,
+          type: 'parish' as const,
+          title: eventTypeName,
+          date: eventStart.toISOString().split('T')[0],
+          time: parishEvent.is_all_day ? undefined : eventStart.toTimeString().slice(0, 5),
+          location: location?.name,
+        })
+      }
+    }
 
     // 3. Get liturgical events
     const { data: liturgicalEvents } = await supabase

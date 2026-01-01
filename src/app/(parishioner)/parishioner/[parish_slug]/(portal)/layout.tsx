@@ -1,22 +1,21 @@
 import { requireParishionerAuth } from '@/lib/parishioner-auth/middleware'
-import { getParishionerSession } from '@/lib/parishioner-auth/actions'
 import { getUnreadNotificationCount } from './notifications/actions'
 import { ParishionerNavigation } from './parishioner-navigation'
 import { LanguageProvider } from './language-context'
 
-export default async function ParishionerPortalLayout({
-  children,
-}: {
+interface LayoutProps {
   children: React.ReactNode
-}) {
-  await requireParishionerAuth()
+  params: Promise<{ parish_slug: string }>
+}
 
-  // Get session to retrieve person ID
-  const session = await getParishionerSession()
-  const personId = session?.personId || ''
+export default async function ParishionerPortalLayout({ children, params }: LayoutProps) {
+  const { parish_slug } = await params
+
+  // Validate auth and parish slug match
+  const auth = await requireParishionerAuth(parish_slug)
 
   // Get unread notification count
-  const unreadCount = personId ? await getUnreadNotificationCount(personId) : 0
+  const unreadCount = await getUnreadNotificationCount(auth.personId)
 
   return (
     <LanguageProvider>
@@ -26,7 +25,12 @@ export default async function ParishionerPortalLayout({
         <div className="flex flex-col md:flex-row h-screen">
           {/* Desktop Sidebar - hidden on mobile */}
           <aside className="hidden md:flex md:w-64 border-r bg-card">
-            <ParishionerNavigation variant="sidebar" unreadCount={unreadCount} />
+            <ParishionerNavigation
+              variant="sidebar"
+              unreadCount={unreadCount}
+              parishSlug={parish_slug}
+              parishName={auth.parishName}
+            />
           </aside>
 
           {/* Main Content Area */}
@@ -34,7 +38,12 @@ export default async function ParishionerPortalLayout({
 
           {/* Mobile Bottom Tabs - hidden on desktop */}
           <nav className="fixed bottom-0 left-0 right-0 md:hidden border-t bg-card">
-            <ParishionerNavigation variant="bottom-tabs" unreadCount={unreadCount} />
+            <ParishionerNavigation
+              variant="bottom-tabs"
+              unreadCount={unreadCount}
+              parishSlug={parish_slug}
+              parishName={auth.parishName}
+            />
           </nav>
         </div>
       </div>

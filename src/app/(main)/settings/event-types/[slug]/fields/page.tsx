@@ -37,40 +37,66 @@ export default async function CustomFieldsPage({ params }: PageProps) {
 
   const parentLabel =
     eventType.system_type === 'mass-liturgy'
-      ? t('nav.masses')
+      ? t('nav.massTypes')
       : eventType.system_type === 'special-liturgy'
         ? t('nav.specialLiturgies')
         : t('nav.events')
+
+  const isMassLiturgy = eventType.system_type === 'mass-liturgy'
+
+  // Use contextual labels for mass-liturgy (Ministry Positions) vs others (Custom Fields)
+  const pageTitle = isMassLiturgy
+    ? t('eventType.hub.ministryPositions.title')
+    : t('eventType.fields.title')
+  const pageDescription = isMassLiturgy
+    ? t('eventType.hub.ministryPositions.description')
+    : t('eventType.fields.description')
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
     { label: t('nav.settings'), href: '/settings' },
     { label: parentLabel, href: parentPath },
     { label: eventType.name, href: `/settings/event-types/${slug}` },
-    { label: t('eventType.fields.title') },
+    { label: pageTitle },
   ]
 
   return (
     <PageContainer
-      title={`${eventType.name} - ${t('eventType.fields.title')}`}
-      description={t('eventType.fields.description')}
+      title={`${eventType.name} - ${pageTitle}`}
+      description={pageDescription}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
 
-      {/* Fields to Scripts explanation */}
+      {/* Contextual explanation based on event type */}
       <Alert className="mb-6">
         <Info className="h-4 w-4" />
         <AlertDescription>
-          <p className="font-medium mb-1">{t('eventType.fields.howFieldsWork')}</p>
-          <p className="text-sm">
-            {t('eventType.fields.fieldsToPlaceholders')}
-          </p>
-          {eventType.system_type === 'special-liturgy' && (
-            <p className="mt-2 text-sm">
-              <Link href={`/settings/event-types/${slug}/scripts`} className="text-primary underline">
-                {t('eventType.fields.configureScripts')} →
-              </Link>
-            </p>
+          {isMassLiturgy ? (
+            <>
+              <p className="font-medium mb-1">{t('eventType.fields.massPositionsExplanation')}</p>
+              <p className="text-sm">
+                {t('eventType.fields.massPositionsHelp')}
+              </p>
+              <p className="mt-2 text-sm">
+                <Link href="/settings/mass-schedules" className="text-primary underline">
+                  {t('eventType.fields.configureMassSchedules')} →
+                </Link>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium mb-1">{t('eventType.fields.howFieldsWork')}</p>
+              <p className="text-sm">
+                {t('eventType.fields.fieldsToPlaceholders')}
+              </p>
+              {eventType.system_type === 'special-liturgy' && (
+                <p className="mt-2 text-sm">
+                  <Link href={`/settings/event-types/${slug}/scripts`} className="text-primary underline">
+                    {t('eventType.fields.configureScripts')} →
+                  </Link>
+                </p>
+              )}
+            </>
           )}
         </AlertDescription>
       </Alert>

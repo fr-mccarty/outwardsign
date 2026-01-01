@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/parish-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
+import { buildDynamicTitle } from '@/lib/utils/dynamic-title'
 import { ParishEventViewClient } from './parish-event-view-client'
 
 interface PageProps {
@@ -50,8 +51,8 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
   // Fetch scripts for this event type
   const scripts = await getScripts(event.event_type_id)
 
-  // TODO: Build dynamic title from key person names once field resolution is implemented
-  const title = eventType.name
+  // Build dynamic title from key person names (e.g., "Smith-Johnson Wedding")
+  const title = buildDynamicTitle(event, eventType)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

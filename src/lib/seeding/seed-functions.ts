@@ -889,8 +889,13 @@ export async function seedParishSettings(ctx: SeederContext): Promise<{ updated:
 }
 
 // =====================================================
-// Seed Mass Times Role Quantities (JSONB)
+// Seed Mass Times Role Quantities and Default Assignments
 // =====================================================
+// This populates Level 2 (Mass Schedule) of the three-level system:
+//   - role_quantities: HOW MANY of each role needed
+//   - default_assignments: Default WHO for each role
+//
+// Automation tools use this to generate mass instances (Level 3)
 
 export async function seedMassTimesRoleQuantities(
   ctx: SeederContext,
@@ -929,11 +934,14 @@ export async function seedMassTimesRoleQuantities(
 
     for (const item of items) {
       // Define role quantities based on mass type
+      // Note: presider and homilist are roles like any other
       const isSunday = template.day_of_week === 'SUNDAY'
       const isVigil = item.day_type === 'DAY_BEFORE'
 
       const roleQuantities = isSunday || isVigil
         ? {
+            presider: 1,
+            homilist: 1,
             lector: 2,
             eucharistic_minister: 4,
             altar_server: 3,
@@ -943,6 +951,8 @@ export async function seedMassTimesRoleQuantities(
             sacristan: 1
           }
         : {
+            presider: 1,
+            homilist: 1,
             lector: 1,
             eucharistic_minister: 2,
             altar_server: 2,
@@ -950,16 +960,24 @@ export async function seedMassTimesRoleQuantities(
             cantor: 1
           }
 
-      // Assign presider and location
+      // Build default assignments for presider and homilist
+      // These are the "usual" people for this time slot
       const presiderIndex = itemsUpdated % people.length
       const homilistIndex = (itemsUpdated + 1) % people.length
+
+      const defaultAssignments: Record<string, string | null> = {}
+      if (people[presiderIndex]) {
+        defaultAssignments.presider = people[presiderIndex].id
+      }
+      if (people[homilistIndex]) {
+        defaultAssignments.homilist = people[homilistIndex].id
+      }
 
       const { error } = await supabase
         .from('mass_times_template_items')
         .update({
           role_quantities: roleQuantities,
-          presider_id: people[presiderIndex]?.id || null,
-          homilist_id: people[homilistIndex]?.id || null,
+          default_assignments: defaultAssignments,
           location_id: churchLocation?.id || null,
           length_of_time: isSunday || isVigil ? 75 : 45
         })

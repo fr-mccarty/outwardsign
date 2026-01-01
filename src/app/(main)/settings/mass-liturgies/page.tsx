@@ -21,7 +21,7 @@ export default async function MassesPage() {
   const breadcrumbs = [
     { label: tNav('dashboard'), href: '/dashboard' },
     { label: tNav('settings'), href: '/settings' },
-    { label: tNav('masses') },
+    { label: tNav('massTypes') },
   ]
 
   return (

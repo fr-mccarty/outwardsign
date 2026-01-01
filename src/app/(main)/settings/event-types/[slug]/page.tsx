@@ -51,6 +51,15 @@ export default async function EventTypeHubPage({ params }: PageProps) {
 
   // Show Scripts card only for special-liturgy
   const showScriptsCard = eventType.system_type === 'special-liturgy'
+  const isMassLiturgy = eventType.system_type === 'mass-liturgy'
+
+  // Use different labels for mass-liturgy (Ministry Positions) vs others (Custom Fields)
+  const fieldsTitle = isMassLiturgy
+    ? t('eventType.hub.ministryPositions.title')
+    : t('eventType.hub.customFields.title')
+  const fieldsDescription = isMassLiturgy
+    ? t('eventType.hub.ministryPositions.description')
+    : t('eventType.hub.customFields.description')
 
   return (
     <PageContainer
@@ -72,7 +81,7 @@ export default async function EventTypeHubPage({ params }: PageProps) {
 
         {/* Navigation cards */}
         <div className="grid gap-6 sm:grid-cols-2">
-          {/* Custom Fields Card */}
+          {/* Fields Card - "Ministry Positions" for mass-liturgy, "Custom Fields" for others */}
           <ContentCard>
             <Link href={`/settings/event-types/${slug}/fields`} className="block group">
               <div className="space-y-4">
@@ -81,11 +90,11 @@ export default async function EventTypeHubPage({ params }: PageProps) {
                     <Settings className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                    {t('eventType.hub.customFields.title')}
+                    {fieldsTitle}
                   </h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {t('eventType.hub.customFields.description')}
+                  {fieldsDescription}
                 </p>
               </div>
             </Link>

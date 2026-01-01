@@ -26,6 +26,19 @@ export interface MassTimesTemplateWithItems extends MassTimesTemplate {
     id: string
     time: string
     day_type: string
+    event_type_id?: string
+    location_id?: string
+    length_of_time?: number
+    role_quantities: Record<string, number>
+    event_type?: {
+      id: string
+      name: string
+      slug: string
+    }
+    location?: {
+      id: string
+      name: string
+    }
   }>
 }
 
@@ -104,7 +117,17 @@ export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Pro
     .from('mass_times_templates')
     .select(`
       *,
-      items:mass_times_template_items(id, time, day_type)
+      items:mass_times_template_items(
+        id,
+        time,
+        day_type,
+        event_type_id,
+        location_id,
+        length_of_time,
+        role_quantities,
+        event_type:event_types(id, name, slug),
+        location:locations(id, name)
+      )
     `)
     .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
@@ -190,6 +213,40 @@ export async function getMassTimeWithRelations(id: string): Promise<MassTimeWith
 
   if (error) {
     logError('Error fetching mass times template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Get a single mass times template by ID with all items and their relations
+ */
+export async function getMassTimeWithItems(id: string): Promise<MassTimesTemplateWithItems | null> {
+  const { supabase, parishId } = await createAuthenticatedClient()
+
+  const { data, error } = await supabase
+    .from('mass_times_templates')
+    .select(`
+      *,
+      items:mass_times_template_items(
+        id,
+        time,
+        day_type,
+        event_type_id,
+        location_id,
+        length_of_time,
+        role_quantities,
+        event_type:event_types(id, name, slug),
+        location:locations(id, name)
+      )
+    `)
+    .eq('id', id)
+    .eq('parish_id', parishId)
+    .single()
+
+  if (error) {
+    logError('Error fetching mass times template with items: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return null
   }
 

@@ -175,6 +175,12 @@ export function MassLiturgiesListClient({ initialData }: MassesListClientProps) 
         <AlertDescription className="space-y-2">
           <p>{t('explanation')}</p>
           <p className="text-muted-foreground text-sm">{t('examples')}</p>
+          <p className="text-muted-foreground text-sm">
+            {t('learnMore')}{' '}
+            <Link href="/settings/mass-schedules" className="text-primary underline underline-offset-2">
+              Mass Schedules
+            </Link>
+          </p>
         </AlertDescription>
       </Alert>
 

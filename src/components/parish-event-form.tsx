@@ -38,6 +38,7 @@ import type {
   CreateCalendarEventData,
   ParishEventStatus
 } from '@/lib/types'
+import { PeopleEventAssignmentSection } from '@/components/people-event-assignment-section'
 
 const MASTER_EVENT_STATUS_VALUES: ParishEventStatus[] = ['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']
 
@@ -425,6 +426,12 @@ export function ParishEventForm({
   // Sort fields by order
   const sortedFields = [...(eventType.input_field_definitions || [])].sort((a, b) => a.order - b.order)
 
+  // Filter person fields for assignment sections
+  // Template-level: type='person' and is_per_calendar_event=false (applies to all occurrences)
+  const templateLevelPersonFields = sortedFields.filter(
+    (field) => field.type === 'person' && !field.is_per_calendar_event && !field.deleted_at
+  )
+
   // Get status label
   const getStatusLabel = (status: ParishEventStatus) => {
     const labels: Record<ParishEventStatus, string> = {
@@ -471,9 +478,20 @@ export function ParishEventForm({
         </FormSectionCard>
       )}
 
-      {/* Ministers - Now handled via people_event_assignments */}
-      {/* TODO: Add PeopleEventAssignmentSection component here for template-level assignments */}
-      {/* TODO: Add CalendarEventAssignmentSection component for occurrence-level assignments */}
+      {/* Ministers - Template-level assignments (e.g., bride, groom, presider) */}
+      {isEditing && initialData && templateLevelPersonFields.length > 0 && (
+        <FormSectionCard
+          title="Person Assignments"
+          description="Assign people to template-level roles"
+        >
+          <PeopleEventAssignmentSection
+            masterEventId={initialData.id}
+            eventTypeId={eventType.id}
+            currentAssignments={initialData.people_event_assignments || []}
+            fieldDefinitions={templateLevelPersonFields}
+          />
+        </FormSectionCard>
+      )}
 
       {/* Form Actions */}
       <FormBottomActions

@@ -9,18 +9,31 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 // Day type enum
 export type DayType = 'IS_DAY' | 'DAY_BEFORE'
 
-// Template item interface
+/**
+ * Default assignments for a mass time slot.
+ * Keys are role property_names (e.g., 'presider', 'lector', 'emhc').
+ * Values are either:
+ *   - A single UUID string (for roles with quantity=1)
+ *   - An array of UUID strings or nulls (for roles with quantity>1, null = open slot)
+ *
+ * Example: { presider: "uuid", lector: ["uuid1", null] }
+ */
+export type DefaultAssignments = Record<string, string | (string | null)[]>
+
+/**
+ * Template item interface - represents a single mass time slot.
+ * Part of Level 2 (Mass Schedule) in the three-level mass scheduling system.
+ */
 export interface MassTimesTemplateItem {
   id: string
   mass_times_template_id: string
-  event_type_id?: string // Links to event type that defines available roles
+  event_type_id?: string // Links to event type that defines available roles (Level 1)
   time: string
   day_type: DayType
-  presider_id?: string
   location_id?: string
   length_of_time?: number // Duration in minutes
-  homilist_id?: string
-  role_quantities: Record<string, number> // Maps role property_names to quantity needed
+  role_quantities: Record<string, number> // HOW MANY of each role needed
+  default_assignments: DefaultAssignments // Default WHO for each role
   created_at: string
   updated_at: string
 }
@@ -31,11 +44,10 @@ export interface CreateTemplateItemData {
   event_type_id?: string
   time: string
   day_type: DayType
-  presider_id?: string
   location_id?: string
   length_of_time?: number
-  homilist_id?: string
   role_quantities?: Record<string, number>
+  default_assignments?: DefaultAssignments
 }
 
 // Update data interface
@@ -43,11 +55,10 @@ export interface UpdateTemplateItemData {
   event_type_id?: string
   time?: string
   day_type?: DayType
-  presider_id?: string
   location_id?: string
   length_of_time?: number
-  homilist_id?: string
   role_quantities?: Record<string, number>
+  default_assignments?: DefaultAssignments
 }
 
 /**
@@ -85,13 +96,13 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
     .from('mass_times_template_items')
     .insert([{
       mass_times_template_id: data.mass_times_template_id,
+      event_type_id: data.event_type_id,
       time: data.time,
       day_type: data.day_type,
-      presider_id: data.presider_id,
       location_id: data.location_id,
       length_of_time: data.length_of_time,
-      homilist_id: data.homilist_id,
-      role_quantities: data.role_quantities || {}
+      role_quantities: data.role_quantities || {},
+      default_assignments: data.default_assignments || {}
     }])
     .select()
     .single()
@@ -118,13 +129,13 @@ export async function updateTemplateItem(
   const supabase = await createClient()
 
   const updateData: Record<string, unknown> = {}
+  if (data.event_type_id !== undefined) updateData.event_type_id = data.event_type_id
   if (data.time !== undefined) updateData.time = data.time
   if (data.day_type !== undefined) updateData.day_type = data.day_type
-  if (data.presider_id !== undefined) updateData.presider_id = data.presider_id
   if (data.location_id !== undefined) updateData.location_id = data.location_id
   if (data.length_of_time !== undefined) updateData.length_of_time = data.length_of_time
-  if (data.homilist_id !== undefined) updateData.homilist_id = data.homilist_id
   if (data.role_quantities !== undefined) updateData.role_quantities = data.role_quantities
+  if (data.default_assignments !== undefined) updateData.default_assignments = data.default_assignments
 
   const { data: item, error } = await supabase
     .from('mass_times_template_items')
