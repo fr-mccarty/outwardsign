@@ -9,7 +9,9 @@
       "Read(.env)",
       "mcp__supabase__*",
       "Bash(supabase db push:*)",
-      "Bash(supabase db reset:*)"
+      "Bash(supabase db reset:*)",
+      "Bash(npx supabase db push:*)",
+      "Bash(npx supabase db reset:*)"
     ]
   },
   "hooks": {

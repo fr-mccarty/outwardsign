@@ -271,8 +271,15 @@ GRANT ALL ON oauth_user_permissions TO service_role;
 -- RLS POLICIES: OAUTH CLIENTS
 -- ============================================================
 
--- Anyone can view active OAuth clients (for consent screen)
-CREATE POLICY "Anyone can view active OAuth clients"
+-- Anyone (including anonymous) can view active OAuth clients
+-- Required for OAuth flow to validate client_id before user authenticates
+CREATE POLICY "Anonymous can view active OAuth clients"
+  ON oauth_clients
+  FOR SELECT
+  TO anon
+  USING (is_active = true);
+
+CREATE POLICY "Authenticated can view active OAuth clients"
   ON oauth_clients
   FOR SELECT
   TO authenticated
