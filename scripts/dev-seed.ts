@@ -12,6 +12,10 @@
  * - Avatar uploads (requires Node.js fs)
  * - Dev user person record with portal access
  *
+ * NOTE: The demo parish infrastructure (parish, user, API key) is created
+ * by the SQL migration. This script detects if the demo parish exists
+ * and uses it, otherwise falls back to creating a new dev parish.
+ *
  * Usage:
  *   npm run seed:dev
  *
@@ -25,6 +29,10 @@ import {
   runAllSeeders,
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
+
+// Demo parish ID (same as in SQL migration)
+const DEMO_PARISH_ID = '00000000-0000-0000-0000-000000000001'
+const DEMO_USER_ID = '00000000-0000-0000-0000-000000000002'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -87,110 +95,132 @@ async function seedDevData() {
   }
 
   // =====================================================
-  // Get or Create Dev User
+  // Check for Demo Parish (created by SQL migration)
   // =====================================================
   logInfo('')
-  logInfo('Setting up development user...')
+  logInfo('Checking for demo parish...')
+
+  const { data: demoParish } = await supabase
+    .from('parishes')
+    .select('id, name')
+    .eq('id', DEMO_PARISH_ID)
+    .single()
 
   let userId: string
-  let userEmail: string = devUserEmail!
+  let parishId: string
+  let parishName: string
+  const userEmail: string = devUserEmail!
 
-  const { data: existingUsers } = await supabase.auth.admin.listUsers()
-  const existingUser = existingUsers?.users.find(u => u.email === devUserEmail)
+  if (demoParish) {
+    // Demo parish exists (from SQL migration)
+    logSuccess(`Using demo parish: ${demoParish.name}`)
+    parishId = demoParish.id
+    parishName = demoParish.name
 
-  if (existingUser) {
-    logSuccess(`Using existing user: ${devUserEmail}`)
-    userId = existingUser.id
+    // Use the demo user ID from migration
+    userId = DEMO_USER_ID
+    logSuccess(`Using demo user: ${devUserEmail}`)
   } else {
-    logInfo(`Creating new user: ${devUserEmail}`)
-    const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
-      email: devUserEmail!,
-      password: devUserPassword!,
-      email_confirm: true
-    })
+    // Fallback: create dev parish and user manually
+    logWarning('Demo parish not found - creating dev environment manually')
 
-    if (createUserError) {
-      logError(`Error creating dev user: ${createUserError.message}`)
-      process.exit(1)
+    // Get or Create Dev User
+    logInfo('')
+    logInfo('Setting up development user...')
+
+    const { data: existingUsers } = await supabase.auth.admin.listUsers()
+    const existingUser = existingUsers?.users.find(u => u.email === devUserEmail)
+
+    if (existingUser) {
+      logSuccess(`Using existing user: ${devUserEmail}`)
+      userId = existingUser.id
+    } else {
+      logInfo(`Creating new user: ${devUserEmail}`)
+      const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+        email: devUserEmail!,
+        password: devUserPassword!,
+        email_confirm: true
+      })
+
+      if (createUserError) {
+        logError(`Error creating dev user: ${createUserError.message}`)
+        process.exit(1)
+      }
+
+      userId = newUser.user.id
+      logSuccess(`Created new user: ${devUserEmail}`)
     }
 
-    userId = newUser.user.id
-    logSuccess(`Created new user: ${devUserEmail}`)
-  }
+    // Get or Create Parish
+    logInfo('')
+    logInfo('Setting up development parish...')
 
-  // =====================================================
-  // Get or Create Parish
-  // =====================================================
-  logInfo('')
-  logInfo('Setting up development parish...')
-
-  const { data: existingParishes, error: parishLookupError } = await supabase
-    .from('parishes')
-    .select('*')
-    .limit(1)
-    .single()
-
-  let parishId: string
-
-  if (existingParishes && !parishLookupError) {
-    parishId = existingParishes.id
-    logSuccess(`Using existing parish: ${existingParishes.name}`)
-  } else {
-    const { data: newParish, error: createParishError } = await supabase
+    const { data: existingParishes, error: parishLookupError } = await supabase
       .from('parishes')
-      .insert({
-        name: 'Development Parish',
-        settings: {}
-      })
-      .select()
+      .select('*')
+      .limit(1)
       .single()
 
-    if (createParishError) {
-      logError(`Error creating parish: ${createParishError.message}`)
-      process.exit(1)
+    if (existingParishes && !parishLookupError) {
+      parishId = existingParishes.id
+      parishName = existingParishes.name
+      logSuccess(`Using existing parish: ${existingParishes.name}`)
+    } else {
+      const { data: newParish, error: createParishError } = await supabase
+        .from('parishes')
+        .insert({
+          name: 'Development Parish',
+          settings: {}
+        })
+        .select()
+        .single()
+
+      if (createParishError) {
+        logError(`Error creating parish: ${createParishError.message}`)
+        process.exit(1)
+      }
+
+      parishId = newParish.id
+      parishName = newParish.name
+      logSuccess(`Created new parish: ${newParish.name}`)
     }
 
-    parishId = newParish.id
-    logSuccess(`Created new parish: ${newParish.name}`)
-  }
+    // Ensure User is Admin of Parish
+    logInfo('')
+    logInfo('Ensuring user is admin of parish...')
 
-  // =====================================================
-  // Ensure User is Admin of Parish
-  // =====================================================
-  logInfo('')
-  logInfo('Ensuring user is admin of parish...')
-
-  const { data: existingMembership } = await supabase
-    .from('parish_users')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('parish_id', parishId)
-    .single()
-
-  if (existingMembership) {
-    if (existingMembership.role !== 'admin') {
-      await supabase
-        .from('parish_users')
-        .update({ role: 'admin', selected: true })
-        .eq('user_id', userId)
-        .eq('parish_id', parishId)
-    }
-    logSuccess('User is admin of parish')
-  } else {
-    const { error: membershipError } = await supabase
+    const { data: existingMembership } = await supabase
       .from('parish_users')
-      .insert({
-        user_id: userId,
-        parish_id: parishId,
-        role: 'admin',
-        selected: true
-      })
+      .select('*')
+      .eq('user_id', userId)
+      .eq('parish_id', parishId)
+      .single()
 
-    if (membershipError) {
-      logError(`Error creating parish membership: ${membershipError.message}`)
-      process.exit(1)
+    if (existingMembership) {
+      if (existingMembership.role !== 'admin') {
+        await supabase
+          .from('parish_users')
+          .update({ role: 'admin', selected: true })
+          .eq('user_id', userId)
+          .eq('parish_id', parishId)
+      }
+      logSuccess('User is admin of parish')
+    } else {
+      const { error: membershipError } = await supabase
+        .from('parish_users')
+        .insert({
+          user_id: userId,
+          parish_id: parishId,
+          role: 'admin',
+          selected: true
+        })
+
+      if (membershipError) {
+        logError(`Error creating parish membership: ${membershipError.message}`)
+        process.exit(1)
+      }
+      logSuccess('Added user as admin of parish')
     }
-    logSuccess('Added user as admin of parish')
   }
 
   // =====================================================
@@ -275,6 +305,35 @@ async function seedDevData() {
   }
 
   // =====================================================
+  // Dev-Specific: Create MCP API Key
+  // (NOT in shared module - dev-only)
+  // =====================================================
+  logInfo('')
+  logInfo('Creating dev MCP API key...')
+
+  // Pre-computed bcrypt hash for: os_dev_DEVELOPMENT_KEY_12345678
+  const devApiKeyHash = '$2b$12$R/ABBkLNFMIQcf7uwUeQM.ZsBxR54TicSvQUKVAZ8HIsDuSGwWhDG'
+
+  const { error: apiKeyError } = await supabase
+    .from('mcp_api_keys')
+    .upsert({
+      id: '00000000-0000-0000-0000-000000000003',
+      parish_id: parishId,
+      user_id: userId,
+      name: 'Dev API Key (Claude Desktop)',
+      key_prefix: 'os_dev_DEVEL',
+      key_hash: devApiKeyHash,
+      scopes: ['read', 'write', 'delete'],
+      is_active: true,
+    }, { onConflict: 'id' })
+
+  if (apiKeyError) {
+    logWarning(`Could not create MCP API key: ${apiKeyError.message}`)
+  } else {
+    logSuccess('MCP API key created: os_dev_DEVELOPMENT_KEY_12345678')
+  }
+
+  // =====================================================
   // Dev-Specific: Create Dev User Person Record
   // (NOT in shared module - dev-only)
   // =====================================================
@@ -298,6 +357,7 @@ async function seedDevData() {
   logInfo('  - Weddings and Funerals (with readings)')
   logInfo('  - Dev user person record with portal access')
   logInfo('  - Avatar images for sample people')
+  logInfo('  - MCP API key for Claude Desktop')
 
   // =====================================================
   // Done!
@@ -308,9 +368,12 @@ async function seedDevData() {
   logInfo('=' .repeat(60))
   logInfo('')
   logInfo(`Parish ID:   ${parishId}`)
-  logInfo(`Parish Name: Development Parish`)
+  logInfo(`Parish Name: ${parishName}`)
   logInfo(`User Email:  ${userEmail}`)
   logInfo(`Role:        admin`)
+  logInfo('')
+  logInfo('MCP API Key: os_dev_DEVELOPMENT_KEY_12345678')
+  logInfo('  (Use in Claude Desktop config)')
   logInfo('')
   logInfo('You can now:')
   logInfo('  - Start the dev server: npm run dev')

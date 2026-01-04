@@ -10,6 +10,23 @@ const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
+  images: {
+    remotePatterns: [
+      {
+        // Local Supabase storage (development)
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54321',
+        pathname: '/storage/v1/object/**',
+      },
+      {
+        // Supabase storage (production)
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

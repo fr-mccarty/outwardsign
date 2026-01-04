@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-c
 import { LinkButton } from '@/components/link-button'
 import { User, BookOpen, Tag, Calendar, Church, FileText, Wrench, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useIsDeveloper } from '@/components/developer-context'
 
 interface SettingsSectionLinkProps {
   icon: React.ElementType
@@ -36,6 +37,7 @@ function SettingsSectionLink({ icon: Icon, title, description, href }: SettingsS
 
 export function SettingsHubClient() {
   const t = useTranslations()
+  const isDeveloper = useIsDeveloper()
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -75,12 +77,14 @@ export function SettingsHubClient() {
         description={t('settings.sections.contentDataDescription')}
         href="/settings/content-data"
       />
-      <SettingsSectionLink
-        icon={Wrench}
-        title={t('settings.sections.developer')}
-        description={t('settings.developerTools.description')}
-        href="/settings/developer-tools"
-      />
+      {isDeveloper && (
+        <SettingsSectionLink
+          icon={Wrench}
+          title={t('settings.sections.developer')}
+          description={t('settings.developerTools.description')}
+          href="/settings/developer-tools"
+        />
+      )}
     </div>
   )
 }

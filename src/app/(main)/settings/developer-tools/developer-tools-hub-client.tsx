@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { LinkButton } from '@/components/link-button'
-import { Layers, Database, ChevronRight } from 'lucide-react'
+import { Layers, ChevronRight } from 'lucide-react'
 
 export function DeveloperToolsHubClient() {
   return (
@@ -46,46 +46,6 @@ export function DeveloperToolsHubClient() {
           </div>
           <LinkButton href="/settings/developer-tools/template-browser">
             Open Template Browser
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </LinkButton>
-        </CardContent>
-      </Card>
-
-      {/* Seed Data Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Sample Data Seeder
-          </CardTitle>
-          <CardDescription>
-            Populate your parish with realistic test data
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-muted-foreground space-y-3">
-            <p>
-              The Sample Data Seeder creates realistic test data for your parish, making it easier to
-              explore features, test workflows, and demonstrate the system without manually entering data.
-            </p>
-            <p>
-              <strong>What gets created:</strong>
-            </p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              <li><strong>People</strong> - Parishioners with names, contact info, and roles</li>
-              <li><strong>Families</strong> - Family units linking people together</li>
-              <li><strong>Masses</strong> - Scheduled masses with assigned ministers</li>
-              <li><strong>Mass Intentions</strong> - Prayer intentions for masses</li>
-              <li><strong>Weddings &amp; Funerals</strong> - Sample special liturgies with participants</li>
-              <li><strong>Scripture Readings</strong> - Content library items for liturgical use</li>
-            </ul>
-            <p>
-              <strong>Note:</strong> Seeding is additive - it won&apos;t delete existing data, but running it
-              multiple times may create duplicates.
-            </p>
-          </div>
-          <LinkButton href="/settings/developer-tools/seed-data">
-            Open Data Seeder
             <ChevronRight className="h-4 w-4 ml-2" />
           </LinkButton>
         </CardContent>

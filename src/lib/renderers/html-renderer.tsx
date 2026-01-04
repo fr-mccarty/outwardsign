@@ -5,6 +5,7 @@
  */
 
 import React from 'react'
+import Image from 'next/image'
 import {
   LiturgyDocument,
   ContentSection,
@@ -316,13 +317,12 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
             whiteSpace: 'pre-wrap'
           }}>
             {sanitizedAvatarUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={sanitizedAvatarUrl}
                 alt="Avatar"
+                width={element.avatarSize || 40}
+                height={element.avatarSize || 40}
                 style={{
-                  width: `${element.avatarSize || 40}px`,
-                  height: `${element.avatarSize || 40}px`,
                   borderRadius: '50%',
                   objectFit: 'cover',
                   marginRight: '12px',
@@ -345,34 +345,51 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
       const sanitizedUrl = sanitizeImageUrl(element.url)
       if (!sanitizedUrl) return null
 
-      const imageStyle: React.CSSProperties = {
-        display: 'block',
-        maxWidth: '100%',
-        height: 'auto',
-        borderRadius: '4px',
-      }
-
-      if (element.width) {
-        imageStyle.width = `${element.width}px`
-      }
-      if (element.height) {
-        imageStyle.height = `${element.height}px`
-      }
-
       const containerStyle: React.CSSProperties = {
         textAlign: element.alignment || 'center',
         marginTop: '8px',
         marginBottom: '8px',
       }
 
+      // If dimensions are provided, use them with explicit sizing
+      if (element.width && element.height) {
+        return (
+          <div key={index} style={containerStyle}>
+            <Image
+              src={sanitizedUrl}
+              alt={element.alt || 'Image'}
+              width={element.width}
+              height={element.height}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: '4px',
+              }}
+            />
+          </div>
+        )
+      }
+
+      // For unknown dimensions, use fill mode with a max-width container
       return (
         <div key={index} style={containerStyle}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={sanitizedUrl}
-            alt={element.alt || 'Image'}
-            style={imageStyle}
-          />
+          <div style={{
+            position: 'relative',
+            width: element.width ? `${element.width}px` : '100%',
+            maxWidth: '600px',
+            aspectRatio: '4 / 3',
+            margin: element.alignment === 'center' ? '0 auto' : undefined,
+          }}>
+            <Image
+              src={sanitizedUrl}
+              alt={element.alt || 'Image'}
+              fill
+              style={{
+                objectFit: 'contain',
+                borderRadius: '4px',
+              }}
+            />
+          </div>
         </div>
       )
     }

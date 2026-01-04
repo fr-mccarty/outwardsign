@@ -310,3 +310,73 @@ export function buildUpdateData<T extends Record<string, unknown>>(
 
   return result
 }
+
+// ============================================================================
+// AUDIT CONTEXT HELPERS
+// ============================================================================
+
+export type AuditSource = 'application' | 'ai_chat' | 'mcp' | 'system' | 'migration'
+
+export interface AuditContext {
+  source?: AuditSource
+  conversationId?: string
+  requestId?: string
+}
+
+/**
+ * Sets audit context for the current database session/transaction.
+ * Call this before any data mutations to ensure proper audit logging.
+ *
+ * The audit trigger will automatically pick up this context when logging changes.
+ *
+ * @example
+ * // In a server action:
+ * const { supabase, parishId, userId } = await createAuthenticatedClientWithPermissions()
+ * await setAuditContext(supabase, userId, user.email, { source: 'application' })
+ * // Now any INSERT/UPDATE/DELETE will be logged with this context
+ */
+export async function setAuditContext(
+  supabase: SupabaseClient,
+  userId: string,
+  userEmail?: string | null,
+  context?: AuditContext
+): Promise<void> {
+  await supabase.rpc('set_audit_context', {
+    p_user_id: userId,
+    p_user_email: userEmail || null,
+    p_source: context?.source || 'application',
+    p_conversation_id: context?.conversationId || null,
+    p_request_id: context?.requestId || null,
+  })
+}
+
+/**
+ * Creates an authenticated client with permissions and sets audit context.
+ * Use this for write operations that should be fully audited.
+ *
+ * This is an extended version of createAuthenticatedClientWithPermissions
+ * that also initializes the audit context for proper change tracking.
+ *
+ * @example
+ * const { supabase, parishId, userId } = await createAuthenticatedClientWithAudit()
+ * // All subsequent mutations will be logged with user attribution
+ */
+export async function createAuthenticatedClientWithAudit(
+  context?: AuditContext
+): Promise<AuthenticatedClientWithUser> {
+  const parishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+
+  await requireEditSharedResources(user.id, parishId)
+
+  // Set audit context for this session
+  await setAuditContext(supabase, user.id, user.email, context)
+
+  return { supabase, parishId, userId: user.id }
+}

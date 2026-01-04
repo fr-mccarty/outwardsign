@@ -27,6 +27,8 @@ interface ConfirmationDialogProps {
   itemName?: string
   /** Optional additional content to display in the dialog body */
   children?: ReactNode
+  /** Disable the confirm button */
+  confirmDisabled?: boolean
 }
 
 /**
@@ -51,6 +53,7 @@ export function ConfirmationDialog({
   preset,
   itemName,
   children,
+  confirmDisabled = false,
 }: ConfirmationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const t = useTranslations('common')
@@ -132,7 +135,7 @@ export function ConfirmationDialog({
           <Button
             variant={isDestructive ? "destructive" : "default"}
             onClick={handleConfirm}
-            disabled={isSubmitting}
+            disabled={isSubmitting || confirmDisabled}
           >
             {isSubmitting ? getSubmittingLabel() : getConfirmLabel()}
           </Button>
