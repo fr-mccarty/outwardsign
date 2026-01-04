@@ -582,46 +582,36 @@ export function OAuthSettingsClient({
                   <div className="border-t border-border pt-4">
                     <h4 className="text-sm font-medium mb-3">Configure in Claude.ai</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Add these settings when configuring your MCP server in Claude.ai:
+                      Use these settings when adding a custom connector in Claude.ai:
                     </p>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-xs text-muted-foreground">Authorization URL</Label>
+                        <Label className="text-sm font-medium">Remote MCP Server URL</Label>
                         <div className="flex items-center gap-2 mt-1">
-                          <code className="flex-1 px-2 py-1.5 bg-muted rounded text-xs font-mono">
-                            {siteUrl}/api/oauth/authorize
+                          <code className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm">
+                            {siteUrl}/mcp
                           </code>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            onClick={() => copyToClipboard(`${siteUrl}/api/oauth/authorize`, 'auth_url')}
+                            onClick={() => copyToClipboard(`${siteUrl}/mcp`, 'mcp_url')}
                           >
-                            {copiedField === 'auth_url' ? (
-                              <Check className="h-3 w-3" />
+                            {copiedField === 'mcp_url' ? (
+                              <Check className="h-4 w-4" />
                             ) : (
-                              <Copy className="h-3 w-3" />
+                              <Copy className="h-4 w-4" />
                             )}
                           </Button>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Enter this URL in the main connector configuration field
+                        </p>
                       </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Token URL</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <code className="flex-1 px-2 py-1.5 bg-muted rounded text-xs font-mono">
-                            {siteUrl}/api/oauth/token
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(`${siteUrl}/api/oauth/token`, 'token_url')}
-                          >
-                            {copiedField === 'token_url' ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </div>
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs font-medium mb-2">Advanced Settings</p>
+                        <p className="text-xs text-muted-foreground">
+                          In Claude.ai&apos;s advanced settings, enter the Client ID and Client Secret shown above.
+                        </p>
                       </div>
                     </div>
                   </div>
