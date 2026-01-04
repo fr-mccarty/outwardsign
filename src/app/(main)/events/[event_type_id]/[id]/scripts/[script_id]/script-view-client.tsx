@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Pencil, Printer, FileText, FileDown, File } from 'lucide-react'
+import { ArrowLeft, Pencil, Printer, FileText, FileDown, File, Bug } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
@@ -73,6 +73,12 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
       >
         <Pencil className="h-4 w-4 mr-2" />
         Edit Script
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/settings/developer-tools/scripts/${script.id}`}>
+          <Bug className="h-4 w-4 mr-2" />
+          Troubleshoot Script
+        </Link>
       </Button>
     </>
   )
