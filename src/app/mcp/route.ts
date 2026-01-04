@@ -30,13 +30,27 @@ interface MCPResponse {
   }
 }
 
-// Extract Bearer token from Authorization header
+// Extract Bearer token from Authorization header or query param
 function extractBearerToken(request: NextRequest): string | null {
+  // Try Authorization header first
   const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.substring(7)
   }
-  return authHeader.substring(7)
+
+  // Try query parameter (some MCP clients pass token this way)
+  const tokenParam = request.nextUrl.searchParams.get('token')
+  if (tokenParam) {
+    return tokenParam
+  }
+
+  // Try access_token query param (OAuth standard)
+  const accessToken = request.nextUrl.searchParams.get('access_token')
+  if (accessToken) {
+    return accessToken
+  }
+
+  return null
 }
 
 // GET /mcp - SSE endpoint for MCP communication
@@ -44,8 +58,22 @@ export async function GET(request: NextRequest) {
   // Extract and validate OAuth token
   const token = extractBearerToken(request)
   if (!token) {
+    // Log headers for debugging (without sensitive data)
+    const hasAuthHeader = !!request.headers.get('authorization')
+    const hasTokenParam = !!request.nextUrl.searchParams.get('token')
+    const hasAccessTokenParam = !!request.nextUrl.searchParams.get('access_token')
+
     return NextResponse.json(
-      { error: 'unauthorized', error_description: 'Missing Authorization header' },
+      {
+        error: 'unauthorized',
+        error_description: 'Missing access token',
+        debug: {
+          hasAuthHeader,
+          hasTokenParam,
+          hasAccessTokenParam,
+          hint: 'Pass token via Authorization: Bearer <token> header or ?access_token=<token> query param',
+        },
+      },
       { status: 401 }
     )
   }
@@ -53,7 +81,14 @@ export async function GET(request: NextRequest) {
   const context = await validateAccessToken(token)
   if (!context) {
     return NextResponse.json(
-      { error: 'invalid_token', error_description: 'Invalid or expired access token' },
+      {
+        error: 'invalid_token',
+        error_description: 'Invalid or expired access token',
+        debug: {
+          tokenPrefix: token.substring(0, 12),
+          hint: 'Token may be expired, revoked, or malformed',
+        },
+      },
       { status: 401 }
     )
   }
@@ -113,8 +148,13 @@ export async function POST(request: NextRequest) {
   // Extract and validate OAuth token
   const token = extractBearerToken(request)
   if (!token) {
+    const hasAuthHeader = !!request.headers.get('authorization')
     return NextResponse.json(
-      { error: 'unauthorized', error_description: 'Missing Authorization header' },
+      {
+        error: 'unauthorized',
+        error_description: 'Missing access token',
+        debug: { hasAuthHeader },
+      },
       { status: 401 }
     )
   }
@@ -122,7 +162,11 @@ export async function POST(request: NextRequest) {
   const context = await validateAccessToken(token)
   if (!context) {
     return NextResponse.json(
-      { error: 'invalid_token', error_description: 'Invalid or expired access token' },
+      {
+        error: 'invalid_token',
+        error_description: 'Invalid or expired access token',
+        debug: { tokenPrefix: token.substring(0, 12) },
+      },
       { status: 401 }
     )
   }
@@ -291,66 +335,65 @@ function getAvailableTools(scopes: string[]) {
     tools.push(
       {
         name: 'list_events',
-        description: 'List upcoming events (weddings, funerals, baptisms, etc.)',
+        description: 'Search and list events (weddings, funerals, baptisms, etc.). Can filter by event type and date range.',
         inputSchema: {
           type: 'object',
           properties: {
-            event_type: { type: 'string', description: 'Filter by event type slug' },
-            limit: { type: 'number', description: 'Maximum number of events to return' },
+            event_type_id: { type: 'string', description: 'Filter by event type UUID' },
+            start_date: { type: 'string', description: 'Start date filter (YYYY-MM-DD)' },
+            end_date: { type: 'string', description: 'End date filter (YYYY-MM-DD)' },
+            limit: { type: 'number', description: 'Maximum number of events to return (default: 20)' },
           },
         },
       },
       {
         name: 'get_event',
-        description: 'Get details of a specific event',
+        description: 'Get details of a specific event by ID',
         inputSchema: {
           type: 'object',
           properties: {
-            event_id: { type: 'string', description: 'The event ID' },
+            event_id: { type: 'string', description: 'The event UUID' },
           },
           required: ['event_id'],
         },
       },
       {
+        name: 'get_calendar_events',
+        description: 'Get calendar events for a date range. Returns events with times and locations.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            start_date: { type: 'string', description: 'Start date (YYYY-MM-DD)' },
+            end_date: { type: 'string', description: 'End date (YYYY-MM-DD)' },
+            limit: { type: 'number', description: 'Maximum number of results (default: 50)' },
+          },
+          required: ['start_date', 'end_date'],
+        },
+      },
+      {
         name: 'list_people',
-        description: 'List people in the parish directory',
+        description: 'List people in the parish directory. Can search by name.',
         inputSchema: {
           type: 'object',
           properties: {
             search: { type: 'string', description: 'Search by name' },
-            limit: { type: 'number', description: 'Maximum number to return' },
+            limit: { type: 'number', description: 'Maximum number to return (default: 20)' },
           },
         },
       },
       {
         name: 'list_masses',
-        description: 'List upcoming masses',
+        description: 'List upcoming Masses with their times and locations.',
         inputSchema: {
           type: 'object',
           properties: {
-            limit: { type: 'number', description: 'Maximum number to return' },
+            start_date: { type: 'string', description: 'Start date (YYYY-MM-DD). Defaults to today.' },
+            end_date: { type: 'string', description: 'End date (YYYY-MM-DD). Defaults to 7 days from start.' },
+            limit: { type: 'number', description: 'Maximum number to return (default: 20)' },
           },
         },
       }
     )
-  }
-
-  // Write tools
-  if (scopes.includes('write') || scopes.includes('delete')) {
-    tools.push({
-      name: 'create_event',
-      description: 'Create a new event',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          event_type_id: { type: 'string', description: 'Event type ID' },
-          date: { type: 'string', description: 'Event date (YYYY-MM-DD)' },
-          time: { type: 'string', description: 'Event time (HH:MM)' },
-          location_id: { type: 'string', description: 'Location ID' },
-        },
-        required: ['event_type_id', 'date'],
-      },
-    })
   }
 
   return tools
@@ -365,49 +408,76 @@ async function executeToolByName(
 ) {
   switch (name) {
     case 'list_events': {
-      const { event_type, limit = 20 } = args as { event_type?: string; limit?: number }
+      const { event_type_id, start_date, end_date, limit = 20 } = args as {
+        event_type_id?: string
+        start_date?: string
+        end_date?: string
+        limit?: number
+      }
 
+      // Query master_events with their calendar_events
       let query = supabase
-        .from('events')
-        .select('id, date, time, status, event_types(name, slug)')
+        .from('master_events')
+        .select(`
+          id,
+          status,
+          field_values,
+          created_at,
+          event_type:event_types(id, name, slug, system_type),
+          calendar_events(id, start_datetime, end_datetime, location:locations(id, name))
+        `)
         .eq('parish_id', context.parishId)
         .is('deleted_at', null)
-        .gte('date', new Date().toISOString().split('T')[0])
-        .order('date', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(limit)
 
-      if (event_type) {
-        const { data: eventType } = await supabase
-          .from('event_types')
-          .select('id')
-          .eq('parish_id', context.parishId)
-          .eq('slug', event_type)
-          .single()
-
-        if (eventType) {
-          query = query.eq('event_type_id', eventType.id)
-        }
+      if (event_type_id) {
+        query = query.eq('event_type_id', event_type_id)
       }
 
       const { data, error } = await query
 
       if (error) throw new Error(error.message)
-      return { events: data }
+
+      // Filter by date range if provided
+      let filteredData = data || []
+      if (start_date || end_date) {
+        filteredData = filteredData.filter((event) => {
+          const calendarEvents = event.calendar_events as Array<{ start_datetime: string }>
+          if (!calendarEvents || calendarEvents.length === 0) return false
+
+          return calendarEvents.some((ce) => {
+            const eventDate = ce.start_datetime.split('T')[0]
+            if (start_date && eventDate < start_date) return false
+            if (end_date && eventDate > end_date) return false
+            return true
+          })
+        })
+      }
+
+      return { success: true, count: filteredData.length, data: filteredData }
     }
 
     case 'get_event': {
       const { event_id } = args as { event_id: string }
 
       const { data, error } = await supabase
-        .from('events')
-        .select('*, event_types(name, slug), locations(name)')
+        .from('master_events')
+        .select(`
+          id,
+          status,
+          field_values,
+          created_at,
+          event_type:event_types(id, name, slug, system_type),
+          calendar_events(id, start_datetime, end_datetime, location:locations(id, name))
+        `)
         .eq('id', event_id)
         .eq('parish_id', context.parishId)
         .is('deleted_at', null)
         .single()
 
       if (error) throw new Error(error.message)
-      return { event: data }
+      return { success: true, data }
     }
 
     case 'list_people': {
@@ -415,7 +485,7 @@ async function executeToolByName(
 
       let query = supabase
         .from('people')
-        .select('id, first_name, last_name, email, phone')
+        .select('id, first_name, last_name, full_name, email, phone_number')
         .eq('parish_id', context.parishId)
         .is('deleted_at', null)
         .order('last_name', { ascending: true })
@@ -428,54 +498,92 @@ async function executeToolByName(
       const { data, error } = await query
 
       if (error) throw new Error(error.message)
-      return { people: data }
+      return { success: true, count: data?.length || 0, data: data || [] }
     }
 
     case 'list_masses': {
-      const { limit = 20 } = args as { limit?: number }
+      const { start_date, end_date, limit = 20 } = args as {
+        start_date?: string
+        end_date?: string
+        limit?: number
+      }
+
+      const today = new Date().toISOString().split('T')[0]
+      const startDateValue = start_date || today
+      const endDateValue = end_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+      // Get mass-liturgy event type
+      const { data: massEventType } = await supabase
+        .from('event_types')
+        .select('id')
+        .eq('parish_id', context.parishId)
+        .eq('system_type', 'mass-liturgy')
+        .is('deleted_at', null)
+        .single()
+
+      if (!massEventType) {
+        return { success: true, count: 0, data: [], message: 'No mass event type configured' }
+      }
 
       const { data, error } = await supabase
-        .from('masses')
-        .select('id, date, time, name, locations(name)')
+        .from('calendar_events')
+        .select(`
+          id,
+          start_datetime,
+          end_datetime,
+          is_cancelled,
+          location:locations(id, name),
+          master_event:master_events!inner(
+            id,
+            status,
+            field_values,
+            event_type_id
+          )
+        `)
         .eq('parish_id', context.parishId)
+        .eq('master_event.event_type_id', massEventType.id)
         .is('deleted_at', null)
-        .gte('date', new Date().toISOString().split('T')[0])
-        .order('date', { ascending: true })
+        .gte('start_datetime', `${startDateValue}T00:00:00`)
+        .lte('start_datetime', `${endDateValue}T23:59:59`)
+        .order('start_datetime')
         .limit(limit)
 
       if (error) throw new Error(error.message)
-      return { masses: data }
+      return { success: true, count: data?.length || 0, data: data || [] }
     }
 
-    case 'create_event': {
-      // Check write scope
-      if (!context.scopes.includes('write') && !context.scopes.includes('delete')) {
-        throw new Error('Insufficient permissions: write scope required')
-      }
-
-      const { event_type_id, date, time, location_id } = args as {
-        event_type_id: string
-        date: string
-        time?: string
-        location_id?: string
+    case 'get_calendar_events': {
+      const { start_date, end_date, limit = 50 } = args as {
+        start_date: string
+        end_date: string
+        limit?: number
       }
 
       const { data, error } = await supabase
-        .from('events')
-        .insert({
-          parish_id: context.parishId,
-          event_type_id,
-          date,
-          time: time || null,
-          location_id: location_id || null,
-          status: 'scheduled',
-          created_by: context.userId,
-        })
-        .select()
-        .single()
+        .from('calendar_events')
+        .select(`
+          id,
+          start_datetime,
+          end_datetime,
+          is_cancelled,
+          is_all_day,
+          location:locations(id, name, address),
+          master_event:master_events(
+            id,
+            status,
+            field_values,
+            event_type:event_types(id, name, slug, system_type, icon)
+          )
+        `)
+        .eq('parish_id', context.parishId)
+        .is('deleted_at', null)
+        .gte('start_datetime', `${start_date}T00:00:00`)
+        .lte('start_datetime', `${end_date}T23:59:59`)
+        .order('start_datetime')
+        .limit(limit)
 
       if (error) throw new Error(error.message)
-      return { event: data, success: true }
+      return { success: true, count: data?.length || 0, data: data || [] }
     }
 
     default:
