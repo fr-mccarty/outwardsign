@@ -62,7 +62,7 @@ function LoginForm() {
     })
 
     if (loginError) {
-      setError(loginError.message)
+      setError(loginError.message || JSON.stringify(loginError) || 'Login failed')
       setLoading(false)
       return
     }

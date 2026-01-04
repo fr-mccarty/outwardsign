@@ -23,6 +23,9 @@ import {
   MoreVertical,
   AlertTriangle,
   Trash2,
+  Copy,
+  Check,
+  RefreshCw,
 } from 'lucide-react'
 import {
   updateParishOAuthSettings,
@@ -33,7 +36,19 @@ import {
   getParishOAuthSettings,
   getParishUserOAuthPermissions,
   getParishActiveTokens,
+  getParishOAuthClient,
+  generateParishOAuthClient,
+  regenerateParishClientSecret,
+  deleteParishOAuthClient,
+  getParishUsersForOAuthPermissions,
 } from '@/lib/actions/oauth'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { toast } from 'sonner'
 import { formatDatePretty, formatDateRelative } from '@/lib/utils/formatters'
 import type { OAuthScope, OAuthUserPermissions } from '@/lib/oauth/types'
@@ -57,17 +72,39 @@ interface OAuthSettingsClientProps {
     expires_at: string
     last_used_at: string | null
   }>
+  initialClient: {
+    client_id: string
+    name: string
+    description: string | null
+    created_at: string
+    client_secret_prefix: string
+  } | null
+  siteUrl: string
 }
 
 export function OAuthSettingsClient({
   initialSettings,
   initialUserPermissions,
   initialActiveTokens,
+  initialClient,
+  siteUrl,
 }: OAuthSettingsClientProps) {
   const [settings, setSettings] = useState(initialSettings)
   const [userPermissions, setUserPermissions] = useState(initialUserPermissions)
   const [activeTokens, setActiveTokens] = useState(initialActiveTokens)
+  const [client, setClient] = useState(initialClient)
   const [saving, setSaving] = useState(false)
+
+  // Client credentials state
+  const [generatedSecret, setGeneratedSecret] = useState<string | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [generatingClient, setGeneratingClient] = useState(false)
+
+  // Regenerate secret dialog
+  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false)
+
+  // Delete client dialog
+  const [deleteClientDialogOpen, setDeleteClientDialogOpen] = useState(false)
 
   // Edit user permissions dialog
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false)
@@ -79,23 +116,87 @@ export function OAuthSettingsClient({
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<(OAuthUserPermissions & { user_email: string | null }) | null>(null)
 
+  // Add user permissions dialog
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false)
+  const [availableUsers, setAvailableUsers] = useState<Array<{ user_id: string; email: string; roles: string[] }>>([])
+  const [selectedUserId, setSelectedUserId] = useState<string>('')
+  const [addUserEnabled, setAddUserEnabled] = useState(true)
+  const [addUserScopes, setAddUserScopes] = useState<OAuthScope[]>(['read', 'profile'])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+
   // Revoke token dialog
   const [revokeTokenDialogOpen, setRevokeTokenDialogOpen] = useState(false)
   const [tokenToRevoke, setTokenToRevoke] = useState<{ id: string; type: 'access' | 'refresh'; user_email: string | null } | null>(null)
 
   async function loadData() {
     try {
-      const [newSettings, newPermissions, newTokens] = await Promise.all([
+      const [newSettings, newPermissions, newTokens, newClient] = await Promise.all([
         getParishOAuthSettings(),
         getParishUserOAuthPermissions(),
         getParishActiveTokens(),
+        getParishOAuthClient(),
       ])
       setSettings(newSettings)
       setUserPermissions(newPermissions)
       setActiveTokens(newTokens)
+      setClient(newClient)
     } catch (error) {
       console.error('Error loading OAuth data:', error)
       toast.error('Failed to load OAuth settings')
+    }
+  }
+
+  // Copy to clipboard helper
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch {
+      toast.error('Failed to copy to clipboard')
+    }
+  }
+
+  // Client management handlers
+  const handleGenerateClient = async () => {
+    try {
+      setGeneratingClient(true)
+      const result = await generateParishOAuthClient()
+      setGeneratedSecret(result.client_secret)
+      await loadData()
+      toast.success('OAuth client created successfully')
+    } catch (error) {
+      console.error('Error generating OAuth client:', error)
+      toast.error('Failed to create OAuth client')
+    } finally {
+      setGeneratingClient(false)
+    }
+  }
+
+  const handleRegenerateSecret = async () => {
+    try {
+      const result = await regenerateParishClientSecret()
+      setGeneratedSecret(result.client_secret)
+      setRegenerateDialogOpen(false)
+      toast.success('Client secret regenerated')
+    } catch (error) {
+      console.error('Error regenerating secret:', error)
+      toast.error('Failed to regenerate secret')
+      throw error
+    }
+  }
+
+  const handleDeleteClient = async () => {
+    try {
+      await deleteParishOAuthClient()
+      setClient(null)
+      setGeneratedSecret(null)
+      setDeleteClientDialogOpen(false)
+      toast.success('OAuth client deleted')
+    } catch (error) {
+      console.error('Error deleting client:', error)
+      toast.error('Failed to delete OAuth client')
+      throw error
     }
   }
 
@@ -181,6 +282,47 @@ export function OAuthSettingsClient({
       console.error('Error deleting user permissions:', error)
       toast.error('Failed to reset permissions')
       throw error
+    }
+  }
+
+  const handleOpenAddUser = async () => {
+    try {
+      setLoadingUsers(true)
+      const users = await getParishUsersForOAuthPermissions()
+      setAvailableUsers(users)
+      setSelectedUserId('')
+      setAddUserEnabled(true)
+      setAddUserScopes(['read', 'profile'])
+      setAddUserDialogOpen(true)
+    } catch (error) {
+      console.error('Error loading users:', error)
+      toast.error('Failed to load users')
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
+
+  const handleSaveAddUser = async () => {
+    if (!selectedUserId) {
+      toast.error('Please select a user')
+      return
+    }
+
+    try {
+      setSaving(true)
+      await updateUserOAuthPermissions(selectedUserId, {
+        oauth_enabled: addUserEnabled,
+        allowed_scopes: addUserScopes,
+      })
+      toast.success('User permissions added')
+      setAddUserDialogOpen(false)
+      setSelectedUserId('')
+      await loadData()
+    } catch (error) {
+      console.error('Error adding user permissions:', error)
+      toast.error('Failed to add user permissions')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -326,36 +468,190 @@ export function OAuthSettingsClient({
         title="OAuth Settings"
         description="Manage OAuth access for third-party applications like Claude.ai. Control which users can authorize apps and what data they can access."
       >
-        {/* Main Settings */}
+        {/* Enable/Disable OAuth */}
         <ContentCard>
-          <div className="flex items-center gap-3 mb-6">
-            <Settings className="h-5 w-5 text-muted-foreground" />
-            <h3 className="font-semibold">Parish OAuth Settings</h3>
-          </div>
-
-          <div className="space-y-6">
-            {/* Enable/Disable OAuth */}
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="oauth-enabled" className="font-medium">
-                  Enable OAuth
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow third-party applications to access parish data
-                </p>
-              </div>
-              <Switch
-                id="oauth-enabled"
-                checked={settings.oauth_enabled}
-                onCheckedChange={handleToggleOAuth}
-                disabled={saving}
-              />
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">Enable OAuth</h3>
+              <p className="text-sm text-muted-foreground">
+                Allow third-party applications like Claude.ai to access parish data on behalf of users
+              </p>
             </div>
+            <Switch
+              id="oauth-enabled"
+              checked={settings.oauth_enabled}
+              onCheckedChange={handleToggleOAuth}
+              disabled={saving}
+            />
+          </div>
+        </ContentCard>
+
+        {settings.oauth_enabled && (
+          <>
+            {/* Claude.ai Integration */}
+            <ContentCard>
+              <div className="flex items-center gap-3 mb-6">
+                <Key className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">Claude.ai Integration</h3>
+              </div>
+
+              {!client ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Generate client credentials to connect your parish with Claude.ai.
+                    These credentials will be used to configure the MCP server connection.
+                  </p>
+                  <Button
+                    onClick={handleGenerateClient}
+                    disabled={generatingClient}
+                  >
+                    {generatingClient ? 'Generating...' : 'Generate Client Credentials'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Credentials Display */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Client ID</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm">
+                          {client.client_id}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(client.client_id, 'client_id')}
+                        >
+                          {copiedField === 'client_id' ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Client Secret</Label>
+                      {generatedSecret ? (
+                        <div className="space-y-2 mt-1">
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm break-all">
+                              {generatedSecret}
+                            </code>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyToClipboard(generatedSecret, 'client_secret')}
+                            >
+                              {copiedField === 'client_secret' ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                          <div className="p-3 bg-warning/10 border border-warning rounded-lg">
+                            <div className="flex items-start gap-2 text-warning">
+                              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm">
+                                Copy this secret now. It cannot be shown again.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm text-muted-foreground">
+                            {client.client_secret_prefix}••••••••••••••••
+                          </code>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRegenerateDialogOpen(true)}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Configuration Instructions */}
+                  <div className="border-t border-border pt-4">
+                    <h4 className="text-sm font-medium mb-3">Configure in Claude.ai</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add these settings when configuring your MCP server in Claude.ai:
+                    </p>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Authorization URL</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 px-2 py-1.5 bg-muted rounded text-xs font-mono">
+                            {siteUrl}/api/oauth/authorize
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(`${siteUrl}/api/oauth/authorize`, 'auth_url')}
+                          >
+                            {copiedField === 'auth_url' ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Token URL</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 px-2 py-1.5 bg-muted rounded text-xs font-mono">
+                            {siteUrl}/api/oauth/token
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(`${siteUrl}/api/oauth/token`, 'token_url')}
+                          >
+                            {copiedField === 'token_url' ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between border-t border-border pt-4">
+                    <div className="text-xs text-muted-foreground">
+                      Created {formatDatePretty(client.created_at)}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => setDeleteClientDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Client
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </ContentCard>
 
             {/* Default Scopes */}
-            <div>
-              <Label className="font-medium">Default User Scopes</Label>
-              <p className="text-sm text-muted-foreground mb-3">
+            <ContentCard>
+              <div className="flex items-center gap-3 mb-6">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">Default User Scopes</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
                 Default permissions for users without custom settings
               </p>
               <div className="space-y-2">
@@ -379,29 +675,31 @@ export function OAuthSettingsClient({
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </ContentCard>
+            </ContentCard>
 
-        {/* User Permissions */}
-        <ListCard
-          title="User Permissions"
-          description="Custom OAuth permissions for specific users. Users not listed use the default settings."
-          items={userPermissions}
-          renderItem={renderUserPermissionItem}
-          getItemId={(perm) => perm.id}
-          emptyMessage="No custom user permissions. All users use the default settings above."
-        />
+            {/* User Permissions */}
+            <ListCard
+              title="User Permissions"
+              description="Custom OAuth permissions for specific users. Users not listed use the default settings."
+              items={userPermissions}
+              renderItem={renderUserPermissionItem}
+              getItemId={(perm) => perm.id}
+              emptyMessage="No custom user permissions. All users use the default settings above."
+              onAdd={handleOpenAddUser}
+              addButtonLabel="Add User"
+            />
 
-        {/* Active Tokens */}
-        <ListCard
-          title="Active Tokens"
-          description="Currently active OAuth tokens. Revoke tokens to immediately terminate access."
-          items={activeTokens}
-          renderItem={renderTokenItem}
-          getItemId={(token) => token.id}
-          emptyMessage="No active OAuth tokens."
-        />
+            {/* Active Tokens */}
+            <ListCard
+              title="Active Tokens"
+              description="Currently active OAuth tokens. Revoke tokens to immediately terminate access."
+              items={activeTokens}
+              renderItem={renderTokenItem}
+              getItemId={(token) => token.id}
+              emptyMessage="No active OAuth tokens."
+            />
+          </>
+        )}
       </PageContainer>
 
       {/* Edit User Permissions Dialog */}
@@ -507,6 +805,160 @@ export function OAuthSettingsClient({
           user re-authorizes.
         </p>
       </ConfirmationDialog>
+
+      {/* Regenerate Client Secret Dialog */}
+      <ConfirmationDialog
+        open={regenerateDialogOpen}
+        onOpenChange={setRegenerateDialogOpen}
+        title="Regenerate Client Secret"
+        itemName="client secret"
+        confirmLabel="Regenerate"
+        onConfirm={handleRegenerateSecret}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            This will generate a new client secret. The old secret will immediately stop working.
+          </p>
+          <div className="p-3 bg-warning/10 border border-warning rounded-lg">
+            <div className="flex items-start gap-2 text-warning">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                You will need to update the secret in Claude.ai after regenerating.
+              </span>
+            </div>
+          </div>
+        </div>
+      </ConfirmationDialog>
+
+      {/* Delete Client Dialog */}
+      <ConfirmationDialog
+        open={deleteClientDialogOpen}
+        onOpenChange={setDeleteClientDialogOpen}
+        title="Delete OAuth Client"
+        itemName="OAuth client"
+        confirmLabel="Delete"
+        onConfirm={handleDeleteClient}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            This will permanently delete the OAuth client and revoke all associated tokens and consents.
+          </p>
+          <div className="p-3 bg-destructive/10 border border-destructive rounded-lg">
+            <div className="flex items-start gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                All users will lose access to Claude.ai integration until a new client is created.
+              </span>
+            </div>
+          </div>
+        </div>
+      </ConfirmationDialog>
+
+      {/* Add User Permissions Dialog */}
+      <FormDialog
+        open={addUserDialogOpen}
+        onOpenChange={setAddUserDialogOpen}
+        title="Add User Permissions"
+        description="Configure custom OAuth permissions for a specific user"
+        onSubmit={handleSaveAddUser}
+        isLoading={saving}
+        submitLabel="Add"
+        loadingLabel="Adding..."
+      >
+        <div className="space-y-4 py-4">
+          <div>
+            <Label className="font-medium">Select User</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Choose a user to configure custom OAuth permissions
+            </p>
+            {loadingUsers ? (
+              <div className="text-sm text-muted-foreground">Loading users...</div>
+            ) : availableUsers.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                All users already have custom permissions configured.
+              </div>
+            ) : (
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableUsers.map((user) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      <div className="flex items-center gap-2">
+                        <span>{user.email}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({user.roles.join(', ')})
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="add-user-oauth-enabled" className="font-medium">
+                OAuth Enabled
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Allow this user to authorize applications
+              </p>
+            </div>
+            <Switch
+              id="add-user-oauth-enabled"
+              checked={addUserEnabled}
+              onCheckedChange={setAddUserEnabled}
+            />
+          </div>
+
+          <div>
+            <Label className="font-medium">Allowed Scopes</Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Maximum scopes this user can grant to applications
+            </p>
+            <div className="space-y-2">
+              {OAUTH_SCOPES.map((scope) => (
+                <div key={scope} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`add-user-scope-${scope}`}
+                    checked={addUserScopes.includes(scope)}
+                    onCheckedChange={() => {
+                      setAddUserScopes((prev) =>
+                        prev.includes(scope)
+                          ? prev.filter((s) => s !== scope)
+                          : [...prev, scope]
+                      )
+                    }}
+                  />
+                  <label
+                    htmlFor={`add-user-scope-${scope}`}
+                    className="text-sm font-medium capitalize"
+                  >
+                    {scope}
+                  </label>
+                  <span className="text-xs text-muted-foreground">
+                    - {SCOPE_DESCRIPTIONS[scope]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {addUserScopes.includes('delete') && (
+            <div className="p-3 bg-warning/10 border border-warning rounded-lg">
+              <div className="flex items-center gap-2 text-warning">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  Delete scope allows removing parish data
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </FormDialog>
     </>
   )
 }

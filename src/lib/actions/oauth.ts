@@ -19,6 +19,7 @@ import {
   generateAuthorizationCode,
   generateAccessToken,
   generateRefreshToken,
+  generateClientSecret,
   validateClientSecret,
   verifyCodeChallenge,
   parseScopes,
@@ -791,6 +792,50 @@ export async function getUserOAuthPermissions(userId: string): Promise<OAuthUser
 }
 
 /**
+ * Get parish users available for OAuth permission configuration.
+ * Returns users who don't already have custom OAuth permissions.
+ */
+export async function getParishUsersForOAuthPermissions(): Promise<
+  Array<{ user_id: string; email: string; roles: string[] }>
+> {
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
+  const adminSupabase = createAdminClient()
+
+  // Get all parish users
+  const { data: parishUsers, error: parishError } = await supabase
+    .from('parish_users')
+    .select('user_id, roles')
+    .eq('parish_id', parishId)
+    .is('deleted_at', null)
+
+  if (parishError) handleSupabaseError(parishError, 'fetching', 'parish users')
+
+  // Get users who already have custom permissions
+  const { data: existingPermissions } = await supabase
+    .from('oauth_user_permissions')
+    .select('user_id')
+    .eq('parish_id', parishId)
+
+  const existingUserIds = new Set((existingPermissions || []).map((p) => p.user_id))
+
+  // Filter to users without custom permissions and get their emails
+  const availableUsers = (parishUsers || []).filter((pu) => !existingUserIds.has(pu.user_id))
+
+  const result = await Promise.all(
+    availableUsers.map(async (pu) => {
+      const { data: user } = await adminSupabase.auth.admin.getUserById(pu.user_id)
+      return {
+        user_id: pu.user_id,
+        email: user?.user?.email ?? 'Unknown',
+        roles: pu.roles as string[],
+      }
+    })
+  )
+
+  return result.sort((a, b) => a.email.localeCompare(b.email))
+}
+
+/**
  * Update OAuth permissions for a user (admin only).
  */
 export async function updateUserOAuthPermissions(
@@ -1007,6 +1052,177 @@ export async function adminRevokeUserTokens(userId: string): Promise<void> {
     .eq('user_id', userId)
     .eq('parish_id', parishId)
     .is('revoked_at', null)
+
+  revalidateEntity('settings/parish/oauth-settings')
+}
+
+// ============================================================================
+// PARISH OAUTH CLIENT MANAGEMENT
+// ============================================================================
+
+/**
+ * Get the OAuth client for the current parish (for Claude.ai integration).
+ */
+export async function getParishOAuthClient(): Promise<{
+  client_id: string
+  name: string
+  description: string | null
+  created_at: string
+  client_secret_prefix: string
+} | null> {
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
+
+  const { data, error } = await supabase
+    .from('oauth_clients')
+    .select('client_id, name, description, created_at, client_secret_prefix')
+    .eq('parish_id', parishId)
+    .eq('is_active', true)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') return null // Not found
+    handleSupabaseError(error, 'fetching', 'OAuth client')
+  }
+
+  return data
+}
+
+/**
+ * Generate a new OAuth client for the parish (for Claude.ai integration).
+ * Returns the client secret ONCE - it cannot be retrieved again.
+ */
+export async function generateParishOAuthClient(): Promise<{
+  client_id: string
+  client_secret: string
+}> {
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
+
+  // Check if client already exists
+  const existing = await getParishOAuthClient()
+  if (existing) {
+    throw new Error('OAuth client already exists. Use regenerate to get a new secret.')
+  }
+
+  // Get parish for naming
+  const { data: parish } = await supabase
+    .from('parishes')
+    .select('name')
+    .eq('id', parishId)
+    .single()
+
+  // Generate client ID and secret
+  const clientIdSuffix = parishId.substring(0, 8)
+  const clientId = `os_${clientIdSuffix}`
+  const secret = await generateClientSecret()
+
+  // Insert new client
+  const { error } = await supabase
+    .from('oauth_clients')
+    .insert({
+      parish_id: parishId,
+      client_id: clientId,
+      client_secret_hash: secret.hash,
+      client_secret_prefix: secret.prefix,
+      name: `${parish?.name || 'Parish'} - Claude.ai`,
+      description: 'OAuth client for Claude.ai MCP integration',
+      redirect_uris: [
+        'https://claude.ai/api/mcp/auth_callback',
+        'https://claude.com/api/mcp/auth_callback',
+      ],
+      allowed_scopes: ['read', 'write', 'profile'],
+      is_first_party: false,
+      is_confidential: true,
+      is_active: true,
+    })
+
+  if (error) handleSupabaseError(error, 'creating', 'OAuth client')
+
+  revalidateEntity('settings/parish/oauth-settings')
+
+  return {
+    client_id: clientId,
+    client_secret: secret.token,
+  }
+}
+
+/**
+ * Regenerate the client secret for the parish OAuth client.
+ * Returns the new secret ONCE - it cannot be retrieved again.
+ */
+export async function regenerateParishClientSecret(): Promise<{
+  client_secret: string
+}> {
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
+
+  // Check if client exists
+  const existing = await getParishOAuthClient()
+  if (!existing) {
+    throw new Error('No OAuth client exists. Generate one first.')
+  }
+
+  // Generate new secret
+  const secret = await generateClientSecret()
+
+  // Update client
+  const { error } = await supabase
+    .from('oauth_clients')
+    .update({
+      client_secret_hash: secret.hash,
+      client_secret_prefix: secret.prefix,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('parish_id', parishId)
+
+  if (error) handleSupabaseError(error, 'updating', 'OAuth client secret')
+
+  revalidateEntity('settings/parish/oauth-settings')
+
+  return {
+    client_secret: secret.token,
+  }
+}
+
+/**
+ * Delete the parish OAuth client and revoke all its tokens.
+ */
+export async function deleteParishOAuthClient(): Promise<void> {
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
+
+  // Get client to get client_id
+  const existing = await getParishOAuthClient()
+  if (!existing) {
+    return // Nothing to delete
+  }
+
+  // Revoke all tokens for this client
+  const adminSupabase = createAdminClient()
+
+  await adminSupabase
+    .from('oauth_access_tokens')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('client_id', existing.client_id)
+    .is('revoked_at', null)
+
+  await adminSupabase
+    .from('oauth_refresh_tokens')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('client_id', existing.client_id)
+    .is('revoked_at', null)
+
+  // Revoke all consents
+  await adminSupabase
+    .from('oauth_user_consents')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('client_id', existing.client_id)
+    .is('revoked_at', null)
+
+  // Delete client
+  const { error } = await supabase
+    .from('oauth_clients')
+    .delete()
+    .eq('parish_id', parishId)
+
+  if (error) handleSupabaseError(error, 'deleting', 'OAuth client')
 
   revalidateEntity('settings/parish/oauth-settings')
 }

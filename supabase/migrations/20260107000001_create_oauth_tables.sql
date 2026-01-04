@@ -13,14 +13,17 @@
 CREATE TABLE oauth_clients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+  -- Parish scope (null for legacy global clients)
+  parish_id UUID REFERENCES parishes(id) ON DELETE CASCADE,
+
   -- Client identification
-  client_id TEXT NOT NULL UNIQUE,               -- Public identifier: "claude_ai_xxxxxxxx"
+  client_id TEXT NOT NULL UNIQUE,               -- Public identifier: "os_xxxxxxxx"
   client_secret_hash TEXT NOT NULL,             -- bcrypt hash of client secret
   client_secret_prefix TEXT NOT NULL,           -- First 8 chars for display
 
   -- Client metadata
-  name TEXT NOT NULL,                           -- "Claude.ai"
-  description TEXT,                             -- "Anthropic's AI Assistant"
+  name TEXT NOT NULL,                           -- "Parish Name - Claude.ai"
+  description TEXT,                             -- "OAuth client for Claude.ai MCP integration"
   logo_url TEXT,                                -- For consent screen display
 
   -- OAuth configuration
@@ -43,6 +46,7 @@ CREATE TABLE oauth_clients (
 );
 
 CREATE INDEX idx_oauth_clients_client_id ON oauth_clients(client_id);
+CREATE INDEX idx_oauth_clients_parish_id ON oauth_clients(parish_id);
 CREATE INDEX idx_oauth_clients_is_active ON oauth_clients(is_active) WHERE is_active = true;
 
 -- ============================================================
@@ -282,6 +286,28 @@ CREATE POLICY "Service role full access to oauth_clients"
   USING (true)
   WITH CHECK (true);
 
+-- Parish admins can manage their own OAuth clients
+CREATE POLICY "Parish admins can manage their OAuth clients"
+  ON oauth_clients
+  FOR ALL
+  TO authenticated
+  USING (
+    parish_id IN (
+      SELECT pu.parish_id FROM parish_users pu
+      WHERE pu.user_id = auth.uid()
+      AND 'admin' = ANY(pu.roles)
+      AND pu.deleted_at IS NULL
+    )
+  )
+  WITH CHECK (
+    parish_id IN (
+      SELECT pu.parish_id FROM parish_users pu
+      WHERE pu.user_id = auth.uid()
+      AND 'admin' = ANY(pu.roles)
+      AND pu.deleted_at IS NULL
+    )
+  );
+
 -- ============================================================
 -- RLS POLICIES: AUTHORIZATION CODES
 -- ============================================================
@@ -458,36 +484,5 @@ COMMENT ON TABLE oauth_user_permissions IS 'Admin-controlled per-user OAuth sett
 COMMENT ON COLUMN parish_settings.oauth_enabled IS 'Master switch to enable/disable OAuth for entire parish';
 COMMENT ON COLUMN parish_settings.oauth_default_user_scopes IS 'Default scopes assigned to new users for OAuth';
 
--- ============================================================
--- PRE-REGISTER CLAUDE.AI AS OAUTH CLIENT
--- ============================================================
--- Client secret will be set via application after deployment
-
-INSERT INTO oauth_clients (
-  client_id,
-  client_secret_hash,
-  client_secret_prefix,
-  name,
-  description,
-  logo_url,
-  redirect_uris,
-  allowed_scopes,
-  is_first_party,
-  is_confidential,
-  is_active
-) VALUES (
-  'claude_ai',
-  -- Placeholder hash - will be updated with real secret via admin action
-  '$2b$12$placeholder_hash_to_be_updated_via_admin',
-  'placeholder',
-  'Claude.ai',
-  'Anthropic''s AI Assistant - Access your parish data through natural conversation',
-  'https://claude.ai/favicon.ico',
-  ARRAY['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback'],
-  ARRAY['read', 'write', 'profile']::TEXT[],
-  false,
-  true,
-  true
-) ON CONFLICT (client_id) DO UPDATE SET
-  redirect_uris = EXCLUDED.redirect_uris,
-  allowed_scopes = EXCLUDED.allowed_scopes;
+-- Note: OAuth clients are created per-parish through the OAuth Settings UI.
+-- Each parish generates their own client credentials for Claude.ai integration.

@@ -31,6 +31,7 @@ import {
   Church,
   FileText,
   Wrench,
+  Shield,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -363,6 +364,11 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     title: t('settings.sections.parish'),
                     url: "/settings/parish",
                     icon: Church,
+                  },
+                  {
+                    title: "OAuth Settings",
+                    url: "/settings/parish/oauth-settings",
+                    icon: Shield,
                   },
                   {
                     title: t('settings.sections.contentData'),

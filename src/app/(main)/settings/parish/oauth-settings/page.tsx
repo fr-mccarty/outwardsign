@@ -3,6 +3,7 @@ import {
   getParishOAuthSettings,
   getParishUserOAuthPermissions,
   getParishActiveTokens,
+  getParishOAuthClient,
 } from '@/lib/actions/oauth'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { OAuthSettingsClient } from './oauth-settings-client'
@@ -25,11 +26,14 @@ export default async function OAuthSettingsPage() {
   }
 
   // Load OAuth settings and data
-  const [settings, userPermissions, activeTokens] = await Promise.all([
+  const [settings, userPermissions, activeTokens, client] = await Promise.all([
     getParishOAuthSettings(),
     getParishUserOAuthPermissions(),
     getParishActiveTokens(),
+    getParishOAuthClient(),
   ])
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
@@ -45,6 +49,8 @@ export default async function OAuthSettingsPage() {
         initialSettings={settings}
         initialUserPermissions={userPermissions}
         initialActiveTokens={activeTokens}
+        initialClient={client}
+        siteUrl={siteUrl}
       />
     </>
   )

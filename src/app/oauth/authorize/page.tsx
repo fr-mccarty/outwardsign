@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { buildConsentContext, getExistingConsent, grantConsent } from '@/lib/actions/oauth'
 import { ConsentClient } from './consent-client'
 
+export const dynamic = 'force-dynamic'
+
 interface OAuthAuthorizePageProps {
   searchParams: Promise<{
     client_id?: string
