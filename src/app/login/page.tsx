@@ -100,7 +100,14 @@ function LoginForm() {
     }
 
     // Successful login (with or without invitation)
-    window.location.href = '/dashboard'
+    // Check for returnTo parameter (used by OAuth flow)
+    const returnTo = searchParams.get('returnTo')
+    if (returnTo && (returnTo.startsWith('/') || returnTo.startsWith(window.location.origin))) {
+      // Validate it's a safe redirect (same origin or relative path)
+      window.location.href = returnTo
+    } else {
+      window.location.href = '/dashboard'
+    }
   }
 
   return (
