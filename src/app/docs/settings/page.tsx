@@ -171,6 +171,29 @@ export default function SettingsGuidePage() {
                 </div>
               </div>
             </div>
+
+            {/* Parishioner Portal */}
+            <div className="p-4 rounded-lg border border-border bg-card">
+              <div className="flex items-start gap-3">
+                <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-medium text-foreground">Parishioner Portal</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Manage parishioner portal access and active sessions. Send magic link emails and revoke access as needed.
+                  </p>
+                  <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                    <li>• View all portal-enabled parishioners</li>
+                    <li>• Monitor active sessions</li>
+                    <li>• Send login links and revoke access</li>
+                  </ul>
+                  <div className="mt-3">
+                    <Link href="/settings/parish/parishioner-portal" className="text-sm text-primary hover:underline">
+                      Manage Parishioner Portal →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

@@ -40,6 +40,7 @@ const getMySchedule: CategorizedTool = {
       .toISOString()
       .split('T')[0]
 
+    // Verify assignments belong to this parish via master_events
     const { data: assignments, error } = await supabase
       .from('people_event_assignments')
       .select(`
@@ -52,12 +53,14 @@ const getMySchedule: CategorizedTool = {
           end_datetime,
           location:locations(name)
         ),
-        master_event:master_events(
+        master_event:master_events!inner(
           id,
+          parish_id,
           event_type:event_types(name)
         )
       `)
       .eq('person_id', context.personId)
+      .eq('master_event.parish_id', context.parishId)
       .is('deleted_at', null)
 
     if (error) {
@@ -344,6 +347,7 @@ const getMyInfo: CategorizedTool = {
         'id, first_name, last_name, full_name, email, phone_number, street, city, state, zipcode, preferred_language'
       )
       .eq('id', context.personId)
+      .eq('parish_id', context.parishId)
       .single()
 
     if (error || !person) {
@@ -439,6 +443,7 @@ const updateMyInfo: CategorizedTool = {
       .from('people')
       .update(updateData)
       .eq('id', context.personId)
+      .eq('parish_id', context.parishId)
       .select()
       .single()
 
@@ -483,9 +488,10 @@ const getMyFamily: CategorizedTool = {
         id,
         relationship,
         is_primary_contact,
-        family:families(
+        family:families!inner(
           id,
           family_name,
+          parish_id,
           members:family_members(
             id,
             relationship,
@@ -495,6 +501,7 @@ const getMyFamily: CategorizedTool = {
         )
       `)
       .eq('person_id', context.personId)
+      .eq('family.parish_id', context.parishId)
 
     if (error) {
       return { success: false, error: 'Could not retrieve family information' }
@@ -555,10 +562,11 @@ const getMyGroups: CategorizedTool = {
       .select(`
         id,
         joined_at,
-        group:groups(id, name, description, is_active),
+        group:groups!inner(id, name, description, is_active, parish_id),
         group_role:group_roles(name)
       `)
       .eq('person_id', context.personId)
+      .eq('group.parish_id', context.parishId)
 
     if (error) {
       return { success: false, error: 'Could not retrieve group memberships' }
@@ -743,12 +751,17 @@ const leaveGroup: CategorizedTool = {
 
     const groupId = args.group_id as string
 
-    // Get group name
-    const { data: group } = await supabase
+    // Get group name and verify it belongs to this parish
+    const { data: group, error: groupError } = await supabase
       .from('groups')
       .select('name')
       .eq('id', groupId)
+      .eq('parish_id', context.parishId)
       .single()
+
+    if (groupError || !group) {
+      return { success: false, error: 'Group not found' }
+    }
 
     // Check if member
     const { data: membership } = await supabase

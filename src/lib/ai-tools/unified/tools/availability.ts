@@ -279,6 +279,7 @@ const removeBlackoutDate: CategorizedTool = {
       .from('person_blackout_dates')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', args.blackout_id as string)
+      .eq('parish_id', context.parishId)
 
     if (deleteError) {
       return { success: false, error: `Failed to remove blackout: ${deleteError.message}` }
@@ -393,6 +394,7 @@ const removeMyBlackout: CategorizedTool = {
       .from('person_blackout_dates')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', args.blackout_id as string)
+      .eq('parish_id', context.parishId)
 
     if (deleteError) {
       return { success: false, error: `Failed to remove blackout: ${deleteError.message}` }

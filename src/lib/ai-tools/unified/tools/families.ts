@@ -381,15 +381,17 @@ const removeFamilyMember: CategorizedTool = {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
 
+    // Verify family belongs to this parish
     const { data: membership, error: membershipError } = await supabase
       .from('family_members')
       .select(`
         id,
         person:people(full_name),
-        family:families(family_name)
+        family:families!inner(family_name, parish_id)
       `)
       .eq('family_id', args.family_id as string)
       .eq('person_id', args.person_id as string)
+      .eq('family.parish_id', context.parishId)
       .is('deleted_at', null)
       .single()
 
@@ -440,6 +442,19 @@ const setFamilyPrimaryContact: CategorizedTool = {
   async execute(args, context) {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
+
+    // First verify the family belongs to this parish
+    const { data: family, error: familyError } = await supabase
+      .from('families')
+      .select('id')
+      .eq('id', args.family_id as string)
+      .eq('parish_id', context.parishId)
+      .is('deleted_at', null)
+      .single()
+
+    if (familyError || !family) {
+      return { success: false, error: 'Family not found' }
+    }
 
     const { data: membership, error: membershipError } = await supabase
       .from('family_members')

@@ -144,7 +144,7 @@ const getPersonGroups: CategorizedTool = {
   },
   requiredScope: 'read',
   allowedConsumers: ['admin', 'staff', 'mcp'],
-  async execute(args) {
+  async execute(args, context) {
     const supabase = getSupabaseClient()
 
     const { data: memberships, error } = await supabase
@@ -152,9 +152,10 @@ const getPersonGroups: CategorizedTool = {
       .select(`
         id,
         role:group_roles(id, name),
-        group:groups(id, name, description)
+        group:groups!inner(id, name, description, parish_id)
       `)
       .eq('person_id', args.person_id as string)
+      .eq('group.parish_id', context.parishId)
       .is('deleted_at', null)
 
     if (error) {
@@ -376,15 +377,17 @@ const removeFromGroup: CategorizedTool = {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
 
+    // Verify group belongs to this parish and get membership
     const { data: membership, error: membershipError } = await supabase
       .from('group_members')
       .select(`
         id,
         person:people(full_name),
-        group:groups(name)
+        group:groups!inner(name, parish_id)
       `)
       .eq('group_id', args.group_id as string)
       .eq('person_id', args.person_id as string)
+      .eq('group.parish_id', context.parishId)
       .is('deleted_at', null)
       .single()
 
@@ -440,11 +443,13 @@ const updateGroupMemberRole: CategorizedTool = {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
 
+    // Verify group belongs to this parish
     const { data: membership, error: membershipError } = await supabase
       .from('group_members')
-      .select('id, person:people(full_name)')
+      .select('id, person:people(full_name), group:groups!inner(parish_id)')
       .eq('group_id', args.group_id as string)
       .eq('person_id', args.person_id as string)
+      .eq('group.parish_id', context.parishId)
       .is('deleted_at', null)
       .single()
 
@@ -561,11 +566,13 @@ const leaveGroup: CategorizedTool = {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
 
+    // Verify group belongs to this parish
     const { data: membership, error: membershipError } = await supabase
       .from('group_members')
-      .select('id, group:groups(name)')
+      .select('id, group:groups!inner(name, parish_id)')
       .eq('group_id', args.group_id as string)
       .eq('person_id', context.personId)
+      .eq('group.parish_id', context.parishId)
       .is('deleted_at', null)
       .single()
 

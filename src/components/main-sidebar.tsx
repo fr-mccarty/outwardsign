@@ -33,6 +33,7 @@ import {
   Wrench,
   Shield,
   Layers,
+  UserCheck,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -372,6 +373,11 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     title: "OAuth Settings",
                     url: "/settings/parish/oauth-settings",
                     icon: Shield,
+                  },
+                  {
+                    title: "Parishioner Portal",
+                    url: "/settings/parish/parishioner-portal",
+                    icon: UserCheck,
                   },
                   {
                     title: t('settings.sections.contentData'),

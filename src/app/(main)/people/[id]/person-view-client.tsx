@@ -7,8 +7,17 @@ import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildPersonContactCard } from '@/lib/content-builders/person'
 import { LinkButton } from '@/components/link-button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
-import { getPersonFilename } from '@/lib/utils/formatters'
+import { Edit, Printer, FileText, FileDown, File, Send, ShieldOff, Loader2 } from 'lucide-react'
+import { getPersonFilename, formatDateRelative } from '@/lib/utils/formatters'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import {
+  toggleParishionerPortalAccess,
+  sendParishionerMagicLink,
+  revokeParishionerSessions,
+  getPersonSessionCount,
+} from '@/lib/actions/parishioner-portal'
 
 interface PersonViewClientProps {
   person: Person
@@ -16,6 +25,11 @@ interface PersonViewClientProps {
 
 export function PersonViewClient({ person }: PersonViewClientProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [portalEnabled, setPortalEnabled] = useState(person.parishioner_portal_enabled || false)
+  const [isTogglingPortal, setIsTogglingPortal] = useState(false)
+  const [isSendingLink, setIsSendingLink] = useState(false)
+  const [isRevokingSessions, setIsRevokingSessions] = useState(false)
+  const [sessionCount, setSessionCount] = useState(0)
 
   // Fetch signed URL for avatar on mount
   useEffect(() => {
@@ -31,6 +45,71 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
     }
     fetchAvatarUrl()
   }, [person.avatar_url])
+
+  // Fetch session count on mount
+  useEffect(() => {
+    async function fetchSessionCount() {
+      const count = await getPersonSessionCount(person.id)
+      setSessionCount(count)
+    }
+    fetchSessionCount()
+  }, [person.id])
+
+  // Handle portal toggle
+  const handlePortalToggle = async (enabled: boolean) => {
+    setIsTogglingPortal(true)
+    try {
+      const result = await toggleParishionerPortalAccess(person.id, enabled)
+      if (result.success) {
+        setPortalEnabled(enabled)
+        if (!enabled) {
+          setSessionCount(0) // Sessions were revoked
+        }
+        toast.success(enabled ? 'Portal access enabled' : 'Portal access disabled')
+      } else {
+        toast.error(result.error || 'Failed to update portal access')
+      }
+    } catch {
+      toast.error('Failed to update portal access')
+    } finally {
+      setIsTogglingPortal(false)
+    }
+  }
+
+  // Handle send magic link
+  const handleSendMagicLink = async () => {
+    setIsSendingLink(true)
+    try {
+      const result = await sendParishionerMagicLink(person.id)
+      if (result.success) {
+        toast.success(result.message)
+      } else {
+        toast.error(result.message)
+      }
+    } catch {
+      toast.error('Failed to send magic link')
+    } finally {
+      setIsSendingLink(false)
+    }
+  }
+
+  // Handle revoke sessions
+  const handleRevokeSessions = async () => {
+    setIsRevokingSessions(true)
+    try {
+      const result = await revokeParishionerSessions(person.id)
+      if (result.success) {
+        setSessionCount(0)
+        toast.success(`Revoked ${result.count} session${result.count !== 1 ? 's' : ''}`)
+      } else {
+        toast.error(result.error || 'Failed to revoke sessions')
+      }
+    } catch {
+      toast.error('Failed to revoke sessions')
+    } finally {
+      setIsRevokingSessions(false)
+    }
+  }
 
   // Get initials for avatar fallback
   const getInitials = () => {
@@ -128,6 +207,77 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
           </div>
         </div>
       )}
+
+      {/* Portal Access Section */}
+      <div className="pt-4 mt-4 border-t">
+        <span className="font-medium">Portal Access</span>
+
+        {/* Enable/Disable Toggle */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm text-muted-foreground">Enabled</span>
+          <Switch
+            checked={portalEnabled}
+            onCheckedChange={handlePortalToggle}
+            disabled={isTogglingPortal}
+          />
+        </div>
+
+        {/* Last Access */}
+        {person.last_portal_access && (
+          <div className="text-sm text-muted-foreground mt-2">
+            Last access: {formatDateRelative(person.last_portal_access)}
+          </div>
+        )}
+
+        {/* Active Sessions */}
+        {sessionCount > 0 && (
+          <div className="text-sm text-muted-foreground mt-1">
+            Active sessions: {sessionCount}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleSendMagicLink}
+            disabled={isSendingLink || !portalEnabled || !person.email}
+          >
+            {isSendingLink ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            Send Login Link
+          </Button>
+
+          {sessionCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-destructive hover:text-destructive"
+              onClick={handleRevokeSessions}
+              disabled={isRevokingSessions}
+            >
+              {isRevokingSessions ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <ShieldOff className="h-4 w-4 mr-2" />
+              )}
+              Revoke Access
+            </Button>
+          )}
+        </div>
+
+        {/* Helper Text */}
+        {!person.email && portalEnabled && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Add an email address to send login links.
+          </p>
+        )}
+      </div>
     </>
   )
 

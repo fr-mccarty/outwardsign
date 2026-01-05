@@ -308,6 +308,7 @@ const deleteLocation: CategorizedTool = {
       .from('calendar_events')
       .select('*', { count: 'exact', head: true })
       .eq('location_id', args.id as string)
+      .eq('parish_id', context.parishId)
 
     if (eventCount && eventCount > 0) {
       return {
@@ -320,6 +321,7 @@ const deleteLocation: CategorizedTool = {
       .from('locations')
       .delete()
       .eq('id', args.id as string)
+      .eq('parish_id', context.parishId)
 
     if (error) {
       return { success: false, error: `Failed to delete location: ${error.message}` }

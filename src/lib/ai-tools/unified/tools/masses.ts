@@ -565,6 +565,7 @@ const updateMassTime: CategorizedTool = {
       .from('calendar_events')
       .update(updateData)
       .eq('id', args.calendar_event_id as string)
+      .eq('parish_id', context.parishId)
 
     if (updateError) {
       return { success: false, error: `Failed to update mass time: ${updateError.message}` }
@@ -658,6 +659,7 @@ const cancelMass: CategorizedTool = {
       .from('calendar_events')
       .update({ is_cancelled: shouldCancel })
       .eq('id', args.calendar_event_id as string)
+      .eq('parish_id', context.parishId)
 
     if (updateError) {
       return { success: false, error: `Failed to update mass: ${updateError.message}` }
@@ -713,16 +715,20 @@ const removeMassAssignment: CategorizedTool = {
     const supabase = getSupabaseClient()
     await setAuditContext(context)
 
+    // First verify the assignment exists and belongs to this parish (via master_events)
     const { data: assignment, error: fetchError } = await supabase
       .from('people_event_assignments')
       .select(
         `
         id,
+        master_event_id,
         person:people(full_name),
-        field_definition:input_field_definitions(name)
+        field_definition:input_field_definitions(name),
+        master_event:master_events!inner(parish_id)
       `
       )
       .eq('id', args.assignment_id as string)
+      .eq('master_event.parish_id', context.parishId)
       .is('deleted_at', null)
       .single()
 
@@ -734,6 +740,7 @@ const removeMassAssignment: CategorizedTool = {
       .from('people_event_assignments')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', args.assignment_id as string)
+      .eq('master_event_id', assignment.master_event_id)
 
     if (deleteError) {
       return { success: false, error: `Failed to remove assignment: ${deleteError.message}` }
