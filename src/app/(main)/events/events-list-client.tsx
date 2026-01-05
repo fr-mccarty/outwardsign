@@ -18,6 +18,7 @@ import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
+import { LinkButton } from "@/components/link-button"
 import Link from "next/link"
 import { Plus, CalendarDays, Filter, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
@@ -386,12 +387,10 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
                 : t('noEventsYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild>
-                    <Link href="/events/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createYourFirstEvent')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/events/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createYourFirstEvent')}
+                  </LinkButton>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
@@ -415,12 +414,10 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
             : t('noEventsYetMessage')}
           action={
             <>
-              <Button asChild>
-                <Link href="/events/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('createYourFirstEvent')}
-                </Link>
-              </Button>
+              <LinkButton href="/events/create">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('createYourFirstEvent')}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

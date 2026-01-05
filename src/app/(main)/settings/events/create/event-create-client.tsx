@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { ContentCard } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { CancelButton } from '@/components/cancel-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FormInput } from '@/components/form-input'
 import { Label } from '@/components/ui/label'
@@ -83,7 +84,7 @@ export function EventCreateClient() {
                     id="name"
                     label={t('nameLabel')}
                     value={name}
-                    onChange={(value) => setValue('name', value)}
+                    onChange={(value) => setValue('name', value, { shouldDirty: true })}
                     error={errors.name?.message}
                     required
                     placeholder={t('namePlaceholder')}
@@ -95,7 +96,7 @@ export function EventCreateClient() {
                   <Label htmlFor="icon">{t('iconLabel')}</Label>
                   <IconSelector
                     value={icon}
-                    onChange={(value) => setValue('icon', value)}
+                    onChange={(value) => setValue('icon', value, { shouldDirty: true })}
                   />
                   <p className="text-sm text-muted-foreground">{t('iconHelp')}</p>
                   {errors.icon && (
@@ -105,14 +106,10 @@ export function EventCreateClient() {
               </div>
 
               <div className="flex gap-2 mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(cancelHref)}
+                <CancelButton
+                  href={cancelHref}
                   disabled={isLoading}
-                >
-                  Cancel
-                </Button>
+                />
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? 'Creating...' : t('createTitle')}
                 </Button>

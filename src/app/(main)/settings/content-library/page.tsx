@@ -1,13 +1,13 @@
+import { Plus } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { ContentLibraryList } from './content-library-list'
 import { getContents } from '@/lib/actions/contents'
 import { getContentTags } from '@/lib/actions/content-tags'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { LinkButton } from '@/components/link-button'
 
 interface PageProps {
   searchParams: Promise<{
@@ -54,14 +54,17 @@ export default async function ContentLibraryPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title={t('settings.contentLibrary')}
-      description={t('settings.contentLibraryDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.contentLibraryDescription')}
+          href="/docs/settings#content"
+        />
+      }
       primaryAction={
-        <Button asChild>
-          <Link href="/settings/content-library/create">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('settings.createContent')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/content-library/create">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('settings.createContent')}
+        </LinkButton>
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

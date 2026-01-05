@@ -27,6 +27,7 @@ import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { LinkButton } from '@/components/link-button'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -171,12 +172,10 @@ export function SpecialLiturgiesListClient({ initialData }: SpecialLiturgiesList
     <>
       {/* Create Button */}
       <div className="flex justify-end mb-4">
-        <Button asChild>
-          <Link href="/settings/special-liturgies/create">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('createTitle')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/special-liturgies/create">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('createTitle')}
+        </LinkButton>
       </div>
 
       {/* Explanatory Alert */}
@@ -213,12 +212,10 @@ export function SpecialLiturgiesListClient({ initialData }: SpecialLiturgiesList
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
                     {t('noSpecialLiturgiesMessage')}
                   </p>
-                  <Button asChild>
-                    <Link href="/settings/special-liturgies/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createTitle')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/settings/special-liturgies/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createTitle')}
+                  </LinkButton>
                 </div>
               )}
             </div>

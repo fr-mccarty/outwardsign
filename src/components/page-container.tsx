@@ -29,7 +29,8 @@ interface AdditionalActionSeparator {
 
 interface PageContainerProps {
   title: React.ReactNode
-  description?: string
+  /** Description can be a string or ReactNode (e.g., for adding doc links) */
+  description?: React.ReactNode
   primaryAction?: React.ReactNode
   additionalActions?: AdditionalActionItem[]
   /** @deprecated Use primaryAction instead */

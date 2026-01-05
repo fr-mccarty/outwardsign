@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Printer, FileText, FileDown, File } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
-import Link from 'next/link'
 import type { MassWithRelations } from '@/lib/schemas/mass-liturgies'
 import type { ScriptWithSections } from '@/lib/types/event-types'
 import type { ParishEventWithRelations } from '@/lib/types'
@@ -61,12 +61,10 @@ export function MassLiturgyScriptViewClient({ mass, script }: MassScriptViewClie
   // Action buttons for the sidebar
   const actionButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/mass-liturgies/${mass.id}/scripts/${script.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href={`/print/mass-liturgies/${mass.id}/scripts/${script.id}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
       <Button
         onClick={handleBackToMass}
         variant="outline"
@@ -81,24 +79,18 @@ export function MassLiturgyScriptViewClient({ mass, script }: MassScriptViewClie
   // Export buttons for the sidebar
   const exportButtons = (
     <>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/pdf`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/docx`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/txt`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
+      <LinkButton href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/pdf`} variant="default" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/docx`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
+      <LinkButton href={`/api/mass-liturgies/${mass.id}/scripts/${script.id}/export/txt`} variant="default" className="w-full">
+        <File className="h-4 w-4 mr-2" />
+        Download Text
+      </LinkButton>
     </>
   )
 

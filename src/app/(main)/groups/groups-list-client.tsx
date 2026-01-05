@@ -20,7 +20,7 @@ import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LinkButton } from '@/components/link-button'
 import { Plus, Users, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { useListFilters } from "@/hooks/use-list-filters"
@@ -236,12 +236,10 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
                 : t('groups.noGroupsYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild>
-                    <Link href="/groups/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('groups.createYourFirstGroup')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/groups/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('groups.createYourFirstGroup')}
+                  </LinkButton>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
@@ -265,12 +263,10 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
             : t('groups.noGroupsYetMessage')}
           action={
             <>
-              <Button asChild>
-                <Link href="/groups/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('groups.createYourFirstGroup')}
-                </Link>
-              </Button>
+              <LinkButton href="/groups/create">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('groups.createYourFirstGroup')}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

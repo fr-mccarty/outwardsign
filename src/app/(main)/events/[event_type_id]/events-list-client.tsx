@@ -18,7 +18,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LinkButton } from "@/components/link-button"
 import { Plus, CalendarDays, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
@@ -338,12 +338,10 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
             : `Create your first ${eventType.name.toLowerCase()} to get started.`}
           action={
             <>
-              <Button asChild>
-                <Link href={`${listBaseUrl}/create`}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First {eventType.name}
-                </Link>
-              </Button>
+              <LinkButton href={`${listBaseUrl}/create`}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First {eventType.name}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

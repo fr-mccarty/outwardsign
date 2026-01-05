@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Edit, Trash2, GripVertical, Info, ArrowLeft, FileText } from 'lucide-react'
 import type { ScriptWithSections, Section, EventTypeWithRelations } from '@/lib/types/event-types'
@@ -246,12 +247,10 @@ export function ScriptBuilderClient({ script, eventType }: ScriptBuilderClientPr
     <div className="space-y-6">
       {/* Back button */}
       <div>
-        <Button variant="outline" asChild>
-          <Link href={`/settings/event-types/${eventType.slug}/scripts`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('common.back')}
-          </Link>
-        </Button>
+        <LinkButton href={`/settings/event-types/${eventType.slug}/scripts`} variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t('common.back')}
+        </LinkButton>
       </div>
 
       {/* Script Name and Description */}
@@ -319,12 +318,10 @@ export function ScriptBuilderClient({ script, eventType }: ScriptBuilderClientPr
         {/* Add Section Button */}
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">{t('eventType.scripts.sections.title')}</h3>
-          <Button asChild>
-            <Link href={`${sectionBaseUrl}/create`}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('eventType.scripts.sections.addSection')}
-            </Link>
-          </Button>
+          <LinkButton href={`${sectionBaseUrl}/create`}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('eventType.scripts.sections.addSection')}
+          </LinkButton>
         </div>
 
         {/* Sections List */}
@@ -333,12 +330,10 @@ export function ScriptBuilderClient({ script, eventType }: ScriptBuilderClientPr
             <p className="text-muted-foreground mb-4">
               {t('eventType.scripts.sections.noSections')}
             </p>
-            <Button asChild>
-              <Link href={`${sectionBaseUrl}/create`}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('eventType.scripts.sections.addSection')}
-              </Link>
-            </Button>
+            <LinkButton href={`${sectionBaseUrl}/create`}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('eventType.scripts.sections.addSection')}
+            </LinkButton>
           </div>
         ) : (
           <DndContext

@@ -3,8 +3,8 @@
 import { PetitionContextTemplate, deletePetitionTemplate } from '@/lib/actions/petition-templates'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Edit, Trash2 } from 'lucide-react'
-import Link from 'next/link'
 import { PETITION_MODULE_LABELS, PETITION_LANGUAGE_LABELS } from '@/lib/constants'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -39,12 +39,10 @@ export function PetitionTemplateViewClient({ template }: PetitionTemplateViewCli
           <CardTitle>Actions</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Button asChild className="flex-1">
-            <Link href={`/settings/petitions/${template.id}/edit`}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Template
-            </Link>
-          </Button>
+          <LinkButton href={`/settings/petitions/${template.id}/edit`} className="flex-1">
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Template
+          </LinkButton>
           <Button
             variant="destructive"
             onClick={() => setDeleteDialogOpen(true)}

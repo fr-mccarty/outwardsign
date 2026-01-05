@@ -9,7 +9,7 @@ import { deleteMassTime } from '@/lib/actions/mass-times-templates'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
-import Link from 'next/link'
+import { LinkButton } from '@/components/link-button'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { formatTime } from '@/lib/utils/formatters'
@@ -87,12 +87,10 @@ export function MassSchedulesListClient({ initialData }: MassSchedulesListClient
           <p className="text-muted-foreground mb-4 max-w-md mx-auto">
             {t('noSchedulesMessage')}
           </p>
-          <Button asChild>
-            <Link href="/settings/mass-schedules/create">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('createSchedule')}
-            </Link>
-          </Button>
+          <LinkButton href="/settings/mass-schedules/create">
+            <Plus className="h-4 w-4 mr-2" />
+            {t('createSchedule')}
+          </LinkButton>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -152,12 +150,10 @@ export function MassSchedulesListClient({ initialData }: MassSchedulesListClient
                   )}
                 </div>
 
-                <Button asChild variant="outline" className="w-full justify-between">
-                  <Link href={`/settings/mass-schedules/${template.id}`}>
-                    {t('configure')}
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <LinkButton href={`/settings/mass-schedules/${template.id}`} variant="outline" className="w-full justify-between">
+                  {t('configure')}
+                  <ChevronRight className="h-4 w-4" />
+                </LinkButton>
               </CardContent>
             </Card>
           ))}

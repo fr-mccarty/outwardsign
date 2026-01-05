@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { ParishEventWithTypeAndCalendarEvent } from '@/lib/actions/parish-events'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -135,12 +136,12 @@ export function MiniCalendar({ events }: MiniCalendarProps) {
 
       {/* View all link */}
       <div className="mt-3 text-center">
-        <button
-          onClick={() => router.push('/calendar?view=month')}
+        <Link
+          href="/calendar?view=month"
           className="text-xs text-primary hover:underline"
         >
           View full calendar
-        </button>
+        </Link>
       </div>
     </div>
   )

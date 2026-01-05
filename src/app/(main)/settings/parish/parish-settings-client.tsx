@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from "@/components/ui/button"
+import { LinkButton } from '@/components/link-button'
 // Input available for future inline editing
 import { Label } from "@/components/ui/label"
 import { FormInput } from '@/components/form-input'
@@ -527,12 +527,10 @@ export function ParishSettingsClient({
             onSearchChange={setPetitionSearchTerm}
             searchPlaceholder="Search templates..."
             actions={
-              <Button asChild size="sm">
-                <Link href="/settings/petitions/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Template
-                </Link>
-              </Button>
+              <LinkButton href="/settings/petitions/create" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                New Template
+              </LinkButton>
             }
           />
 
@@ -604,9 +602,7 @@ export function ParishSettingsClient({
                 ? t('noPetitionTemplatesFoundMessage')
                 : t('noPetitionTemplatesYetMessage'),
               action: !petitionSearchTerm && (
-                <Button asChild>
-                  <Link href="/settings/petitions/create">{t('createTemplate')}</Link>
-                </Button>
+                <LinkButton href="/settings/petitions/create">{t('createTemplate')}</LinkButton>
               ),
             }}
           />

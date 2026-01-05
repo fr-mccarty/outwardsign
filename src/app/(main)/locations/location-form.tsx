@@ -101,7 +101,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           id="name"
           label={t('locationName')}
           value={name}
-          onChange={(value) => setValue("name", value)}
+          onChange={(value) => setValue("name", value, { shouldDirty: true })}
           required
           placeholder={t('locationNamePlaceholder')}
           error={errors.name?.message}
@@ -112,7 +112,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           label={t('descriptionLabel')}
           inputType="textarea"
           value={description ?? ""}
-          onChange={(value) => setValue("description", value)}
+          onChange={(value) => setValue("description", value, { shouldDirty: true })}
           placeholder={t('descriptionPlaceholder')}
           rows={3}
           error={errors.description?.message}
@@ -128,7 +128,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           id="street"
           label={t('streetAddress')}
           value={street ?? ""}
-          onChange={(value) => setValue("street", value)}
+          onChange={(value) => setValue("street", value, { shouldDirty: true })}
           placeholder={t('streetAddressPlaceholder')}
           error={errors.street?.message}
         />
@@ -138,7 +138,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
             id="city"
             label={t('city')}
             value={city ?? ""}
-            onChange={(value) => setValue("city", value)}
+            onChange={(value) => setValue("city", value, { shouldDirty: true })}
             placeholder={t('cityPlaceholder')}
             error={errors.city?.message}
           />
@@ -147,7 +147,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
             id="state"
             label={t('state')}
             value={state ?? ""}
-            onChange={(value) => setValue("state", value)}
+            onChange={(value) => setValue("state", value, { shouldDirty: true })}
             placeholder={t('statePlaceholder')}
             error={errors.state?.message}
           />
@@ -157,7 +157,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           id="country"
           label={t('country')}
           value={country ?? ""}
-          onChange={(value) => setValue("country", value)}
+          onChange={(value) => setValue("country", value, { shouldDirty: true })}
           placeholder={t('countryPlaceholder')}
           error={errors.country?.message}
         />
@@ -173,7 +173,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           label={t('phoneNumber')}
           inputType="tel"
           value={phoneNumber ?? ""}
-          onChange={(value) => setValue("phone_number", value)}
+          onChange={(value) => setValue("phone_number", value, { shouldDirty: true })}
           placeholder={t('phoneNumberPlaceholder')}
           error={errors.phone_number?.message}
         />

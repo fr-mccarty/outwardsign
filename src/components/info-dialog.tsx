@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
 interface InfoDialogProps {
   open: boolean
@@ -106,12 +106,10 @@ export function InfoDialog({
           )}
           {primaryAction && (
             primaryAction.href ? (
-              <Button asChild>
-                <Link href={primaryAction.href}>
-                  {primaryAction.label}
-                  {primaryAction.icon}
-                </Link>
-              </Button>
+              <LinkButton href={primaryAction.href}>
+                {primaryAction.label}
+                {primaryAction.icon}
+              </LinkButton>
             ) : (
               <Button onClick={primaryAction.onClick}>
                 {primaryAction.label}

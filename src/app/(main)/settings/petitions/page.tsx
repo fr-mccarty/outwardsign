@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { getPetitionTemplates, ensureDefaultContexts } from '@/lib/actions/petition-templates'
 import PetitionTemplateList from './petition-template-list'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
@@ -26,7 +27,12 @@ export default async function PetitionSettingsPage() {
   return (
     <PageContainer
       title={t('settings.petitionSettings')}
-      description={t('settings.petitionSettingsDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.petitionSettingsDescription')}
+          href="/docs/settings#mass"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PetitionTemplateList templates={templates} />

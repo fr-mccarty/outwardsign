@@ -127,7 +127,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   useEffect(() => {
     if (initialLiturgicalEvent && !event) {
       liturgicalEvent.setValue(initialLiturgicalEvent)
-      setValue('liturgical_event_id', initialLiturgicalEvent.id)
+      setValue('liturgical_event_id', initialLiturgicalEvent.id, { shouldDirty: true })
     }
   }, [initialLiturgicalEvent, event, liturgicalEvent, setValue])
 
@@ -578,7 +578,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           value={eventTypeId}
           onChange={(value) => {
             setEventTypeId(value)
-            setValue('event_type_id', value || undefined)
+            setValue('event_type_id', value || undefined, { shouldDirty: true })
           }}
         />
 
@@ -588,7 +588,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           label="Status"
           description="Current status of this event"
           value={watch('status') || 'ACTIVE'}
-          onChange={(value) => setValue('status', value as EventStatus)}
+          onChange={(value) => setValue('status', value as EventStatus, { shouldDirty: true })}
           options={MASTER_EVENT_STATUS_VALUES.map((value) => ({
             value,
             label: getStatusLabel(value, 'en')
@@ -602,7 +602,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           value={liturgicalEvent.value}
           onValueChange={(value) => {
             liturgicalEvent.setValue(value)
-            setValue('liturgical_event_id', value?.id || undefined)
+            setValue('liturgical_event_id', value?.id || undefined, { shouldDirty: true })
           }}
           showPicker={liturgicalEvent.showPicker}
           onShowPickerChange={liturgicalEvent.setShowPicker}
@@ -614,7 +614,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           label="Internal Notes"
           description="Private notes for staff (not visible to public)"
           value={watch('note') || ''}
-          onChange={(value) => setValue('note', value || undefined)}
+          onChange={(value) => setValue('note', value || undefined, { shouldDirty: true })}
           placeholder="Add any internal notes about this event..."
           error={errors.note?.message}
         />

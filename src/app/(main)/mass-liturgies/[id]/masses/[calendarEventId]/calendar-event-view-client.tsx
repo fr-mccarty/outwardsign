@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { ParishEventWithRelations, CalendarEvent, InputFieldDefinition } from '@/lib/types'
 import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
 import type { PeopleEventAssignmentWithPerson } from '@/lib/actions/people-event-assignments'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { ContentCard } from '@/components/content-card'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { ArrowLeft, Clock, MapPin, Calendar, Heart, Edit, Palette } from 'lucide-react'
@@ -46,18 +46,14 @@ export function CalendarEventViewClient({
   // Action buttons for side panel
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <Link href={`/mass-liturgies/${massLiturgy.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Mass Liturgy
-        </Link>
-      </Button>
-      <Button variant="outline" asChild className="w-full">
-        <Link href={`/mass-liturgies/${massLiturgy.id}`}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Liturgy
-        </Link>
-      </Button>
+      <LinkButton href={`/mass-liturgies/${massLiturgy.id}/edit`} className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Mass Liturgy
+      </LinkButton>
+      <LinkButton href={`/mass-liturgies/${massLiturgy.id}`} variant="outline" className="w-full">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Liturgy
+      </LinkButton>
     </>
   )
 

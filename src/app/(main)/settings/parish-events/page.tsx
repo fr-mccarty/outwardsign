@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
 import { ParishEventsClient } from './parish-events-client'
@@ -17,7 +18,12 @@ export default async function ParishEventsSettingsPage() {
   return (
     <PageContainer
       title={t('settings.sections.parishEvents')}
-      description={t('settings.sections.parishEventsDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.sections.parishEventsDescription')}
+          href="/docs/settings"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <ParishEventsClient />

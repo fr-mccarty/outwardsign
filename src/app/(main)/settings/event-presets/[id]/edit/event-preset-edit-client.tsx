@@ -95,7 +95,7 @@ export function EventPresetEditClient({ preset }: EventPresetEditClientProps) {
                   id="name"
                   label={t('common.name')}
                   value={form.watch('name')}
-                  onChange={(value) => form.setValue('name', value)}
+                  onChange={(value) => form.setValue('name', value, { shouldDirty: true })}
                   placeholder={t('settings.presetNamePlaceholder')}
                   required
                   error={form.formState.errors.name?.message}
@@ -106,7 +106,7 @@ export function EventPresetEditClient({ preset }: EventPresetEditClientProps) {
                   label={t('common.description')}
                   inputType="textarea"
                   value={form.watch('description') || ''}
-                  onChange={(value) => form.setValue('description', value)}
+                  onChange={(value) => form.setValue('description', value, { shouldDirty: true })}
                   placeholder={t('settings.presetDescriptionPlaceholder')}
                   rows={4}
                   error={form.formState.errors.description?.message}

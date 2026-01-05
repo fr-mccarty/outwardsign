@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, CheckCircle, AlertCircle, UserPlus, LogIn } from 'lucide-react'
@@ -159,13 +160,13 @@ function AcceptInvitationForm() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-            <Button
-              onClick={() => router.push('/')}
+            <LinkButton
+              href="/"
               className="w-full mt-4"
               variant="outline"
             >
               Go to Homepage
-            </Button>
+            </LinkButton>
           </CardContent>
         </Card>
       </div>
@@ -243,14 +244,14 @@ function AcceptInvitationForm() {
                 >
                   Sign Out & Continue
                 </Button>
-                <Button
-                  onClick={() => router.push('/dashboard')}
+                <LinkButton
+                  href="/dashboard"
                   variant="outline"
                   className="w-full"
                   size="lg"
                 >
                   Go to Dashboard
-                </Button>
+                </LinkButton>
               </div>
             </div>
           </CardContent>
@@ -274,13 +275,13 @@ function AcceptInvitationForm() {
             <p className="text-muted-foreground mb-4">
               This invitation link is invalid or has expired.
             </p>
-            <Button
-              onClick={() => router.push('/')}
+            <LinkButton
+              href="/"
               className="w-full"
               variant="outline"
             >
               Go to Homepage
-            </Button>
+            </LinkButton>
           </CardContent>
         </Card>
       </div>

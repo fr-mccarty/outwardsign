@@ -26,7 +26,9 @@ import {
   Copy,
   Check,
   RefreshCw,
+  BookOpen,
 } from 'lucide-react'
+import Link from 'next/link'
 import {
   updateParishOAuthSettings,
   updateUserOAuthPermissions,
@@ -466,7 +468,14 @@ export function OAuthSettingsClient({
     <>
       <PageContainer
         title="OAuth Settings"
-        description="Manage OAuth access for third-party applications like Claude.ai. Control which users can authorize apps and what data they can access."
+        description={
+          <span>
+            Manage OAuth access for third-party applications like Claude.ai. Control which users can authorize apps and what data they can access.{' '}
+            <Link href="/docs/mcp-setup" className="text-primary hover:underline inline-flex items-center gap-1">
+              <BookOpen className="h-3 w-3" /> View setup guide
+            </Link>
+          </span>
+        }
       >
         {/* Enable/Disable OAuth */}
         <ContentCard>

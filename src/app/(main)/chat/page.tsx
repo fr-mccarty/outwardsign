@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ChatView } from './chat-view'
 import { PageContainer } from '@/components/page-container'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 
 export default async function StaffChatPage() {
   const supabase = await createClient()
@@ -17,7 +18,13 @@ export default async function StaffChatPage() {
   return (
     <PageContainer
       title="AI Assistant"
-      description="Chat with AI to query and manage parish data"
+      description={
+        <DescriptionWithDocLink
+          description="Chat with AI to query and manage parish data."
+          href="/docs/ai-assistant"
+          linkText="View documentation"
+        />
+      }
     >
       <ChatView userId={user.id} parishId={parishId} />
     </PageContainer>

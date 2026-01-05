@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
 import { MassConfigurationClient } from './mass-configuration-client'
@@ -17,7 +18,12 @@ export default async function MassConfigurationPage() {
   return (
     <PageContainer
       title={t('settings.sections.massConfiguration')}
-      description={t('settings.sections.massConfigurationDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.sections.massConfigurationDescription')}
+          href="/docs/settings#mass"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassConfigurationClient />

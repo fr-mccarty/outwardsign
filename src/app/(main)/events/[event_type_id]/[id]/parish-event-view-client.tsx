@@ -4,13 +4,13 @@ import { useState } from 'react'
 import type { ParishEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { FormDialog } from '@/components/form-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScriptCard } from '@/components/script-card'
 import { Edit, BookmarkPlus, Settings } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { formatDatePretty } from '@/lib/utils/formatters'
@@ -63,12 +63,10 @@ export function ParishEventViewClient({ event, eventType, scripts, eventTypeSlug
   // Generate action buttons (Edit + Save as Preset + Settings - Delete handled via onDelete prop)
   const actionButtons = (
     <div className="space-y-2 w-full">
-      <Button asChild className="w-full">
-        <Link href={`/events/${eventType.slug}/${event.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit {eventType.name}
-        </Link>
-      </Button>
+      <LinkButton href={`/events/${eventType.slug}/${event.id}/edit`} className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit {eventType.name}
+      </LinkButton>
       <Button
         variant="outline"
         className="w-full"
@@ -77,12 +75,10 @@ export function ParishEventViewClient({ event, eventType, scripts, eventTypeSlug
         <BookmarkPlus className="h-4 w-4 mr-2" />
         Save as Preset
       </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/settings/event-types/${eventType.slug}/scripts`}>
-          <Settings className="h-4 w-4 mr-2" />
-          Configure Scripts
-        </Link>
-      </Button>
+      <LinkButton href={`/settings/event-types/${eventType.slug}/scripts`} variant="outline" className="w-full">
+        <Settings className="h-4 w-4 mr-2" />
+        Configure Scripts
+      </LinkButton>
     </div>
   )
 

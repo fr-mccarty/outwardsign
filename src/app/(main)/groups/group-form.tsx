@@ -205,7 +205,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
             id="name"
             label={t('groups.name')}
             value={form.watch('name')}
-            onChange={(value) => form.setValue('name', value)}
+            onChange={(value) => form.setValue('name', value, { shouldDirty: true })}
             placeholder={t('groups.namePlaceholder')}
             required
             error={form.formState.errors.name?.message}
@@ -216,7 +216,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
             inputType="textarea"
             label={t('groups.description')}
             value={form.watch('description') || ''}
-            onChange={(value) => form.setValue('description', value)}
+            onChange={(value) => form.setValue('description', value, { shouldDirty: true })}
             placeholder={t('groups.descriptionPlaceholder')}
             rows={3}
             error={form.formState.errors.description?.message}
@@ -228,7 +228,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
             label={t('groups.isActive')}
             description={t('groups.isActiveDescription')}
             value={form.watch('is_active') ?? true}
-            onChange={(value: boolean) => form.setValue('is_active', value)}
+            onChange={(value: boolean) => form.setValue('is_active', value, { shouldDirty: true })}
             error={form.formState.errors.is_active?.message}
           />
         </FormSectionCard>

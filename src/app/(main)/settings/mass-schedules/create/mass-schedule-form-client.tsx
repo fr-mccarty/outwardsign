@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +18,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-c
 import { createMassTime } from '@/lib/actions/mass-times-templates'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { ArrowLeft, Save } from 'lucide-react'
 
 const DAYS_OF_WEEK = [
@@ -72,12 +72,10 @@ export function MassScheduleFormClient() {
     <div className="space-y-6">
       {/* Back button */}
       <div>
-        <Button variant="outline" asChild>
-          <Link href="/settings/mass-schedules">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {tCommon('back')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/mass-schedules" variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {tCommon('back')}
+        </LinkButton>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -125,11 +123,9 @@ export function MassScheduleFormClient() {
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button" asChild>
-                <Link href="/settings/mass-schedules">
-                  {tCommon('cancel')}
-                </Link>
-              </Button>
+              <LinkButton href="/settings/mass-schedules" variant="outline">
+                {tCommon('cancel')}
+              </LinkButton>
               <Button type="submit" disabled={saving}>
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? tCommon('saving') : t('createSchedule')}

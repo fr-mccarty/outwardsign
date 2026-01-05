@@ -51,7 +51,7 @@ export default function PetitionTemplateForm({ template }: PetitionTemplateFormP
     const defaultText = language === 'bilingual'
       ? `${DEFAULT_PETITIONS.en}\n\n${DEFAULT_PETITIONS.es}`
       : DEFAULT_PETITIONS[language] || DEFAULT_PETITIONS.en
-    form.setValue('context', defaultText)
+    form.setValue('context', defaultText, { shouldDirty: true })
     toast.success('Default petition text loaded')
   }
 
@@ -90,16 +90,16 @@ export default function PetitionTemplateForm({ template }: PetitionTemplateFormP
         return (
           <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_SECTIONS_SPACING}>
             <FormSectionCard title="Template Information">
-              <FormInput id="title" label="Template Title" value={form.watch('title')} onChange={(v) => form.setValue('title', v)} placeholder="e.g., Sunday Mass (English)" required error={form.formState.errors.title?.message} />
-              <FormInput id="description" label="Description" value={form.watch('description') || ''} onChange={(v) => form.setValue('description', v)} placeholder="Brief description" error={form.formState.errors.description?.message} />
-              <FormInput id="module" label="Module" inputType="select" value={form.watch('module') || ''} onChange={(v) => form.setValue('module', v)} options={PETITION_MODULE_VALUES.map(m => ({ value: m, label: PETITION_MODULE_LABELS[m].en }))} description="Which module should use this template? (Optional)" />
-              <FormInput id="language" label="Language" inputType="select" value={form.watch('language')} onChange={(v) => form.setValue('language', v)} options={PETITION_LANGUAGE_VALUES.map(l => ({ value: l, label: PETITION_LANGUAGE_LABELS[l].en }))} required />
+              <FormInput id="title" label="Template Title" value={form.watch('title')} onChange={(v) => form.setValue('title', v, { shouldDirty: true })} placeholder="e.g., Sunday Mass (English)" required error={form.formState.errors.title?.message} />
+              <FormInput id="description" label="Description" value={form.watch('description') || ''} onChange={(v) => form.setValue('description', v, { shouldDirty: true })} placeholder="Brief description" error={form.formState.errors.description?.message} />
+              <FormInput id="module" label="Module" inputType="select" value={form.watch('module') || ''} onChange={(v) => form.setValue('module', v, { shouldDirty: true })} options={PETITION_MODULE_VALUES.map(m => ({ value: m, label: PETITION_MODULE_LABELS[m].en }))} description="Which module should use this template? (Optional)" />
+              <FormInput id="language" label="Language" inputType="select" value={form.watch('language')} onChange={(v) => form.setValue('language', v, { shouldDirty: true })} options={PETITION_LANGUAGE_VALUES.map(l => ({ value: l, label: PETITION_LANGUAGE_LABELS[l].en }))} required />
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Template Text<span className="text-destructive ml-1">*</span></label>
                   <Button type="button" variant="outline" size="sm" onClick={handleLoadDefaultPetitions}><FileText className="h-4 w-4 mr-2" />Insert Default Text</Button>
                 </div>
-                <FormInput id="context" label="" inputType="textarea" value={form.watch('context')} onChange={(v) => form.setValue('context', v)} placeholder="Enter template text..." rows={10} required error={form.formState.errors.context?.message} />
+                <FormInput id="context" label="" inputType="textarea" value={form.watch('context')} onChange={(v) => form.setValue('context', v, { shouldDirty: true })} placeholder="Enter template text..." rows={10} required error={form.formState.errors.context?.message} />
               </div>
             </FormSectionCard>
             <FormBottomActions

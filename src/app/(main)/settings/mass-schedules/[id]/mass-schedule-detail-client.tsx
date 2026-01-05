@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Input } from '@/components/ui/input'
@@ -25,7 +26,6 @@ import {
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { formatTime } from '@/lib/utils/formatters'
 
@@ -252,12 +252,10 @@ export function MassScheduleDetailClient({
     <div className="space-y-6">
       {/* Back button */}
       <div>
-        <Button variant="outline" asChild>
-          <Link href="/settings/mass-schedules">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {tCommon('back')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/mass-schedules" variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {tCommon('back')}
+        </LinkButton>
       </div>
 
       {/* Explanation */}

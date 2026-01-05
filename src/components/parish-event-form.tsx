@@ -457,7 +457,7 @@ export function ParishEventForm({
           label="Status"
           description="Current status of this event"
           value={watch('status') || 'PLANNING'}
-          onChange={(value) => setValue('status', value as ParishEventStatus)}
+          onChange={(value) => setValue('status', value as ParishEventStatus, { shouldDirty: true })}
           options={MASTER_EVENT_STATUS_VALUES.map((value) => ({
             value,
             label: getStatusLabel(value)

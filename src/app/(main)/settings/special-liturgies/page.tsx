@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { SpecialLiturgiesListClient } from './special-liturgies-list-client'
 import { getEventTypes } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
@@ -23,7 +24,12 @@ export default async function SpecialLiturgiesPage() {
   return (
     <PageContainer
       title={t('settings.specialLiturgies.title')}
-      description={t('settings.specialLiturgies.description')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.specialLiturgies.description')}
+          href="/docs/settings"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <SpecialLiturgiesListClient initialData={eventTypes} />

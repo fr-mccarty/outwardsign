@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { EventPresetsList } from './event-presets-list'
 import { NewPresetButton } from './new-preset-button'
 import { getAllPresets } from '@/lib/actions/event-presets'
@@ -55,7 +56,12 @@ export default async function EventPresetsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title={t('settings.eventPresets')}
-      description={t('settings.eventPresetsDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.eventPresetsDescription')}
+          href="/docs/settings"
+        />
+      }
       primaryAction={<NewPresetButton />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

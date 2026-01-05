@@ -90,14 +90,14 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
 
   // Sync picker values to form when they change
   useEffect(() => {
-    setValue("requested_by_id", requestedBy.value?.id || null)
+    setValue("requested_by_id", requestedBy.value?.id || null, { shouldDirty: true })
   }, [requestedBy.value, setValue])
 
   useEffect(() => {
     // Mass picker returns a ParishEvent with primary_calendar_event
     // We need to extract the calendar_event_id from the primary_calendar_event
     const calendarEventId = (assignedMass.value as any)?.primary_calendar_event?.id || assignedMass.value?.id || null
-    setValue("calendar_event_id", calendarEventId)
+    setValue("calendar_event_id", calendarEventId, { shouldDirty: true })
   }, [assignedMass.value, setValue])
 
   const onSubmit = async (data: CreateMassIntentionData) => {
@@ -129,7 +129,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('massOfferedFor')}
             description={t('massOfferedForDescription')}
             value={massOfferedFor}
-            onChange={(value) => setValue("mass_offered_for", value)}
+            onChange={(value) => setValue("mass_offered_for", value, { shouldDirty: true })}
             placeholder={t('massOfferedForPlaceholder')}
             required
             error={errors.mass_offered_for?.message}
@@ -161,7 +161,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('statusLabel')}
             description={t('statusDescription')}
             value={status || ""}
-            onChange={(value) => setValue("status", value as MassIntentionStatus)}
+            onChange={(value) => setValue("status", value as MassIntentionStatus, { shouldDirty: true })}
             error={errors.status?.message}
           >
             {MASS_INTENTION_STATUS_VALUES.map((value) => (
@@ -177,7 +177,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('printTemplate')}
             description={t('printTemplateDescription')}
             value={massIntentionTemplateId || ""}
-            onChange={(value) => setValue("mass_intention_template_id", value as MassIntentionTemplate)}
+            onChange={(value) => setValue("mass_intention_template_id", value as MassIntentionTemplate, { shouldDirty: true })}
             error={errors.mass_intention_template_id?.message}
           >
             {MASS_INTENTION_TEMPLATE_VALUES.map((value) => (
@@ -198,7 +198,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('dateRequested')}
             description={t('dateRequestedDescription')}
             value={dateRequested ? new Date(dateRequested + 'T12:00:00') : undefined}
-            onValueChange={(date) => setValue("date_requested", date ? toLocalDateString(date) : null)}
+            onValueChange={(date) => setValue("date_requested", date ? toLocalDateString(date) : null, { shouldDirty: true })}
             error={errors.date_requested?.message}
             closeOnSelect
           />
@@ -208,7 +208,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('dateReceived')}
             description={t('dateReceivedDescription')}
             value={dateReceived ? new Date(dateReceived + 'T12:00:00') : undefined}
-            onValueChange={(date) => setValue("date_received", date ? toLocalDateString(date) : null)}
+            onValueChange={(date) => setValue("date_received", date ? toLocalDateString(date) : null, { shouldDirty: true })}
             error={errors.date_received?.message}
             closeOnSelect
           />
@@ -219,7 +219,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label={t('stipendAmount')}
             description={t('stipendAmountDescription')}
             value={stipendInCents?.toString() || ""}
-            onChange={(value) => setValue("stipend_in_cents", value ? parseInt(value) : null)}
+            onChange={(value) => setValue("stipend_in_cents", value ? parseInt(value) : null, { shouldDirty: true })}
             placeholder={t('stipendAmountPlaceholder')}
             step="1"
             min="0"
@@ -238,7 +238,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           description={t('notesLabelDescription')}
           inputType="textarea"
           value={note || ""}
-          onChange={(value) => setValue("note", value || null)}
+          onChange={(value) => setValue("note", value || null, { shouldDirty: true })}
           placeholder={t('notesPlaceholder')}
           rows={3}
           error={errors.note?.message}

@@ -18,7 +18,7 @@ import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LinkButton } from '@/components/link-button'
 import { Plus, Heart, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { MASS_INTENTION_STATUS_VALUES } from "@/lib/constants"
@@ -298,12 +298,10 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
             : t('noIntentionsYetMessage')}
           action={
             <>
-              <Button asChild>
-                <Link href="/mass-intentions/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('createYourFirstIntention')}
-                </Link>
-              </Button>
+              <LinkButton href="/mass-intentions/create">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('createYourFirstIntention')}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

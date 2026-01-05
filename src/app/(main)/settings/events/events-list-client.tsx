@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Trash2, GripVertical, Info, type LucideIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
@@ -203,12 +204,10 @@ export function EventsListClient({ initialData }: EventsListClientProps) {
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
                     {t('noEventTypesMessage')}
                   </p>
-                  <Button asChild>
-                    <Link href="/settings/events/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createTitle')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/settings/events/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createTitle')}
+                  </LinkButton>
                 </div>
               )}
             </div>

@@ -2,12 +2,11 @@ import { notFound } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
 import { Info, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { ScriptsListClient } from './scripts-list-client'
 
 interface PageProps {
@@ -68,12 +67,10 @@ export default async function ScriptsPage({ params }: PageProps) {
       <div className="space-y-6">
         {/* Back button */}
         <div>
-          <Button variant="outline" asChild>
-            <Link href={`/settings/event-types/${slug}`}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('common.back')}
-            </Link>
-          </Button>
+          <LinkButton href={`/settings/event-types/${slug}`} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('common.back')}
+          </LinkButton>
         </div>
 
         {/* Special Liturgy: Show full script builder */}

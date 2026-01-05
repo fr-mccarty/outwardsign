@@ -5,10 +5,9 @@ import { deletePerson, getPersonAvatarSignedUrl } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildPersonContactCard } from '@/lib/content-builders/person'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
-import Link from 'next/link'
 import { getPersonFilename } from '@/lib/utils/formatters'
 
 interface PersonViewClientProps {
@@ -47,42 +46,32 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
   // Generate action buttons
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <Link href={`/people/${person.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Person
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/people/${person.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href={`/people/${person.id}/edit`} className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Person
+      </LinkButton>
+      <LinkButton href={`/print/people/${person.id}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
     </>
   )
 
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/people/${person.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/people/${person.id}/word?filename=${generateFilename('docx')}`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/people/${person.id}/txt?filename=${generateFilename('txt')}`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
+      <LinkButton href={`/api/people/${person.id}/pdf?filename=${generateFilename('pdf')}`} variant="default" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/people/${person.id}/word?filename=${generateFilename('docx')}`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
+      <LinkButton href={`/api/people/${person.id}/txt?filename=${generateFilename('txt')}`} variant="default" className="w-full">
+        <File className="h-4 w-4 mr-2" />
+        Download Text
+      </LinkButton>
     </>
   )
 

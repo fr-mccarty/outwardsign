@@ -4,19 +4,18 @@ import { useState, useEffect } from 'react'
 import { PageContainer } from '@/components/page-container'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { CancelButton } from '@/components/cancel-button'
 import { FormInput } from '@/components/form-input'
 import { Badge } from '@/components/ui/badge'
 import { Save, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { useRouter } from 'next/navigation'
 import { getDefaultPetitions, updateDefaultPetitions } from '@/lib/actions/parish-settings'
 import { DEFAULT_PETITIONS } from '@/lib/constants'
 import { FORM_SECTIONS_SPACING } from "@/lib/constants/form-spacing"
 
 export default function DefaultPetitionsPage() {
   const { setBreadcrumbs } = useBreadcrumbs()
-  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [petitionText, setPetitionText] = useState(DEFAULT_PETITIONS.en)
@@ -159,14 +158,10 @@ export default function DefaultPetitionsPage() {
               </>
             )}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push('/settings/petitions')}
+          <CancelButton
+            href="/settings/petitions"
             className="flex-1"
-          >
-            Cancel
-          </Button>
+          />
         </div>
       </form>
     </PageContainer>

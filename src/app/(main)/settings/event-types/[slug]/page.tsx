@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ContentCard } from '@/components/content-card'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
@@ -71,12 +71,10 @@ export default async function EventTypeHubPage({ params }: PageProps) {
       <div className="space-y-6">
         {/* Back button */}
         <div>
-          <Button variant="outline" asChild>
-            <Link href={parentPath}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('common.back')}
-            </Link>
-          </Button>
+          <LinkButton href={parentPath} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('common.back')}
+          </LinkButton>
         </div>
 
         {/* Navigation cards */}

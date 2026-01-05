@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LinkButton } from '@/components/link-button'
 import { Plus, Building, Filter, MapPin, Phone } from "lucide-react"
 import { toast } from "sonner"
 import { useListFilters } from "@/hooks/use-list-filters"
@@ -235,12 +235,10 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
                 : t('noLocationsYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild>
-                    <Link href="/locations/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createYourFirstLocation')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/locations/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createYourFirstLocation')}
+                  </LinkButton>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
@@ -264,12 +262,10 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
             : t('noLocationsYetMessage')}
           action={
             <>
-              <Button asChild>
-                <Link href="/locations/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('createYourFirstLocation')}
-                </Link>
-              </Button>
+              <LinkButton href="/locations/create">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('createYourFirstLocation')}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

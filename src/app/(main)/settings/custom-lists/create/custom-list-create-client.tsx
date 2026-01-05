@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ModuleFormWrapper } from '@/components/module-form-wrapper'
 import { ContentCard } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { CancelButton } from '@/components/cancel-button'
 import { FormInput } from '@/components/form-input'
 import { createCustomList } from '@/lib/actions/custom-lists'
 import {
@@ -63,7 +64,7 @@ export function CustomListCreateClient() {
                   id="name"
                   label="List Name"
                   value={name}
-                  onChange={(value) => setValue('name', value)}
+                  onChange={(value) => setValue('name', value, { shouldDirty: true })}
                   error={errors.name?.message}
                   required
                   placeholder="e.g., Wedding Songs, Funeral Readings, Baptism Locations..."
@@ -71,14 +72,10 @@ export function CustomListCreateClient() {
               </div>
 
               <div className="flex gap-2 mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(cancelHref)}
+                <CancelButton
+                  href={cancelHref}
                   disabled={isLoading}
-                >
-                  Cancel
-                </Button>
+                />
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? 'Creating...' : 'Create Custom List'}
                 </Button>

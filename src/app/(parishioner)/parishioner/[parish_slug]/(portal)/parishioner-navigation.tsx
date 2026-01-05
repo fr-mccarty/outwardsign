@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, MessageCircle, Bell, LogOut, Languages } from 'lucide-react'
+import { Calendar, MessageCircle, Bell, LogOut, Languages, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { cn } from '@/lib/utils'
 import { useLanguage } from './language-context'
 
@@ -95,28 +96,37 @@ export function ParishionerNavigation({
           const Icon = tab.icon
 
           return (
-            <Link key={tab.href} href={tab.href}>
-              <Button
-                variant={isActive ? 'default' : 'ghost'}
-                className={cn(
-                  'w-full justify-start',
-                  isActive && 'bg-primary text-primary-foreground'
-                )}
-              >
-                <Icon className="h-5 w-5 mr-3" />
-                <span>{tab.name}</span>
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="ml-auto h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                    {tab.badge}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            <LinkButton
+              key={tab.href}
+              href={tab.href}
+              variant={isActive ? 'default' : 'ghost'}
+              className={cn(
+                'w-full justify-start',
+                isActive && 'bg-primary text-primary-foreground'
+              )}
+            >
+              <Icon className="h-5 w-5 mr-3" />
+              <span>{tab.name}</span>
+              {tab.badge !== undefined && tab.badge > 0 && (
+                <span className="ml-auto h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                  {tab.badge}
+                </span>
+              )}
+            </LinkButton>
           )
         })}
       </nav>
 
       <div className="mt-auto pt-4 border-t space-y-2">
+        <LinkButton
+          href="/docs/parishioner-portal"
+          target="_blank"
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+        >
+          <HelpCircle className="h-5 w-5 mr-3" />
+          {language === 'en' ? 'Help' : 'Ayuda'}
+        </LinkButton>
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"
@@ -125,12 +135,14 @@ export function ParishionerNavigation({
           <Languages className="h-5 w-5 mr-3" />
           {language === 'en' ? 'Español' : 'English'}
         </Button>
-        <Link href="/parishioner/logout">
-          <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
-            <LogOut className="h-5 w-5 mr-3" />
-            {language === 'en' ? 'Log Out' : 'Cerrar sesión'}
-          </Button>
-        </Link>
+        <LinkButton
+          href="/parishioner/logout"
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="h-5 w-5 mr-3" />
+          {language === 'en' ? 'Log Out' : 'Cerrar sesión'}
+        </LinkButton>
       </div>
     </div>
   )

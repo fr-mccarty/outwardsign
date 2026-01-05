@@ -19,7 +19,7 @@ import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { LiturgicalColorDot } from '@/components/liturgical-color-dot'
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LinkButton } from '@/components/link-button'
 import { Plus, Church, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString } from "@/lib/utils/formatters"
@@ -354,12 +354,10 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
                 : t('noMassesYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild>
-                    <Link href="/mass-liturgies/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createYourFirstMass')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/mass-liturgies/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createYourFirstMass')}
+                  </LinkButton>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
@@ -383,12 +381,10 @@ export function MassLiturgiesListClient({ initialData, stats }: MassesListClient
             : t('noMassesYetMessage')}
           action={
             <>
-              <Button asChild>
-                <Link href="/mass-liturgies/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('createYourFirstMass')}
-                </Link>
-              </Button>
+              <LinkButton href="/mass-liturgies/create">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('createYourFirstMass')}
+              </LinkButton>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />

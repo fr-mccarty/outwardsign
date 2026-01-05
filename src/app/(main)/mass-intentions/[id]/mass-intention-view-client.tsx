@@ -3,11 +3,10 @@
 import { MassIntentionWithRelations, updateMassIntention, deleteMassIntention } from '@/lib/actions/mass-intentions'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildMassIntentionLiturgy, MASS_INTENTION_TEMPLATES } from '@/lib/content-builders/mass-intention'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
-import Link from 'next/link'
 import { getMassIntentionFilename } from '@/lib/utils/formatters'
 
 interface MassIntentionViewClientProps {
@@ -35,36 +34,28 @@ export function MassIntentionViewClient({ intention }: MassIntentionViewClientPr
   // Generate action buttons
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <Link href={`/mass-intentions/${intention.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Mass Intention
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/mass-intentions/${intention.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href={`/mass-intentions/${intention.id}/edit`} className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Mass Intention
+      </LinkButton>
+      <LinkButton href={`/print/mass-intentions/${intention.id}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
     </>
   )
 
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/api/mass-intentions/${intention.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/api/mass-intentions/${intention.id}/word?filename=${generateFilename('docx')}`}>
-          <Download className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
+      <LinkButton href={`/api/mass-intentions/${intention.id}/pdf?filename=${generateFilename('pdf')}`} variant="outline" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/mass-intentions/${intention.id}/word?filename=${generateFilename('docx')}`} variant="outline" className="w-full">
+        <Download className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
     </>
   )
 

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { TemplateBrowserClient } from './template-browser-client'
 import { PageContainer } from '@/components/page-container'
 import { getTranslations } from 'next-intl/server'
@@ -28,7 +29,12 @@ export default async function TemplateBrowserPage() {
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PageContainer
         title="Template Structure Browser"
-        description="Browse event types, scripts, and sections to understand template structure and troubleshoot placeholder issues."
+        description={
+          <DescriptionWithDocLink
+            description="Browse event types, scripts, and sections to understand template structure and troubleshoot placeholder issues."
+            href="/docs/template-browser"
+          />
+        }
       >
         <TemplateBrowserClient />
       </PageContainer>

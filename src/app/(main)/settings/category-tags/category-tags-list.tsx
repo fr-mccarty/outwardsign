@@ -20,12 +20,12 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Plus, Tag, Trash2, Edit, GripVertical } from 'lucide-react'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { deleteCategoryTag, reorderCategoryTags } from '@/lib/actions/category-tags'
 import type { CategoryTagWithUsageCount } from '@/lib/types'
 import { toast } from 'sonner'
-import Link from 'next/link'
 
 interface CategoryTagsListProps {
   initialTags: CategoryTagWithUsageCount[]
@@ -182,12 +182,10 @@ export function CategoryTagsList({ initialTags }: CategoryTagsListProps) {
     <>
       {/* Create Tag button */}
       <div className="flex justify-end mb-4">
-        <Button asChild>
-          <Link href="/settings/category-tags/create">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Tag
-          </Link>
-        </Button>
+        <LinkButton href="/settings/category-tags/create">
+          <Plus className="mr-2 h-4 w-4" />
+          Create Tag
+        </LinkButton>
       </div>
 
       {items.length === 0 ? (
@@ -198,12 +196,10 @@ export function CategoryTagsList({ initialTags }: CategoryTagsListProps) {
             <p className="mt-2 text-sm text-muted-foreground">
               Get started by creating your first tag
             </p>
-            <Button asChild className="mt-4">
-              <Link href="/settings/category-tags/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Tag
-              </Link>
-            </Button>
+            <LinkButton href="/settings/category-tags/create" className="mt-4">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Tag
+            </LinkButton>
           </div>
         </div>
       ) : (

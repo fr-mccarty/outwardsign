@@ -226,8 +226,8 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       })
 
       // Set pronunciations in form
-      setValue('first_name_pronunciation', result.firstNamePronunciation, { shouldValidate: true })
-      setValue('last_name_pronunciation', result.lastNamePronunciation, { shouldValidate: true })
+      setValue('first_name_pronunciation', result.firstNamePronunciation, { shouldValidate: true, shouldDirty: true })
+      setValue('last_name_pronunciation', result.lastNamePronunciation, { shouldValidate: true, shouldDirty: true })
 
       toast.success(t('people.pronunciationsGenerated'))
     } catch (error) {
@@ -263,7 +263,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="first_name"
             label={t('people.firstName')}
             value={firstName}
-            onChange={(value) => setValue("first_name", value)}
+            onChange={(value) => setValue("first_name", value, { shouldDirty: true })}
             required
             placeholder={t('people.firstNamePlaceholder')}
             error={errors.first_name?.message}
@@ -273,7 +273,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="last_name"
             label={t('people.lastName')}
             value={lastName}
-            onChange={(value) => setValue("last_name", value)}
+            onChange={(value) => setValue("last_name", value, { shouldDirty: true })}
             required
             placeholder={t('people.lastNamePlaceholder')}
             error={errors.last_name?.message}
@@ -295,7 +295,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
                   id="first_name_pronunciation"
                   label={t('people.firstNamePronunciation')}
                   value={firstNamePronunciation || ""}
-                  onChange={(value) => setValue("first_name_pronunciation", value)}
+                  onChange={(value) => setValue("first_name_pronunciation", value, { shouldDirty: true })}
                   placeholder={t('people.firstNamePronunciationPlaceholder')}
                   error={errors.first_name_pronunciation?.message}
                   description={t('people.firstNamePronunciationDescription')}
@@ -305,7 +305,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
                   id="last_name_pronunciation"
                   label={t('people.lastNamePronunciation')}
                   value={lastNamePronunciation || ""}
-                  onChange={(value) => setValue("last_name_pronunciation", value)}
+                  onChange={(value) => setValue("last_name_pronunciation", value, { shouldDirty: true })}
                   placeholder={t('people.lastNamePronunciationPlaceholder')}
                   error={errors.last_name_pronunciation?.message}
                   description={t('people.lastNamePronunciationDescription')}
@@ -352,7 +352,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             label={t('people.email')}
             inputType="email"
             value={email || ""}
-            onChange={(value) => setValue("email", value)}
+            onChange={(value) => setValue("email", value, { shouldDirty: true })}
             placeholder={t('people.emailPlaceholder')}
             error={errors.email?.message}
           />
@@ -362,7 +362,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             label={t('people.phoneNumber')}
             inputType="tel"
             value={phoneNumber || ""}
-            onChange={(value) => setValue("phone_number", value)}
+            onChange={(value) => setValue("phone_number", value, { shouldDirty: true })}
             placeholder={t('people.phoneNumberPlaceholder')}
             error={errors.phone_number?.message}
           />
@@ -372,7 +372,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           id="street"
           label={t('people.streetAddress')}
           value={street || ""}
-          onChange={(value) => setValue("street", value)}
+          onChange={(value) => setValue("street", value, { shouldDirty: true })}
           placeholder={t('people.streetAddressPlaceholder')}
           error={errors.street?.message}
         />
@@ -382,7 +382,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="city"
             label={t('people.city')}
             value={city || ""}
-            onChange={(value) => setValue("city", value)}
+            onChange={(value) => setValue("city", value, { shouldDirty: true })}
             placeholder={t('people.cityPlaceholder')}
             error={errors.city?.message}
           />
@@ -391,7 +391,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="state"
             label={t('people.state')}
             value={state || ""}
-            onChange={(value) => setValue("state", value)}
+            onChange={(value) => setValue("state", value, { shouldDirty: true })}
             placeholder={t('people.statePlaceholder')}
             error={errors.state?.message}
           />
@@ -400,7 +400,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="zipcode"
             label={t('people.zipCode')}
             value={zipcode || ""}
-            onChange={(value) => setValue("zipcode", value)}
+            onChange={(value) => setValue("zipcode", value, { shouldDirty: true })}
             placeholder={t('people.zipCodePlaceholder')}
             error={errors.zipcode?.message}
           />
@@ -411,7 +411,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           label={t('people.notes')}
           inputType="textarea"
           value={note || ""}
-          onChange={(value) => setValue("note", value)}
+          onChange={(value) => setValue("note", value, { shouldDirty: true })}
           placeholder={t('people.notesPlaceholder')}
           rows={4}
           error={errors.note?.message}
@@ -424,7 +424,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       >
         <MassAttendanceSelector
           selectedIds={massTimeIds || []}
-          onChange={(ids) => setValue("mass_times_template_item_ids", ids)}
+          onChange={(ids) => setValue("mass_times_template_item_ids", ids, { shouldDirty: true })}
           disabled={isSubmitting}
         />
       </FormSectionCard>

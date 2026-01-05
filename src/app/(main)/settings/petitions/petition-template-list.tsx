@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { LinkButton } from '@/components/link-button';
 import { useState, useMemo, useEffect } from "react";
 import { FileText, Edit, Plus } from "lucide-react";
 import { deletePetitionTemplate, PetitionContextTemplate } from '@/lib/actions/petition-templates';
@@ -230,12 +229,10 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
               ]}
               className="w-[150px]"
             />
-            <Button asChild size="sm">
-              <Link href="/settings/petitions/create">
-                <Plus className="h-4 w-4 mr-2" />
-                New Template
-              </Link>
-            </Button>
+            <LinkButton href="/settings/petitions/create" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              New Template
+            </LinkButton>
           </div>
         }
       />
@@ -251,9 +248,7 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
             ? "No templates found matching your search."
             : "No templates yet. Create your first template!",
           action: !searchTerm && (
-            <Button asChild>
-              <Link href="/settings/petitions/create">Create Template</Link>
-            </Button>
+            <LinkButton href="/settings/petitions/create">Create Template</LinkButton>
           ),
         }}
       />

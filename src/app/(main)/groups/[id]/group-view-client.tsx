@@ -4,9 +4,8 @@ import { deleteGroup } from '@/lib/actions/groups'
 import type { GroupWithMembers } from '@/lib/actions/groups'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildGroupMembersReport } from '@/lib/content-builders/group'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
-import Link from 'next/link'
 import { getGroupFilename } from '@/lib/utils/formatters'
 import { Badge } from '@/components/ui/badge'
 
@@ -23,42 +22,32 @@ export function GroupViewClient({ group }: GroupViewClientProps) {
   // Generate action buttons
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <Link href={`/groups/${group.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Group
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/groups/${group.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href={`/groups/${group.id}/edit`} className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Group
+      </LinkButton>
+      <LinkButton href={`/print/groups/${group.id}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
     </>
   )
 
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/groups/${group.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/groups/${group.id}/word?filename=${generateFilename('docx')}`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/groups/${group.id}/txt?filename=${generateFilename('txt')}`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
+      <LinkButton href={`/api/groups/${group.id}/pdf?filename=${generateFilename('pdf')}`} variant="default" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/groups/${group.id}/word?filename=${generateFilename('docx')}`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
+      <LinkButton href={`/api/groups/${group.id}/txt?filename=${generateFilename('txt')}`} variant="default" className="w-full">
+        <File className="h-4 w-4 mr-2" />
+        Download Text
+      </LinkButton>
     </>
   )
 

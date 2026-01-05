@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { getCustomLists } from '@/lib/actions/custom-lists'
 import { CustomListsListClient } from './custom-lists-list-client'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
@@ -22,7 +23,12 @@ export default async function CustomListsPage() {
   return (
     <PageContainer
       title={t('settings.customLists')}
-      description={t('settings.customListsDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.customListsDescription')}
+          href="/docs/settings#content"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <CustomListsListClient initialData={customLists} />

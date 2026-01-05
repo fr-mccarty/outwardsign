@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Edit, Trash2, GripVertical, Info, ArrowLeft } from 'lucide-react'
 import type { EventTypeWithRelations, InputFieldDefinition } from '@/lib/types/event-types'
@@ -29,7 +30,6 @@ import {
 } from '@/lib/actions/input-field-definitions'
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { FieldFormDialog } from './field-form-dialog'
 
@@ -230,12 +230,10 @@ export function FieldsListClient({ eventType, initialFields }: FieldsListClientP
     <div className={PAGE_SECTIONS_SPACING}>
       {/* Back button */}
       <div>
-        <Button variant="outline" asChild>
-          <Link href={`/settings/event-types/${eventType.slug}`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('common.back')}
-          </Link>
-        </Button>
+        <LinkButton href={`/settings/event-types/${eventType.slug}`} variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t('common.back')}
+        </LinkButton>
       </div>
 
       {/* Explanation */}

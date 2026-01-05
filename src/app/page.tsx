@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
+import { LinkButton } from "@/components/link-button"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -907,20 +908,14 @@ function HomeContent() {
 
               <div className="flex flex-col gap-3">
                 {isAuthenticated ? (
-                  <Button asChild className="w-full">
-                    <Link href="/dashboard">
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      {t.nav.goToDashboard}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/dashboard" className="w-full">
+                    <ArrowRight className="h-4 w-4 mr-2" />
+                    {t.nav.goToDashboard}
+                  </LinkButton>
                 ) : (
                   <>
-                    <Button asChild variant="outline" className="w-full" data-testid="home-login-button">
-                      <Link href="/login">{t.nav.login}</Link>
-                    </Button>
-                    <Button asChild className="w-full">
-                      <Link href="/signup">{t.nav.getStarted}</Link>
-                    </Button>
+                    <LinkButton href="/login" variant="outline" className="w-full" data-testid="home-login-button">{t.nav.login}</LinkButton>
+                    <LinkButton href="/signup" className="w-full">{t.nav.getStarted}</LinkButton>
                   </>
                 )}
               </div>
@@ -961,26 +956,20 @@ function HomeContent() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             {isAuthenticated ? (
-              <Button asChild size="lg" className="text-lg px-8 h-12">
-                <Link href="/dashboard">
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                  {t.nav.goToDashboard}
-                </Link>
-              </Button>
+              <LinkButton href="/dashboard" size="lg" className="text-lg px-8 h-12">
+                <ArrowRight className="h-5 w-5 mr-2" />
+                {t.nav.goToDashboard}
+              </LinkButton>
             ) : (
               <>
-                <Button asChild size="lg" className="text-lg px-8 h-12">
-                  <Link href="/signup">
-                    <Heart className="h-5 w-5 mr-2" />
-                    {t.hero.getStartedFree}
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="text-lg px-8 h-12">
-                  <Link href="#how-it-works">
-                    {t.hero.seeHowItWorks}
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Link>
-                </Button>
+                <LinkButton href="/signup" size="lg" className="text-lg px-8 h-12">
+                  <Heart className="h-5 w-5 mr-2" />
+                  {t.hero.getStartedFree}
+                </LinkButton>
+                <LinkButton href="#how-it-works" variant="outline" size="lg" className="text-lg px-8 h-12">
+                  {t.hero.seeHowItWorks}
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </LinkButton>
               </>
             )}
           </div>
@@ -1513,12 +1502,10 @@ function HomeContent() {
                 <AlertCircle className="h-4 w-4 inline mr-1" />
                 Have a feature request or suggestion? We&apos;d love to hear from you!
               </p>
-              <Button asChild variant="outline">
-                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4 mr-2" />
-                  Share Your Ideas on GitHub
-                </a>
-              </Button>
+              <LinkButton href={GITHUB_URL} variant="outline" target="_blank">
+                <Github className="h-4 w-4 mr-2" />
+                Share Your Ideas on GitHub
+              </LinkButton>
             </div>
           </div>
         </div>
@@ -1620,12 +1607,10 @@ function HomeContent() {
             <p className="text-lg font-medium text-muted-foreground">
               {t.gettingStarted.totalTime}
             </p>
-            <Button asChild size="lg" className="text-lg px-8 h-12">
-              <Link href="/signup">
-                <ArrowRight className="h-5 w-5 mr-2" />
-                {t.gettingStarted.ctaButton}
-              </Link>
-            </Button>
+            <LinkButton href="/signup" size="lg" className="text-lg px-8 h-12">
+              <ArrowRight className="h-5 w-5 mr-2" />
+              {t.gettingStarted.ctaButton}
+            </LinkButton>
           </div>
             </div>
           </div>
@@ -1645,25 +1630,19 @@ function HomeContent() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
-              <Button asChild size="lg" className="text-lg px-8 h-12">
-                <Link href="/dashboard">
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                  {t.nav.goToDashboard}
-                </Link>
-              </Button>
+              <LinkButton href="/dashboard" size="lg" className="text-lg px-8 h-12">
+                <ArrowRight className="h-5 w-5 mr-2" />
+                {t.nav.goToDashboard}
+              </LinkButton>
             ) : (
               <>
-                <Button asChild size="lg" className="text-lg px-8 h-12">
-                  <Link href="/signup">
-                    <Church className="h-5 w-5 mr-2" />
-                    {t.finalCTA.getStartedFree}
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-lg px-8 h-12">
-                  <Link href="/login">
-                    {t.finalCTA.signInToYourParish}
-                  </Link>
-                </Button>
+                <LinkButton href="/signup" size="lg" className="text-lg px-8 h-12">
+                  <Church className="h-5 w-5 mr-2" />
+                  {t.finalCTA.getStartedFree}
+                </LinkButton>
+                <LinkButton href="/login" size="lg" variant="outline" className="text-lg px-8 h-12">
+                  {t.finalCTA.signInToYourParish}
+                </LinkButton>
               </>
             )}
           </div>

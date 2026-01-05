@@ -62,7 +62,7 @@ export function UserSettingsClient({ user, userSettings }: UserSettingsClientPro
                 description="Your interface language preference"
                 inputType="select"
                 value={watch('language') || 'en'}
-                onChange={(value) => setValue('language', value as 'en' | 'es' | 'fr' | 'la')}
+                onChange={(value) => setValue('language', value as 'en' | 'es' | 'fr' | 'la', { shouldDirty: true })}
                 error={errors.language?.message}
                 options={[
                   { value: 'en', label: 'English' },

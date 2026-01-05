@@ -3,9 +3,8 @@
 import { WeekendSummaryData, WeekendSummaryParams } from '@/lib/actions/weekend-summary'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildWeekendSummary } from '@/lib/content-builders/weekend-summary'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
-import Link from 'next/link'
 import { formatDatePretty } from '@/lib/utils/formatters'
 
 interface WeekendSummaryViewClientProps {
@@ -36,45 +35,37 @@ export function WeekendSummaryViewClient({
   // Generate action buttons
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <Link href="/weekend-summary">
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Configuration
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/weekend-summary?${buildQueryParams()}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href="/weekend-summary" className="w-full">
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Configuration
+      </LinkButton>
+      <LinkButton href={`/print/weekend-summary?${buildQueryParams()}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
     </>
   )
 
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="default" className="w-full">
-        <Link
-          href={`/api/weekend-summary/pdf?${buildQueryParams()}&filename=${generateFilename('pdf')}`}
-          target="_blank"
-        >
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/weekend-summary/word?${buildQueryParams()}&filename=${generateFilename('docx')}`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/weekend-summary/txt?${buildQueryParams()}&filename=${generateFilename('txt')}`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
+      <LinkButton
+        href={`/api/weekend-summary/pdf?${buildQueryParams()}&filename=${generateFilename('pdf')}`}
+        variant="default"
+        className="w-full"
+        target="_blank"
+      >
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/weekend-summary/word?${buildQueryParams()}&filename=${generateFilename('docx')}`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
+      <LinkButton href={`/api/weekend-summary/txt?${buildQueryParams()}&filename=${generateFilename('txt')}`} variant="default" className="w-full">
+        <File className="h-4 w-4 mr-2" />
+        Download Text
+      </LinkButton>
     </>
   )
 

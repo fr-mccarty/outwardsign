@@ -1,10 +1,9 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/content-card"
-import { Button } from "@/components/ui/button"
+import { LinkButton } from '@/components/link-button'
 import { MapPin, Phone, Edit } from "lucide-react"
 import type { Location } from '@/lib/types'
-import Link from 'next/link'
 import { deleteLocation } from '@/lib/actions/locations'
 import { ModuleViewContainer } from '@/components/module-view-container'
 
@@ -15,12 +14,10 @@ interface LocationViewClientProps {
 export function LocationViewClient({ location }: LocationViewClientProps) {
   // Action buttons
   const actionButtons = (
-    <Button asChild className="w-full">
-      <Link href={`/locations/${location.id}/edit`}>
-        <Edit className="h-4 w-4 mr-2" />
-        Edit Location
-      </Link>
-    </Button>
+    <LinkButton href={`/locations/${location.id}/edit`} className="w-full">
+      <Edit className="h-4 w-4 mr-2" />
+      Edit Location
+    </LinkButton>
   )
 
   // Details section content

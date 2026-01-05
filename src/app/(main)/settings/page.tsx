@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { SettingsHubClient } from './settings-hub-client'
 import { getTranslations } from 'next-intl/server'
@@ -18,7 +19,13 @@ export default async function SettingsPage() {
   return (
     <PageContainer
       title={t('settings.title')}
-      description={t('settings.description')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.description')}
+          href="/docs/settings"
+          linkText="View documentation"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <SettingsHubClient />

@@ -1,5 +1,6 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { getCategoryTagsWithUsageCount } from '@/lib/actions/category-tags'
 import { CategoryTagsList } from './category-tags-list'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
@@ -23,7 +24,12 @@ export default async function CategoryTagsPage() {
   return (
     <PageContainer
       title={t('settings.categoryTags')}
-      description={t('settings.categoryTagsDescription')}
+      description={
+        <DescriptionWithDocLink
+          description={t('settings.categoryTagsDescription')}
+          href="/docs/settings#content"
+        />
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <CategoryTagsList initialTags={tags} />

@@ -176,6 +176,7 @@ export function FieldFormDialog({
     if (!field && watchName) {
       // Only auto-generate for new fields
       const generatedPropertyName = generatePropertyName(watchName)
+      // Don't mark as dirty for auto-generation
       form.setValue('property_name', generatedPropertyName)
     }
   }, [watchName, field, form])

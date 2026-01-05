@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
+import { LinkButton } from "@/components/link-button"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 import { useTranslations } from 'next-intl'
 
 interface CancelButtonProps extends Omit<React.ComponentProps<typeof Button>, 'asChild' | 'type'> {
@@ -89,15 +89,14 @@ export function CancelButton({
   }
 
   return (
-    <Button
-      type="button"
+    <LinkButton
+      href={href}
       variant={variant}
-      asChild
       disabled={disabled}
       className={cn(className)}
       {...props}
     >
-      <Link href={href}>{buttonContent}</Link>
-    </Button>
+      {buttonContent}
+    </LinkButton>
   )
 }

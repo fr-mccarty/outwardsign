@@ -80,7 +80,7 @@ export function FamilyForm({ family }: FamilyFormProps) {
         id="family_name"
         label={t('families.familyName')}
         value={form.watch('family_name')}
-        onChange={(v) => form.setValue('family_name', v)}
+        onChange={(v) => form.setValue('family_name', v, { shouldDirty: true })}
         placeholder={t('families.familyNamePlaceholder')}
         required
         autoFocus
@@ -93,7 +93,7 @@ export function FamilyForm({ family }: FamilyFormProps) {
         label={t('common.active')}
         description="Inactive families will be hidden from scheduling and pickers"
         value={form.watch('active')}
-        onChange={(v: boolean) => form.setValue('active', v)}
+        onChange={(v: boolean) => form.setValue('active', v, { shouldDirty: true })}
       />
 
       <FormBottomActions

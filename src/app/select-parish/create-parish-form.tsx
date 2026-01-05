@@ -95,7 +95,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             id="name"
             label="Parish Name"
             value={formData.name}
-            onChange={(value) => setValue('name', value)}
+            onChange={(value) => setValue('name', value, { shouldDirty: true })}
             placeholder="e.g., St. Mary's Catholic Church"
             required
             autoFocus
@@ -106,7 +106,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             id="city"
             label="City"
             value={formData.city}
-            onChange={(value) => setValue('city', value)}
+            onChange={(value) => setValue('city', value, { shouldDirty: true })}
             placeholder="e.g., Boston"
             required
             error={errors.city?.message}
@@ -116,7 +116,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             id="state"
             label="State"
             value={formData.state || ''}
-            onChange={(value) => setValue('state', value)}
+            onChange={(value) => setValue('state', value, { shouldDirty: true })}
             placeholder="e.g., Massachusetts"
             error={errors.state?.message}
           />
@@ -125,7 +125,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             id="country"
             label="Country"
             value={formData.country}
-            onChange={(value) => setValue('country', value)}
+            onChange={(value) => setValue('country', value, { shouldDirty: true })}
             placeholder="e.g., United States"
             required
             error={errors.country?.message}

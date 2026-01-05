@@ -6,6 +6,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
@@ -304,12 +305,12 @@ export function GroupMembershipsForm({
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button
+          <LinkButton
             variant="outline"
-            onClick={() => router.push(`/group-members/${person.id}`)}
+            href={`/group-members/${person.id}`}
           >
             Back to Profile
-          </Button>
+          </LinkButton>
         </div>
       </div>
 

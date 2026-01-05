@@ -76,7 +76,7 @@ export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
                 id="name"
                 label="Name"
                 value={form.watch('name')}
-                onChange={(v) => form.setValue('name', v)}
+                onChange={(v) => form.setValue('name', v, { shouldDirty: true })}
                 placeholder="e.g., Wedding, First Reading, Hope"
                 description="Display name for the tag"
                 required
@@ -86,7 +86,7 @@ export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
                 id="slug"
                 label="Slug (optional)"
                 value={form.watch('slug') || ''}
-                onChange={(v) => form.setValue('slug', v)}
+                onChange={(v) => form.setValue('slug', v, { shouldDirty: true })}
                 placeholder="e.g., wedding, first-reading, hope"
                 description="URL-safe identifier. Auto-generated from name if not provided."
                 error={form.formState.errors.slug?.message}

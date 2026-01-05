@@ -6,7 +6,7 @@ import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
-import Link from 'next/link'
+import { LinkButton } from '@/components/link-button'
 import type { ScriptWithSections } from '@/lib/types/event-types'
 import type { ParishEventWithRelations } from '@/lib/types'
 
@@ -60,12 +60,10 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
         <Pencil className="h-4 w-4 mr-2" />
         Edit Event
       </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/events/${eventTypeSlug}/${event.id}/scripts/${script.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
+      <LinkButton href={`/print/events/${eventTypeSlug}/${event.id}/scripts/${script.id}`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print View
+      </LinkButton>
       <Button
         onClick={handleEditScript}
         variant="outline"
@@ -74,36 +72,28 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
         <Pencil className="h-4 w-4 mr-2" />
         Edit Script
       </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/settings/developer-tools/scripts/${script.id}`}>
-          <Bug className="h-4 w-4 mr-2" />
-          Troubleshoot Script
-        </Link>
-      </Button>
+      <LinkButton href={`/settings/developer-tools/scripts/${script.id}`} variant="outline" className="w-full">
+        <Bug className="h-4 w-4 mr-2" />
+        Troubleshoot Script
+      </LinkButton>
     </>
   )
 
   // Export buttons for the sidebar
   const exportButtons = (
     <>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/pdf`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/docx`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/txt`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
+      <LinkButton href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/pdf`} variant="default" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF
+      </LinkButton>
+      <LinkButton href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/docx`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word
+      </LinkButton>
+      <LinkButton href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/txt`} variant="default" className="w-full">
+        <File className="h-4 w-4 mr-2" />
+        Download Text
+      </LinkButton>
     </>
   )
 

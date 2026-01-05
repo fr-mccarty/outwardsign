@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Badge } from '@/components/ui/badge'
 import { Users, Calendar } from 'lucide-react'
 import { formatDatePretty } from '@/lib/utils/formatters'
@@ -28,16 +28,12 @@ export function GroupMembersViewClient({
   // Action buttons
   const actionButtons = (
     <>
-      <Button asChild className="w-full">
-        <a href={`/group-members/${person.id}/memberships`}>
-          Manage Memberships
-        </a>
-      </Button>
-      <Button variant="outline" asChild className="w-full">
-        <a href={`/people/${person.id}`}>
-          View Full Profile
-        </a>
-      </Button>
+      <LinkButton href={`/group-members/${person.id}/memberships`} className="w-full">
+        Manage Memberships
+      </LinkButton>
+      <LinkButton href={`/people/${person.id}`} variant="outline" className="w-full">
+        View Full Profile
+      </LinkButton>
     </>
   )
 
@@ -100,11 +96,9 @@ export function GroupMembersViewClient({
                   {activeMemberships.length} active {activeMemberships.length === 1 ? 'membership' : 'memberships'}
                 </CardDescription>
               </div>
-              <Button
-                onClick={() => router.push(`/group-members/${person.id}/memberships`)}
-              >
+              <LinkButton href={`/group-members/${person.id}/memberships`}>
                 Manage Memberships
-              </Button>
+              </LinkButton>
             </div>
           </CardHeader>
           <CardContent>

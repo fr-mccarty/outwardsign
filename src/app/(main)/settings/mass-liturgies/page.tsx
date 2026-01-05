@@ -4,9 +4,8 @@ import { MassLiturgiesListClient } from './mass-liturgies-list-client'
 import { getEventTypes } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Plus } from 'lucide-react'
-import Link from 'next/link'
 
 export default async function MassesPage() {
   // Check admin permissions (redirects if not authorized)
@@ -29,12 +28,10 @@ export default async function MassesPage() {
       title={t('title')}
       description={t('description')}
       primaryAction={
-        <Button asChild>
-          <Link href="/settings/mass-liturgies/create">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('createTitle')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/mass-liturgies/create">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('createTitle')}
+        </LinkButton>
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

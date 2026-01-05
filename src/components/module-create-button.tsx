@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { LinkButton } from '@/components/link-button'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -23,11 +22,9 @@ export function ModuleCreateButton({ moduleName, href }: ModuleCreateButtonProps
   const t = useTranslations('common')
 
   return (
-    <Button asChild>
-      <Link href={href}>
-        <Plus className="h-4 w-4 mr-2" />
-        {t('create')} {moduleName}
-      </Link>
-    </Button>
+    <LinkButton href={href}>
+      <Plus className="h-4 w-4 mr-2" />
+      {t('create')} {moduleName}
+    </LinkButton>
   )
 }

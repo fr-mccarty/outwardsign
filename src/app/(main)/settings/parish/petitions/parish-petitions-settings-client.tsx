@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { ContentCard } from '@/components/content-card'
-import { Button } from "@/components/ui/button"
+import { LinkButton } from '@/components/link-button'
 import { Plus, FileText, Edit } from "lucide-react"
 import { getPetitionTemplates, deletePetitionTemplate, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { Parish } from '@/lib/types'
@@ -82,12 +81,10 @@ export function ParishPetitionsSettingsClient({
             onSearchChange={setPetitionSearchTerm}
             searchPlaceholder="Search templates..."
             actions={
-              <Button asChild size="sm">
-                <Link href="/settings/petitions/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Template
-                </Link>
-              </Button>
+              <LinkButton href="/settings/petitions/create" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                New Template
+              </LinkButton>
             }
           />
 
@@ -159,9 +156,7 @@ export function ParishPetitionsSettingsClient({
                 ? t('noPetitionTemplatesFoundMessage')
                 : t('noPetitionTemplatesYetMessage'),
               action: !petitionSearchTerm && (
-                <Button asChild>
-                  <Link href="/settings/petitions/create">{t('createTemplate')}</Link>
-                </Button>
+                <LinkButton href="/settings/petitions/create">{t('createTemplate')}</LinkButton>
               ),
             }}
           />

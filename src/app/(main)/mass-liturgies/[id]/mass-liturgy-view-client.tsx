@@ -7,6 +7,7 @@ import { deleteEvent } from '@/lib/actions/parish-events'
 import { deleteCalendarEvent } from '@/lib/actions/calendar-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { ContentCard } from '@/components/content-card'
 import { Edit, Printer, FileText, FileDown, Clock, MapPin, Heart, Plus, Settings, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
@@ -86,12 +87,10 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
 
   // Generate action buttons
   const actionButtons = (
-    <Button asChild className="w-full">
-      <Link href={`/mass-liturgies/${mass.id}/edit`}>
-        <Edit className="h-4 w-4 mr-2" />
-        Edit Mass
-      </Link>
-    </Button>
+    <LinkButton href={`/mass-liturgies/${mass.id}/edit`} className="w-full">
+      <Edit className="h-4 w-4 mr-2" />
+      Edit Mass
+    </LinkButton>
   )
 
   // Settings URL for this event type
@@ -102,31 +101,23 @@ export function MassLiturgyViewClient({ mass, scripts, intentionsByCalendarEvent
   // Generate export buttons for roster
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/mass-liturgies/${mass.id}/roster`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print Roster
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/mass-liturgies/${mass.id}/roster/pdf`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF Roster
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/mass-liturgies/${mass.id}/roster/word`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word Roster
-        </Link>
-      </Button>
+      <LinkButton href={`/print/mass-liturgies/${mass.id}/roster`} variant="outline" className="w-full" target="_blank">
+        <Printer className="h-4 w-4 mr-2" />
+        Print Roster
+      </LinkButton>
+      <LinkButton href={`/api/mass-liturgies/${mass.id}/roster/pdf`} variant="default" className="w-full" target="_blank">
+        <FileText className="h-4 w-4 mr-2" />
+        Download PDF Roster
+      </LinkButton>
+      <LinkButton href={`/api/mass-liturgies/${mass.id}/roster/word`} variant="default" className="w-full">
+        <FileDown className="h-4 w-4 mr-2" />
+        Download Word Roster
+      </LinkButton>
       {eventTypeSettingsUrl && (
-        <Button asChild variant="outline" className="w-full">
-          <Link href={eventTypeSettingsUrl}>
-            <Settings className="h-4 w-4 mr-2" />
-            Configure Mass Type
-          </Link>
-        </Button>
+        <LinkButton href={eventTypeSettingsUrl} variant="outline" className="w-full">
+          <Settings className="h-4 w-4 mr-2" />
+          Configure Mass Type
+        </LinkButton>
       )}
     </>
   )

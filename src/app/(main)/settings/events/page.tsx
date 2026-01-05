@@ -4,9 +4,8 @@ import { EventsListClient } from './events-list-client'
 import { getEventTypes } from '@/lib/actions/event-types'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
-import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/link-button'
 import { Plus } from 'lucide-react'
-import Link from 'next/link'
 
 export default async function EventsPage() {
   // Check admin permissions (redirects if not authorized)
@@ -28,12 +27,10 @@ export default async function EventsPage() {
       title={t('settings.events.title')}
       description={t('settings.events.description')}
       primaryAction={
-        <Button asChild>
-          <Link href="/settings/events/create">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('events.createTitle')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/events/create">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('events.createTitle')}
+        </LinkButton>
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

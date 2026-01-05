@@ -1,12 +1,12 @@
+import { Plus } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { DescriptionWithDocLink } from '@/components/description-with-doc-link'
 import { MassSchedulesListClient } from './mass-schedules-list-client'
 import { getMassTimesWithItems } from '@/lib/actions/mass-times-templates'
 import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
-import Link from 'next/link'
+import { LinkButton } from '@/components/link-button'
 
 export default async function MassSchedulesPage() {
   // Check admin permissions (redirects if not authorized)
@@ -27,14 +27,17 @@ export default async function MassSchedulesPage() {
   return (
     <PageContainer
       title={t('title')}
-      description={t('description')}
+      description={
+        <DescriptionWithDocLink
+          description={t('description')}
+          href="/docs/settings#mass"
+        />
+      }
       primaryAction={
-        <Button asChild>
-          <Link href="/settings/mass-schedules/create">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('createSchedule')}
-          </Link>
-        </Button>
+        <LinkButton href="/settings/mass-schedules/create">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('createSchedule')}
+        </LinkButton>
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

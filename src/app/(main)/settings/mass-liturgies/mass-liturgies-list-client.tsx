@@ -27,6 +27,7 @@ import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { LinkButton } from '@/components/link-button'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -209,12 +210,10 @@ export function MassLiturgiesListClient({ initialData }: MassesListClientProps) 
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
                     {t('noMassesMessage')}
                   </p>
-                  <Button asChild>
-                    <Link href="/settings/mass-liturgies/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('createTitle')}
-                    </Link>
-                  </Button>
+                  <LinkButton href="/settings/mass-liturgies/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createTitle')}
+                  </LinkButton>
                 </div>
               )}
             </div>

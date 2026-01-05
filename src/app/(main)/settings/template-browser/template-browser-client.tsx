@@ -11,7 +11,7 @@ import {
   type ScriptForDebug
 } from '@/lib/actions/developer-tools'
 import { toast } from 'sonner'
-import { Loader2, FileText, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Loader2, FileText, ChevronRight, ArrowLeft, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 export function TemplateBrowserClient() {
@@ -87,12 +87,19 @@ export function TemplateBrowserClient() {
 
   return (
     <div className="space-y-6">
-      {/* Back button */}
-      <div>
-        <LinkButton href="/settings/developer-tools">
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <LinkButton href="/settings">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Developer Tools
+          Back to Settings
         </LinkButton>
+        <Link
+          href="/docs/template-browser"
+          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+        >
+          <BookOpen className="h-4 w-4" />
+          View documentation
+        </Link>
       </div>
 
       {/* Event Types */}

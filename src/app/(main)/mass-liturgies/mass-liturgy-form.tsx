@@ -163,11 +163,11 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
 
   // Sync picker values to form state
   useEffect(() => {
-    setValue('event_id', event.value?.id)
+    setValue('event_id', event.value?.id, { shouldDirty: true })
   }, [event.value, setValue])
 
   useEffect(() => {
-    setValue('liturgical_event_id', liturgicalEvent.value?.id)
+    setValue('liturgical_event_id', liturgicalEvent.value?.id, { shouldDirty: true })
   }, [liturgicalEvent.value, setValue])
 
   // Load people event assignments when editing an existing mass
@@ -596,7 +596,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
           label="Status"
           description="Current status of this Mass"
           value={watch('status') || 'ACTIVE'}
-          onChange={(value) => setValue('status', value as MassStatus)}
+          onChange={(value) => setValue('status', value as MassStatus, { shouldDirty: true })}
           options={MASS_STATUS_VALUES.map((value) => ({
             value,
             label: getStatusLabel(value, 'en')
@@ -610,7 +610,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
           label="Liturgical Color"
           description="The liturgical color for this Mass celebration"
           value={watch('liturgical_color') || ''}
-          onChange={(value) => setValue('liturgical_color', value ? (value as LiturgicalColor) : undefined)}
+          onChange={(value) => setValue('liturgical_color', value ? (value as LiturgicalColor) : undefined, { shouldDirty: true })}
           placeholder="Select liturgical color (optional)"
           options={LITURGICAL_COLOR_VALUES.map((value) => ({
             value,
@@ -907,7 +907,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
       {/* Petitions */}
       <PetitionEditor
         value={watch('petitions') || ''}
-        onChange={(value) => setValue('petitions', value)}
+        onChange={(value) => setValue('petitions', value, { shouldDirty: true })}
         templates={petitionTemplates}
         onInsertTemplate={handleInsertTemplate}
       />
@@ -922,7 +922,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
             label="Announcement Text"
             inputType="textarea"
             value={watch('announcements') || ''}
-            onChange={(value) => setValue('announcements', value)}
+            onChange={(value) => setValue('announcements', value, { shouldDirty: true })}
             placeholder="Enter announcements here..."
             rows={6}
             error={errors.announcements?.message}
@@ -939,7 +939,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
           label="Liturgy Template"
           inputType="select"
           value={watch('mass_template_id') || MASS_DEFAULT_TEMPLATE}
-          onChange={(value) => setValue('mass_template_id', value as MassTemplate)}
+          onChange={(value) => setValue('mass_template_id', value as MassTemplate, { shouldDirty: true })}
           options={MASS_TEMPLATE_VALUES.map((templateId) => ({
             value: templateId,
             label: MASS_TEMPLATE_LABELS[templateId].en,
@@ -953,7 +953,7 @@ export function MassLiturgyForm({ mass, formId, onLoadingChange, initialLiturgic
             description="Internal notes and reminders (not included in printed liturgy)"
             inputType="textarea"
             value={watch('note') || ''}
-            onChange={(value) => setValue('note', value)}
+            onChange={(value) => setValue('note', value, { shouldDirty: true })}
             placeholder="Add any internal notes or reminders..."
             rows={3}
             error={errors.note?.message}

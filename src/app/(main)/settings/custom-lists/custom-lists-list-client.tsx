@@ -9,7 +9,7 @@ import { deleteCustomList } from '@/lib/actions/custom-lists'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
-import Link from 'next/link'
+import { LinkButton } from '@/components/link-button'
 
 interface CustomListsListClientProps {
   initialData: CustomList[]
@@ -47,12 +47,10 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
     <>
       {/* Create Button */}
       <div className="flex justify-end mb-4">
-        <Button asChild>
-          <Link href="/settings/custom-lists/create">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Custom List
-          </Link>
-        </Button>
+        <LinkButton href="/settings/custom-lists/create">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Custom List
+        </LinkButton>
       </div>
 
       {lists.length === 0 ? (
@@ -63,12 +61,10 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
               <p className="text-muted-foreground mb-4">
                 No custom lists yet. Create a list to use in event fields.
               </p>
-              <Button asChild>
-                <Link href="/settings/custom-lists/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Custom List
-                </Link>
-              </Button>
+              <LinkButton href="/settings/custom-lists/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Custom List
+              </LinkButton>
             </div>
           </CardContent>
         </Card>
@@ -87,12 +83,10 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
                 </div>
 
                 <div className="flex gap-2">
-                  <Button asChild variant="outline" className="flex-1">
-                    <Link href={`/settings/custom-lists/${list.slug}`}>
-                      Manage Items
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
+                  <LinkButton href={`/settings/custom-lists/${list.slug}`} variant="outline" className="flex-1">
+                    Manage Items
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </LinkButton>
 
                   <Button
                     variant="ghost"
