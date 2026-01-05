@@ -19,8 +19,8 @@
 INSERT INTO parishes (id, name, slug, city, state, country, created_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
-  'St. Mary''s Catholic Church',
-  'st-marys-catholic-church',
+  'St. Damo',
+  'st-damo',
   'Springfield',
   'Illinois',
   'United States',
@@ -39,20 +39,26 @@ INSERT INTO parish_settings (
   donations_quick_amount,
   liturgical_locale,
   public_calendar_enabled,
+  timezone,
+  primary_language,
   created_at,
   updated_at
 )
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
-  '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}]'::JSONB,
-  '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}, {"amount": 10000, "label": "$100"}]'::JSONB,
+  '[{"amount": 500, "label": "$5"}, {"amount": 1000, "label": "$10"}, {"amount": 1500, "label": "$15"}, {"amount": 2000, "label": "$20"}, {"amount": 2500, "label": "$25"}, {"amount": 5000, "label": "$50"}]'::JSONB,
+  '[{"amount": 2500, "label": "$25"}, {"amount": 5000, "label": "$50"}, {"amount": 10000, "label": "$100"}, {"amount": 25000, "label": "$250"}, {"amount": 50000, "label": "$500"}]'::JSONB,
   'en_US',
   true,
+  'America/Chicago',
+  'en',
   now(),
   now()
 )
 ON CONFLICT (parish_id) DO UPDATE SET
-  public_calendar_enabled = EXCLUDED.public_calendar_enabled;
+  public_calendar_enabled = EXCLUDED.public_calendar_enabled,
+  timezone = EXCLUDED.timezone,
+  primary_language = EXCLUDED.primary_language;
 
 -- ============================================================
 -- 3. CREATE DEVELOPER USER
@@ -229,7 +235,7 @@ BEGIN
   RAISE NOTICE 'DEMO PARISH INFRASTRUCTURE CREATED';
   RAISE NOTICE '================================================================';
   RAISE NOTICE '';
-  RAISE NOTICE 'Parish: St. Mary''s Catholic Church (Springfield, Illinois)';
+  RAISE NOTICE 'Parish: St. Damo (Springfield, Illinois)';
   RAISE NOTICE 'Parish ID: 00000000-0000-0000-0000-000000000001';
   RAISE NOTICE '';
   RAISE NOTICE 'Developer Account:';

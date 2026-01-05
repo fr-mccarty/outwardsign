@@ -291,6 +291,8 @@ export async function updateParishSettings(parishId: string, data: {
   donations_quick_amount?: Array<{amount: number, label: string}>
   liturgical_locale?: string
   public_calendar_enabled?: boolean
+  timezone?: string
+  primary_language?: string
 }) {
   const supabase = await createClient()
 
@@ -319,6 +321,8 @@ export async function updateParishSettings(parishId: string, data: {
         donations_quick_amount: data.donations_quick_amount,
         liturgical_locale: data.liturgical_locale,
         public_calendar_enabled: data.public_calendar_enabled,
+        timezone: data.timezone,
+        primary_language: data.primary_language,
         updated_at: new Date().toISOString()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       }).filter(([_key, value]) => value !== undefined)

@@ -1,9 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createParish, populateInitialParishData } from '@/lib/actions/setup'
+import { createParish, populateInitialParishData, updateParishSettings } from '@/lib/actions/setup'
 import { setSelectedParish } from '@/lib/auth/parish'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner'
 import { createParishSchema, type CreateParishData } from '@/lib/schemas/parishes'
 import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
+import { TIMEZONE_OPTIONS, PRIMARY_LANGUAGE_OPTIONS, DEFAULT_TIMEZONE, DEFAULT_PRIMARY_LANGUAGE } from '@/lib/constants'
 
 interface CreateParishFormProps {
   onCancel: () => void
@@ -19,6 +21,8 @@ interface CreateParishFormProps {
 
 export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps) {
   const router = useRouter()
+  const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE)
+  const [primaryLanguage, setPrimaryLanguage] = useState(DEFAULT_PRIMARY_LANGUAGE)
 
   const {
     handleSubmit,
@@ -40,6 +44,17 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
   const onSubmit = async (data: CreateParishData) => {
     try {
       const result = await createParish(data)
+
+      // Update parish settings with timezone and language
+      try {
+        await updateParishSettings(result.parish.id, {
+          timezone,
+          primary_language: primaryLanguage,
+        })
+      } catch (settingsError) {
+        console.error('Error updating parish settings:', settingsError)
+        // Continue anyway - parish is created with defaults
+      }
 
       // Populate initial parish data (readings, petition templates, group roles, mass roles)
       try {
@@ -114,6 +129,24 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             placeholder="e.g., United States"
             required
             error={errors.country?.message}
+          />
+
+          <FormInput
+            id="timezone"
+            label="Timezone"
+            inputType="select"
+            value={timezone}
+            onChange={setTimezone}
+            options={[...TIMEZONE_OPTIONS]}
+          />
+
+          <FormInput
+            id="primaryLanguage"
+            label="Primary Language"
+            inputType="select"
+            value={primaryLanguage}
+            onChange={setPrimaryLanguage}
+            options={[...PRIMARY_LANGUAGE_OPTIONS]}
           />
 
           <div className="flex gap-2 pt-4">

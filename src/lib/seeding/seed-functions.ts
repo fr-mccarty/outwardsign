@@ -879,9 +879,11 @@ export async function seedParishSettings(ctx: SeederContext): Promise<{ updated:
   const { error } = await supabase
     .from('parish_settings')
     .update({
-      mass_intention_offering_quick_amount: [10, 15, 20, 25, 50],
+      mass_intention_offering_quick_amount: [5, 10, 15, 20, 25, 50],
       donations_quick_amount: [25, 50, 100, 250, 500],
-      liturgical_locale: 'en_US'
+      liturgical_locale: 'en_US',
+      timezone: 'America/Chicago',
+      primary_language: 'en'
     })
     .eq('parish_id', parishId)
 

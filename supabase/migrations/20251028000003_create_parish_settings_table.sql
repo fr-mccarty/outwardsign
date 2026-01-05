@@ -6,6 +6,8 @@ CREATE TABLE parish_settings (
   donations_quick_amount JSONB NOT NULL DEFAULT '[]'::JSONB,
   liturgical_locale TEXT NOT NULL DEFAULT 'en_US',
   public_calendar_enabled BOOLEAN NOT NULL DEFAULT false,
+  timezone TEXT NOT NULL DEFAULT 'America/Chicago',
+  primary_language TEXT NOT NULL DEFAULT 'en',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
@@ -114,3 +116,5 @@ CREATE TRIGGER auto_create_parish_settings
 -- Column comments
 COMMENT ON COLUMN parish_settings.liturgical_locale IS 'Locale preference for liturgical calendar events (e.g., "en_US", "es_MX")';
 COMMENT ON COLUMN parish_settings.public_calendar_enabled IS 'Whether the public calendar feed (.ics) is enabled for this parish';
+COMMENT ON COLUMN parish_settings.timezone IS 'IANA timezone identifier for the parish (e.g., "America/Chicago", "America/New_York"). Used for calendar feeds and time display.';
+COMMENT ON COLUMN parish_settings.primary_language IS 'Primary language for the parish (e.g., "en", "es"). Used as default for content and communications.';

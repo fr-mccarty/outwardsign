@@ -9,9 +9,9 @@ import { FormInput } from '@/components/form-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Logo } from '@/components/logo'
 import { Loader2 } from 'lucide-react'
-import { APP_NAME } from '@/lib/constants'
+import { APP_NAME, TIMEZONE_OPTIONS, PRIMARY_LANGUAGE_OPTIONS, DEFAULT_TIMEZONE, DEFAULT_PRIMARY_LANGUAGE } from '@/lib/constants'
 import { createParishWithSuperAdmin } from '@/lib/auth/parish'
-import { populateInitialParishData } from '@/lib/actions/setup'
+import { populateInitialParishData, updateParishSettings } from '@/lib/actions/setup'
 import { toast } from 'sonner'
 import { FORM_FIELDS_SPACING } from '@/lib/constants/form-spacing'
 
@@ -20,6 +20,8 @@ export default function OnboardingPage() {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [country, setCountry] = useState('')
+  const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE)
+  const [primaryLanguage, setPrimaryLanguage] = useState(DEFAULT_PRIMARY_LANGUAGE)
   const [loading, setLoading] = useState(false)
   const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
@@ -82,7 +84,18 @@ export default function OnboardingPage() {
       setLoading(false)
       setPreparing(true)
 
-      // Step 3: Populate initial data (sample readings, group roles, mass roles, etc.)
+      // Step 3: Update parish settings with timezone and language
+      try {
+        await updateParishSettings(result.parishId, {
+          timezone,
+          primary_language: primaryLanguage,
+        })
+      } catch (settingsError) {
+        console.error('Error updating parish settings:', settingsError)
+        // Continue anyway - parish is created with defaults
+      }
+
+      // Step 4: Populate initial data (sample readings, group roles, mass roles, etc.)
       try {
         await populateInitialParishData(result.parishId)
       } catch (seedError) {
@@ -91,7 +104,7 @@ export default function OnboardingPage() {
         toast.error('Parish created but some initial data failed to load')
       }
 
-      // Step 4: Redirect to dashboard
+      // Step 5: Redirect to dashboard
       router.push('/dashboard')
     } catch (err) {
       console.error('Onboarding error:', err)
@@ -195,6 +208,22 @@ export default function OnboardingPage() {
                 onChange={setCountry}
                 required
                 placeholder="e.g., United States"
+              />
+              <FormInput
+                id="timezone"
+                label="Timezone"
+                inputType="select"
+                value={timezone}
+                onChange={setTimezone}
+                options={[...TIMEZONE_OPTIONS]}
+              />
+              <FormInput
+                id="primaryLanguage"
+                label="Primary Language"
+                inputType="select"
+                value={primaryLanguage}
+                onChange={setPrimaryLanguage}
+                options={[...PRIMARY_LANGUAGE_OPTIONS]}
               />
 
               {error && (

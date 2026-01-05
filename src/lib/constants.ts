@@ -470,7 +470,7 @@ export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: st
 }
 
 // Timezone Constants
-export const DEFAULT_TIMEZONE = 'UTC' as const
+export const DEFAULT_TIMEZONE: string = 'America/Chicago'
 
 // Mass Intention Template Constants
 export const MASS_INTENTION_TEMPLATE_VALUES = ['mass-intention-summary-english', 'mass-intention-summary-spanish'] as const
@@ -1199,3 +1199,33 @@ export const LITURGICAL_CALENDAR_API_COLOR_MAPPING: Record<string, string> = {
   'rose': 'liturgy-rose',
   'black': 'liturgy-black'
 }
+
+
+// Parish Settings Options
+// Timezone options for parish settings (US-centric for now)
+export const TIMEZONE_OPTIONS = [
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Phoenix', label: 'Arizona (MST - No DST)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HST)' },
+  { value: 'America/Puerto_Rico', label: 'Atlantic Time (AST)' },
+] as const
+
+// Language options for parish primary language
+export const PRIMARY_LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'vi', label: 'Vietnamese' },
+  { value: 'tl', label: 'Tagalog' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'pl', label: 'Polish' },
+  { value: 'it', label: 'Italian' },
+] as const
+
+export const DEFAULT_PRIMARY_LANGUAGE = 'en'

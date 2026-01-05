@@ -114,6 +114,8 @@ export interface ParishSettings {
   donations_quick_amount: Array<{amount: number, label: string}>
   liturgical_locale: string
   public_calendar_enabled: boolean
+  timezone: string  // IANA timezone identifier (e.g., "America/Chicago")
+  primary_language: string  // Primary language code (e.g., "en", "es")
   created_at: string
   updated_at: string
 }

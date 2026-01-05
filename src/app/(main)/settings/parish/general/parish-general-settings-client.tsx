@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { SECTION_SPACING } from '@/lib/constants/form-spacing'
+import { TIMEZONE_OPTIONS, PRIMARY_LANGUAGE_OPTIONS } from '@/lib/constants'
 
 // Slug validation schema
 const slugSchema = z.string()
@@ -58,6 +59,8 @@ export function ParishGeneralSettingsClient({
 }: ParishGeneralSettingsClientProps) {
   const router = useRouter()
   const [liturgicalLocale, setLiturgicalLocale] = useState(parishSettings?.liturgical_locale || 'en_US')
+  const [timezone, setTimezone] = useState(parishSettings?.timezone || 'America/Chicago')
+  const [primaryLanguage, setPrimaryLanguage] = useState(parishSettings?.primary_language || 'en')
   const [publicCalendarEnabled, setPublicCalendarEnabled] = useState(parishSettings?.public_calendar_enabled || false)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -133,8 +136,12 @@ export function ParishGeneralSettingsClient({
         slug: data.slug || undefined,
       })
 
-      // Also save liturgical locale
-      await updateParishSettings(parish.id, { liturgical_locale: liturgicalLocale })
+      // Also save liturgical locale, timezone, and primary language
+      await updateParishSettings(parish.id, {
+        liturgical_locale: liturgicalLocale,
+        timezone: timezone,
+        primary_language: primaryLanguage,
+      })
 
       toast.success('Settings updated successfully')
       router.refresh()
@@ -326,23 +333,44 @@ export function ParishGeneralSettingsClient({
         </Form>
 
         <FormSectionCard
-          title="Liturgical Settings"
-          description="This determines which liturgical calendar events are imported from the API"
+          title="Regional Settings"
+          description="Configure timezone and liturgical calendar settings for your parish"
         >
-          <FormInput
-            id="liturgical-locale"
-            label="Liturgical Calendar Locale"
-            inputType="select"
-            value={liturgicalLocale}
-            onChange={setLiturgicalLocale}
-            options={[
-              { value: 'en_US', label: 'English (United States)' },
-              { value: 'es_MX', label: 'Spanish (Mexico)' },
-              { value: 'es_ES', label: 'Spanish (Spain)' },
-              { value: 'fr_FR', label: 'French (France)' },
-              { value: 'pt_BR', label: 'Portuguese (Brazil)' }
-            ]}
-          />
+          <div className="space-y-6">
+            <FormInput
+              id="timezone"
+              label="Timezone"
+              inputType="select"
+              value={timezone}
+              onChange={setTimezone}
+              description="Used for calendar feeds and event time display"
+              options={[...TIMEZONE_OPTIONS]}
+            />
+            <FormInput
+              id="liturgical-locale"
+              label="Liturgical Calendar Locale"
+              inputType="select"
+              value={liturgicalLocale}
+              onChange={setLiturgicalLocale}
+              description="Determines which liturgical calendar events are imported"
+              options={[
+                { value: 'en_US', label: 'English (United States)' },
+                { value: 'es_MX', label: 'Spanish (Mexico)' },
+                { value: 'es_ES', label: 'Spanish (Spain)' },
+                { value: 'fr_FR', label: 'French (France)' },
+                { value: 'pt_BR', label: 'Portuguese (Brazil)' }
+              ]}
+            />
+            <FormInput
+              id="primary-language"
+              label="Primary Language"
+              inputType="select"
+              value={primaryLanguage}
+              onChange={setPrimaryLanguage}
+              description="Default language for content and communications"
+              options={[...PRIMARY_LANGUAGE_OPTIONS]}
+            />
+          </div>
         </FormSectionCard>
 
         <FormSectionCard

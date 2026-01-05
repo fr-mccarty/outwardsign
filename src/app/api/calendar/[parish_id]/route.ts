@@ -36,16 +36,19 @@ export async function GET(
     return new NextResponse('Parish not found', { status: 404 })
   }
 
-  // Check if public calendar is enabled for this parish
+  // Check if public calendar is enabled for this parish and get timezone
   const { data: parishSettings } = await supabase
     .from('parish_settings')
-    .select('public_calendar_enabled')
+    .select('public_calendar_enabled, timezone')
     .eq('parish_id', parish.id)
     .single()
 
   if (!parishSettings?.public_calendar_enabled) {
     return new NextResponse('Public calendar is not enabled for this parish', { status: 403 })
   }
+
+  // Get the parish timezone (default to America/Chicago)
+  const parishTimezone = parishSettings.timezone || 'America/Chicago'
 
   // Get future calendar events for event types with show_on_public_calendar = true
   const now = new Date().toISOString()
@@ -86,7 +89,7 @@ export async function GET(
   })
 
   // Generate .ics content
-  const icsContent = generateICS(parish, publicEvents)
+  const icsContent = generateICS(parish, publicEvents, parishTimezone)
 
   return new NextResponse(icsContent, {
     status: 200,
@@ -103,7 +106,8 @@ export async function GET(
  */
 function generateICS(
   parish: { id: string; name: string; city: string; state: string | null },
-  events: any[]
+  events: any[],
+  timezone: string
 ): string {
   const lines: string[] = []
 
@@ -112,12 +116,16 @@ function generateICS(
   lines.push('VERSION:2.0')
   lines.push(`PRODID:-//Outward Sign//${parish.name}//EN`)
   lines.push(`X-WR-CALNAME:${escapeICS(parish.name)}`)
+  lines.push(`X-WR-TIMEZONE:${timezone}`)
   lines.push('CALSCALE:GREGORIAN')
   lines.push('METHOD:PUBLISH')
 
+  // Add VTIMEZONE component
+  lines.push(...generateVTimezone(timezone))
+
   // Add each event
   for (const event of events) {
-    const eventLines = generateEventICS(event)
+    const eventLines = generateEventICS(event, timezone)
     lines.push(...eventLines)
   }
 
@@ -128,9 +136,89 @@ function generateICS(
 }
 
 /**
+ * Timezone offset configurations for VTIMEZONE generation
+ */
+const TIMEZONE_CONFIGS: Record<string, {
+  standard: { offset: string; abbr: string; month: number; day: string }
+  daylight?: { offset: string; abbr: string; month: number; day: string }
+}> = {
+  'America/New_York': {
+    standard: { offset: '-0500', abbr: 'EST', month: 11, day: '1SU' },
+    daylight: { offset: '-0400', abbr: 'EDT', month: 3, day: '2SU' },
+  },
+  'America/Chicago': {
+    standard: { offset: '-0600', abbr: 'CST', month: 11, day: '1SU' },
+    daylight: { offset: '-0500', abbr: 'CDT', month: 3, day: '2SU' },
+  },
+  'America/Denver': {
+    standard: { offset: '-0700', abbr: 'MST', month: 11, day: '1SU' },
+    daylight: { offset: '-0600', abbr: 'MDT', month: 3, day: '2SU' },
+  },
+  'America/Phoenix': {
+    standard: { offset: '-0700', abbr: 'MST', month: 1, day: '1MO' }, // No DST
+  },
+  'America/Los_Angeles': {
+    standard: { offset: '-0800', abbr: 'PST', month: 11, day: '1SU' },
+    daylight: { offset: '-0700', abbr: 'PDT', month: 3, day: '2SU' },
+  },
+  'America/Anchorage': {
+    standard: { offset: '-0900', abbr: 'AKST', month: 11, day: '1SU' },
+    daylight: { offset: '-0800', abbr: 'AKDT', month: 3, day: '2SU' },
+  },
+  'Pacific/Honolulu': {
+    standard: { offset: '-1000', abbr: 'HST', month: 1, day: '1MO' }, // No DST
+  },
+  'America/Puerto_Rico': {
+    standard: { offset: '-0400', abbr: 'AST', month: 1, day: '1MO' }, // No DST
+  },
+}
+
+/**
+ * Generate VTIMEZONE component for the given timezone
+ */
+function generateVTimezone(timezone: string): string[] {
+  const config = TIMEZONE_CONFIGS[timezone] || TIMEZONE_CONFIGS['America/Chicago']
+  const lines: string[] = []
+
+  lines.push('BEGIN:VTIMEZONE')
+  lines.push(`TZID:${timezone}`)
+  lines.push(`X-LIC-LOCATION:${timezone}`)
+
+  // Add daylight component if timezone observes DST
+  if (config.daylight) {
+    lines.push('BEGIN:DAYLIGHT')
+    lines.push(`TZOFFSETFROM:${config.standard.offset}`)
+    lines.push(`TZOFFSETTO:${config.daylight.offset}`)
+    lines.push(`TZNAME:${config.daylight.abbr}`)
+    lines.push(`DTSTART:19700308T020000`)
+    lines.push(`RRULE:FREQ=YEARLY;BYMONTH=${config.daylight.month};BYDAY=${config.daylight.day}`)
+    lines.push('END:DAYLIGHT')
+  }
+
+  // Add standard component
+  lines.push('BEGIN:STANDARD')
+  if (config.daylight) {
+    lines.push(`TZOFFSETFROM:${config.daylight.offset}`)
+  } else {
+    lines.push(`TZOFFSETFROM:${config.standard.offset}`)
+  }
+  lines.push(`TZOFFSETTO:${config.standard.offset}`)
+  lines.push(`TZNAME:${config.standard.abbr}`)
+  lines.push(`DTSTART:19701101T020000`)
+  if (config.daylight) {
+    lines.push(`RRULE:FREQ=YEARLY;BYMONTH=${config.standard.month};BYDAY=${config.standard.day}`)
+  }
+  lines.push('END:STANDARD')
+
+  lines.push('END:VTIMEZONE')
+
+  return lines
+}
+
+/**
  * Generate VEVENT block for a single calendar event
  */
-function generateEventICS(event: any): string[] {
+function generateEventICS(event: any, timezone: string): string[] {
   const lines: string[] = []
 
   const masterEvent = event.master_event
@@ -144,8 +232,10 @@ function generateEventICS(event: any): string[] {
   // UID must be globally unique
   const uid = `${event.id}@outwardsign.church`
 
-  // Timestamps
+  // Timestamps - DTSTAMP must be UTC
   const created = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+
+  // Parse the stored datetime and convert to local timezone
   const startDate = new Date(event.start_datetime)
   const endDate = event.end_datetime
     ? new Date(event.end_datetime)
@@ -162,9 +252,9 @@ function generateEventICS(event: any): string[] {
       lines.push(`DTEND;VALUE=DATE:${formatDateOnly(endDate)}`)
     }
   } else {
-    // Timed events use full datetime
-    lines.push(`DTSTART:${formatDateTime(startDate)}`)
-    lines.push(`DTEND:${formatDateTime(endDate)}`)
+    // Timed events use local time with TZID
+    lines.push(`DTSTART;TZID=${timezone}:${formatLocalDateTime(startDate, timezone)}`)
+    lines.push(`DTEND;TZID=${timezone}:${formatLocalDateTime(endDate, timezone)}`)
   }
 
   lines.push(`SUMMARY:${escapeICS(title)}`)
@@ -198,10 +288,33 @@ function formatDateOnly(date: Date): string {
 }
 
 /**
- * Format datetime for timed events (YYYYMMDDTHHMMSSZ)
+ * Format datetime for local time with TZID (YYYYMMDDTHHMMSS - no Z suffix)
+ * Converts UTC date to the specified timezone
  */
-function formatDateTime(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+function formatLocalDateTime(date: Date, timezone: string): string {
+  // Format in the specified timezone
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }
+
+  const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(date)
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '00'
+
+  const year = get('year')
+  const month = get('month')
+  const day = get('day')
+  const hour = get('hour')
+  const minute = get('minute')
+  const second = get('second')
+
+  return `${year}${month}${day}T${hour}${minute}${second}`
 }
 
 /**
