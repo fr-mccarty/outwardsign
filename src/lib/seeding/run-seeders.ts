@@ -70,6 +70,50 @@ export async function runAllSeeders(
   supabase: SupabaseClient,
   parishId: string
 ): Promise<SeederResult> {
+  // =====================================================
+  // IDEMPOTENCY CHECK - Skip if sample data already exists
+  // =====================================================
+  const { count: existingPeopleCount } = await supabase
+    .from('people')
+    .select('*', { count: 'exact', head: true })
+    .eq('parish_id', parishId)
+
+  if (existingPeopleCount && existingPeopleCount > 5) {
+    // Sample data already exists - return existing counts
+    const { count: familyCount } = await supabase
+      .from('families')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+
+    const { count: massCount } = await supabase
+      .from('calendar_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+
+    return {
+      success: true,
+      counts: {
+        people: existingPeopleCount || 0,
+        families: familyCount || 0,
+        groupMemberships: 0,
+        masses: massCount || 0,
+        massRoleAssignments: 0,
+        massIntentions: 0,
+        weddings: 0,
+        funerals: 0,
+        specialLiturgies: 0,
+        parishSettingsUpdated: true,
+        massTimesItemsUpdated: 0,
+        customLists: 0,
+        customListItems: 0,
+        blackoutDates: 0,
+        notifications: 0,
+        eventPresets: 0,
+        calendarVisibility: 0,
+      }
+    }
+  }
+
   const ctx: SeederContext = { supabase, parishId }
 
   // Get locations for events

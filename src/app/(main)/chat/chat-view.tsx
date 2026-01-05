@@ -25,6 +25,7 @@ export function ChatView({ userId }: ChatViewProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -66,9 +67,10 @@ export function ChatView({ userId }: ChatViewProps) {
         timestamp: new Date().toISOString(),
       }
       setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
+      inputRef.current?.focus()
     }
-
-    setIsLoading(false)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -147,6 +149,7 @@ export function ChatView({ userId }: ChatViewProps) {
       {/* Input Area */}
       <div className="flex gap-2">
         <Input
+          ref={inputRef}
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress}

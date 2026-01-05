@@ -38,10 +38,61 @@ import presentationSpanish from '@/lib/default-petition-templates/presentation-s
  * Seeds all initial data for a parish.
  * This is the single source of truth for parish onboarding data.
  *
+ * IDEMPOTENT: Safe to call multiple times - checks for existing data first.
+ *
  * @param supabase - Any Supabase client (server, service role, etc.)
  * @param parishId - The parish ID to seed data for
  */
 export async function seedParishData(supabase: SupabaseClient, parishId: string) {
+  // =====================================================
+  // CHECK FOR EXISTING DATA (make function idempotent)
+  // =====================================================
+  // Check if event types exist - if so, this parish has been seeded
+  const { data: existingEventTypes } = await supabase
+    .from('event_types')
+    .select('id')
+    .eq('parish_id', parishId)
+    .limit(1)
+
+  if (existingEventTypes && existingEventTypes.length > 0) {
+    // Parish already has data - return existing counts
+    const { count: petitionCount } = await supabase
+      .from('petition_templates')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+
+    const { count: roleCount } = await supabase
+      .from('group_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+
+    const { count: specialCount } = await supabase
+      .from('event_types')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+      .eq('system_type', 'special-liturgy')
+
+    const { count: generalCount } = await supabase
+      .from('event_types')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+      .eq('system_type', 'parish-event')
+
+    const { count: massCount } = await supabase
+      .from('event_types')
+      .select('*', { count: 'exact', head: true })
+      .eq('parish_id', parishId)
+      .eq('system_type', 'mass-liturgy')
+
+    return {
+      petitionTemplates: Array(petitionCount || 0).fill({ id: 'existing' }),
+      groupRoles: Array(roleCount || 0).fill({ id: 'existing' }),
+      specialLiturgyEventTypesCount: specialCount || 0,
+      generalEventTypesCount: generalCount || 0,
+      massEventTypesCount: massCount || 0,
+    }
+  }
+
   // =====================================================
   // 1. Seed Petition Templates
   // =====================================================
@@ -90,9 +141,10 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     { parish_id: parishId, name: 'Coordinator', description: 'Coordinates group activities and events', is_active: true, display_order: 5 },
   ]
 
+  // Use upsert to handle case when roles already exist (e.g., dev server restart)
   const { data: groupRoles, error: groupRolesError } = await supabase
     .from('group_roles')
-    .insert(defaultGroupRoles)
+    .upsert(defaultGroupRoles, { onConflict: 'parish_id,name', ignoreDuplicates: true })
     .select()
 
   if (groupRolesError) {

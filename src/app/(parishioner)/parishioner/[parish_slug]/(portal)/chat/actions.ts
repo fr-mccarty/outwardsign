@@ -5,7 +5,17 @@ import Anthropic from '@anthropic-ai/sdk'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { validateCsrfToken } from '@/lib/csrf'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
-import { logAIActivity } from '@/lib/ai-tools/shared'
+
+// Import unified AI tools
+import {
+  getToolsForAnthropicSDK,
+  executeTool,
+  createParishionerContext,
+} from '@/lib/ai-tools/unified'
+import { initializeTools } from '@/lib/ai-tools/unified/tools'
+
+// Initialize tools on module load
+initializeTools()
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -17,992 +27,6 @@ export interface ChatMessage {
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
-
-// ============================================================================
-// TOOL DEFINITIONS - Based on ai-conversation-parishioner.md guidelines
-// ============================================================================
-
-const tools: Anthropic.Tool[] = [
-  // ============================================================================
-  // SCHEDULE & ASSIGNMENTS
-  // ============================================================================
-  {
-    name: 'get_my_schedule',
-    description:
-      'Get upcoming ministry assignments and commitments. Use when user asks about their schedule, assignments, "when am I scheduled", or what they have coming up.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        days_ahead: {
-          type: 'number',
-          description: 'Number of days ahead to look (default: 30)',
-        },
-      },
-    },
-  },
-
-  // ============================================================================
-  // CALENDAR & EVENTS (PUBLIC)
-  // ============================================================================
-  {
-    name: 'get_public_calendar',
-    description:
-      'Get public parish events and Mass times. Use when user asks "what\'s on the calendar", "what\'s happening this weekend", or about parish events.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        date: {
-          type: 'string',
-          description: 'Specific date in YYYY-MM-DD format (optional, defaults to upcoming events)',
-        },
-        days_ahead: {
-          type: 'number',
-          description: 'Number of days ahead to show (default: 7)',
-        },
-      },
-    },
-  },
-  {
-    name: 'get_mass_times',
-    description:
-      'Get the parish Mass schedule. Use when user asks about Mass times, "when is Mass", or weekend schedule.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        day_of_week: {
-          type: 'string',
-          enum: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
-          description: 'Filter by day of week (optional)',
-        },
-      },
-    },
-  },
-  {
-    name: 'get_liturgical_info',
-    description:
-      'Get liturgical calendar information for a date (feast day, liturgical color, readings). Use when user asks about a specific feast, "what feast is today", or liturgical information.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        date: {
-          type: 'string',
-          description: 'Date in YYYY-MM-DD format (defaults to today)',
-        },
-      },
-    },
-  },
-
-  // ============================================================================
-  // MY INFORMATION
-  // ============================================================================
-  {
-    name: 'get_my_info',
-    description:
-      'Get the user\'s own profile information (name, email, phone, address). Use when user asks about their info on file, "what\'s my email", or their profile.',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-
-  // ============================================================================
-  // MY FAMILY
-  // ============================================================================
-  {
-    name: 'get_my_family',
-    description:
-      'Get the user\'s family members. Use when user asks "who is in my family", about family members, or "who is the primary contact".',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-
-  // ============================================================================
-  // MY GROUPS & MINISTRIES
-  // ============================================================================
-  {
-    name: 'get_my_groups',
-    description:
-      'Get groups and ministries the user belongs to. Use when user asks "what groups am I in", about their ministries, or ministry involvement.',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-
-  // ============================================================================
-  // CONTENT & RESOURCES
-  // ============================================================================
-  {
-    name: 'search_readings',
-    description:
-      'Search the content library for readings, prayers, or blessings. Use when user asks for readings, prayers, or content for events.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        search: {
-          type: 'string',
-          description: 'Search term to find content by title or text',
-        },
-        language: {
-          type: 'string',
-          enum: ['en', 'es'],
-          description: 'Filter by language (optional)',
-        },
-        limit: {
-          type: 'number',
-          description: 'Maximum results to return (default: 10)',
-        },
-      },
-    },
-  },
-
-  // ============================================================================
-  // LOCATIONS
-  // ============================================================================
-  {
-    name: 'get_parish_locations',
-    description:
-      'Get parish locations and addresses. Use when user asks about church address, where things are, or location information.',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-
-  // ============================================================================
-  // MY AVAILABILITY (Mutations)
-  // ============================================================================
-  {
-    name: 'add_my_blackout',
-    description:
-      'Mark dates when the user is unavailable. Use when user wants to block out dates, "mark me as unavailable", or indicate they cannot serve on certain dates.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        start_date: {
-          type: 'string',
-          description: 'Start date in YYYY-MM-DD format',
-        },
-        end_date: {
-          type: 'string',
-          description: 'End date in YYYY-MM-DD format',
-        },
-        reason: {
-          type: 'string',
-          description: 'Optional reason for unavailability (e.g., "vacation", "out of town")',
-        },
-      },
-      required: ['start_date', 'end_date'],
-    },
-  },
-  {
-    name: 'remove_my_blackout',
-    description:
-      'Remove one of the user\'s blackout dates. Use when user wants to remove unavailability, "cancel my blackout", or indicate they are now available.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        blackout_id: {
-          type: 'string',
-          description: 'The ID of the blackout date to remove',
-        },
-      },
-      required: ['blackout_id'],
-    },
-  },
-  {
-    name: 'get_my_blackouts',
-    description:
-      'Get the user\'s current blackout dates. Use when user asks about their unavailable dates or wants to see when they\'re blocked out.',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-
-  // ============================================================================
-  // MY PERSONAL INFO (Mutations)
-  // ============================================================================
-  {
-    name: 'update_my_info',
-    description:
-      'Update the user\'s personal information (phone, email, address, language). Use when user wants to change their contact info. Only updates provided fields.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        phone_number: {
-          type: 'string',
-          description: 'New phone number',
-        },
-        email: {
-          type: 'string',
-          description: 'New email address',
-        },
-        street: {
-          type: 'string',
-          description: 'Street address',
-        },
-        city: {
-          type: 'string',
-          description: 'City',
-        },
-        state: {
-          type: 'string',
-          description: 'State',
-        },
-        zipcode: {
-          type: 'string',
-          description: 'Zip code',
-        },
-        preferred_language: {
-          type: 'string',
-          enum: ['en', 'es'],
-          description: 'Preferred language (English or Spanish)',
-        },
-      },
-    },
-  },
-
-  // ============================================================================
-  // MY GROUP MEMBERSHIP (Mutations)
-  // ============================================================================
-  {
-    name: 'join_group',
-    description:
-      'Join a group or ministry. Use when user wants to "add me to the choir", "join the lector ministry", or sign up for a group.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        group_id: {
-          type: 'string',
-          description: 'The ID of the group to join',
-        },
-      },
-      required: ['group_id'],
-    },
-  },
-  {
-    name: 'leave_group',
-    description:
-      'Leave a group or ministry. Use when user wants to "leave the usher group", "remove me from the choir", or unsubscribe from a ministry.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        group_id: {
-          type: 'string',
-          description: 'The ID of the group to leave',
-        },
-      },
-      required: ['group_id'],
-    },
-  },
-  {
-    name: 'list_available_groups',
-    description:
-      'List all available groups the user can join. Use when user asks what groups are available or wants to see ministry options.',
-    input_schema: {
-      type: 'object',
-      properties: {},
-    },
-  },
-]
-
-// ============================================================================
-// TOOL EXECUTOR
-// ============================================================================
-
-async function executeTool(
-  toolName: string,
-  toolInput: Record<string, unknown>,
-  personId: string,
-  parishId: string
-): Promise<string> {
-  const supabase = createAdminClient()
-
-  try {
-    switch (toolName) {
-      // ========================================================================
-      // SCHEDULE & ASSIGNMENTS
-      // ========================================================================
-      case 'get_my_schedule': {
-        const daysAhead = (toolInput.days_ahead as number) || 30
-        const startDate = new Date().toISOString().split('T')[0]
-        const endDate = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0]
-
-        // Get people_event_assignments for this person
-        const { data: assignments } = await supabase
-          .from('people_event_assignments')
-          .select(`
-            id,
-            notes,
-            field_definition:input_field_definitions(name),
-            calendar_event:calendar_events(
-              id,
-              start_datetime,
-              end_datetime,
-              location:locations(name)
-            ),
-            master_event:master_events(
-              id,
-              event_type:event_types(name)
-            )
-          `)
-          .eq('person_id', personId)
-          .is('deleted_at', null)
-
-        // Filter to upcoming events
-        const upcomingAssignments = assignments
-          ?.filter((a: any) => {
-            const calEvent = a.calendar_event
-            if (!calEvent?.start_datetime) return false
-            const eventDate = calEvent.start_datetime.split('T')[0]
-            return eventDate >= startDate && eventDate <= endDate
-          })
-          .map((a: any) => ({
-            id: a.id,
-            role: a.field_definition?.name || 'Unknown Role',
-            event_type: a.master_event?.event_type?.name || 'Event',
-            datetime: a.calendar_event?.start_datetime,
-            location: a.calendar_event?.location?.name,
-            notes: a.notes,
-          }))
-          .sort((a: any, b: any) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
-
-        if (!upcomingAssignments || upcomingAssignments.length === 0) {
-          return JSON.stringify({
-            success: true,
-            message: 'No upcoming assignments found',
-            count: 0,
-            assignments: [],
-          })
-        }
-
-        return JSON.stringify({
-          success: true,
-          message: `Found ${upcomingAssignments.length} upcoming assignment(s)`,
-          count: upcomingAssignments.length,
-          assignments: upcomingAssignments,
-        })
-      }
-
-      // ========================================================================
-      // CALENDAR & EVENTS (PUBLIC)
-      // ========================================================================
-      case 'get_public_calendar': {
-        const filterDate = toolInput.date as string | undefined
-        const daysAhead = (toolInput.days_ahead as number) || 7
-        const today = new Date().toISOString().split('T')[0]
-        const endDate = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0]
-
-        let query = supabase
-          .from('calendar_events')
-          .select(`
-            id,
-            start_datetime,
-            end_datetime,
-            is_cancelled,
-            show_on_calendar,
-            location:locations(name, street, city),
-            master_event:master_events(
-              id,
-              event_type:event_types(name, icon)
-            )
-          `)
-          .eq('parish_id', parishId)
-          .eq('show_on_calendar', true)
-          .is('deleted_at', null)
-          .order('start_datetime', { ascending: true })
-
-        if (filterDate) {
-          query = query.gte('start_datetime', `${filterDate}T00:00:00`)
-            .lt('start_datetime', `${filterDate}T23:59:59`)
-        } else {
-          query = query.gte('start_datetime', `${today}T00:00:00`)
-            .lte('start_datetime', `${endDate}T23:59:59`)
-        }
-
-        const { data: events } = await query.limit(20)
-
-        const formattedEvents = events?.map((e: any) => ({
-          id: e.id,
-          title: e.master_event?.event_type?.name || 'Event',
-          start_datetime: e.start_datetime,
-          end_datetime: e.end_datetime,
-          location: e.location?.name,
-          address: e.location ? `${e.location.street}, ${e.location.city}` : undefined,
-          is_cancelled: e.is_cancelled,
-        })) || []
-
-        return JSON.stringify({
-          success: true,
-          count: formattedEvents.length,
-          events: formattedEvents,
-        })
-      }
-
-      case 'get_mass_times': {
-        const dayFilter = toolInput.day_of_week as string | undefined
-
-        let query = supabase
-          .from('mass_times_templates')
-          .select(`
-            id,
-            name,
-            day_of_week,
-            is_active,
-            items:mass_times_template_items(
-              id,
-              time,
-              day_type,
-              location:locations(name)
-            )
-          `)
-          .eq('parish_id', parishId)
-          .eq('is_active', true)
-
-        if (dayFilter) {
-          query = query.eq('day_of_week', dayFilter)
-        }
-
-        const { data: templates } = await query
-
-        const massSchedule = templates?.flatMap((t: any) =>
-          t.items?.map((item: any) => ({
-            day: t.day_of_week,
-            time: item.time,
-            location: item.location?.name,
-            day_type: item.day_type,
-          })) || []
-        ).sort((a: any, b: any) => {
-          const dayOrder = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-          return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
-        }) || []
-
-        return JSON.stringify({
-          success: true,
-          count: massSchedule.length,
-          mass_times: massSchedule,
-        })
-      }
-
-      case 'get_liturgical_info': {
-        const date = (toolInput.date as string) || new Date().toISOString().split('T')[0]
-
-        const { data: liturgicalData } = await supabase
-          .from('liturgical_calendar')
-          .select('*')
-          .eq('date', date)
-          .eq('locale', 'en_US')
-          .limit(1)
-          .single()
-
-        if (!liturgicalData) {
-          return JSON.stringify({
-            success: true,
-            message: `No liturgical information found for ${date}`,
-            date,
-            info: null,
-          })
-        }
-
-        const eventData = liturgicalData.event_data as any
-        return JSON.stringify({
-          success: true,
-          date,
-          info: {
-            name: eventData?.name,
-            color: eventData?.color?.[0],
-            grade: eventData?.grade_lcl,
-            season: eventData?.liturgical_season_lcl,
-            readings: eventData?.readings,
-          },
-        })
-      }
-
-      // ========================================================================
-      // MY INFORMATION
-      // ========================================================================
-      case 'get_my_info': {
-        const { data: person } = await supabase
-          .from('people')
-          .select('id, first_name, last_name, full_name, email, phone_number, street, city, state, zipcode, preferred_language')
-          .eq('id', personId)
-          .single()
-
-        if (!person) {
-          return JSON.stringify({ success: false, error: 'Profile not found' })
-        }
-
-        return JSON.stringify({
-          success: true,
-          profile: {
-            name: person.full_name,
-            email: person.email,
-            phone: person.phone_number,
-            address: person.street ? `${person.street}, ${person.city}, ${person.state} ${person.zipcode}` : null,
-            language: person.preferred_language,
-          },
-        })
-      }
-
-      // ========================================================================
-      // MY FAMILY
-      // ========================================================================
-      case 'get_my_family': {
-        // Find families this person belongs to
-        const { data: memberships } = await supabase
-          .from('family_members')
-          .select(`
-            id,
-            relationship,
-            is_primary_contact,
-            family:families(
-              id,
-              family_name,
-              members:family_members(
-                id,
-                relationship,
-                is_primary_contact,
-                person:people(id, full_name, phone_number, email)
-              )
-            )
-          `)
-          .eq('person_id', personId)
-
-        if (!memberships || memberships.length === 0) {
-          return JSON.stringify({
-            success: true,
-            message: 'You are not currently associated with any family in our records.',
-            families: [],
-          })
-        }
-
-        const families = memberships.map((m: any) => ({
-          family_name: m.family?.family_name,
-          my_relationship: m.relationship,
-          am_primary_contact: m.is_primary_contact,
-          members: m.family?.members?.map((member: any) => ({
-            name: member.person?.full_name,
-            relationship: member.relationship,
-            is_primary_contact: member.is_primary_contact,
-          })) || [],
-        }))
-
-        return JSON.stringify({
-          success: true,
-          count: families.length,
-          families,
-        })
-      }
-
-      // ========================================================================
-      // MY GROUPS & MINISTRIES
-      // ========================================================================
-      case 'get_my_groups': {
-        const { data: memberships } = await supabase
-          .from('group_members')
-          .select(`
-            id,
-            joined_at,
-            group:groups(id, name, description, is_active),
-            group_role:group_roles(name)
-          `)
-          .eq('person_id', personId)
-
-        if (!memberships || memberships.length === 0) {
-          return JSON.stringify({
-            success: true,
-            message: 'You are not currently a member of any groups or ministries.',
-            groups: [],
-          })
-        }
-
-        const groups = memberships.map((m: any) => ({
-          id: m.group?.id,
-          name: m.group?.name,
-          description: m.group?.description,
-          role: m.group_role?.name,
-          joined_at: m.joined_at,
-          is_active: m.group?.is_active,
-        }))
-
-        return JSON.stringify({
-          success: true,
-          count: groups.length,
-          groups,
-        })
-      }
-
-      case 'list_available_groups': {
-        // Get all active groups
-        const { data: allGroups } = await supabase
-          .from('groups')
-          .select('id, name, description')
-          .eq('parish_id', parishId)
-          .eq('is_active', true)
-          .is('deleted_at', null)
-          .order('name')
-
-        // Get groups the user is already in
-        const { data: myMemberships } = await supabase
-          .from('group_members')
-          .select('group_id')
-          .eq('person_id', personId)
-
-        const myGroupIds = new Set(myMemberships?.map((m: any) => m.group_id) || [])
-
-        const availableGroups = allGroups?.map((g: any) => ({
-          id: g.id,
-          name: g.name,
-          description: g.description,
-          already_member: myGroupIds.has(g.id),
-        })) || []
-
-        return JSON.stringify({
-          success: true,
-          count: availableGroups.length,
-          groups: availableGroups,
-        })
-      }
-
-      // ========================================================================
-      // CONTENT & RESOURCES
-      // ========================================================================
-      case 'search_readings': {
-        const search = toolInput.search as string | undefined
-        const language = toolInput.language as 'en' | 'es' | undefined
-        const limit = (toolInput.limit as number) || 10
-
-        let query = supabase
-          .from('contents')
-          .select('id, title, description, language')
-          .eq('parish_id', parishId)
-          .order('title')
-          .limit(limit)
-
-        if (search) {
-          query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`)
-        }
-
-        if (language) {
-          query = query.eq('language', language)
-        }
-
-        const { data: contents } = await query
-
-        return JSON.stringify({
-          success: true,
-          count: contents?.length || 0,
-          contents: contents?.map((c: any) => ({
-            id: c.id,
-            title: c.title,
-            description: c.description,
-            language: c.language,
-          })) || [],
-        })
-      }
-
-      // ========================================================================
-      // LOCATIONS
-      // ========================================================================
-      case 'get_parish_locations': {
-        const { data: locations } = await supabase
-          .from('locations')
-          .select('id, name, description, street, city, state, phone_number')
-          .eq('parish_id', parishId)
-          .is('deleted_at', null)
-          .order('name')
-
-        return JSON.stringify({
-          success: true,
-          count: locations?.length || 0,
-          locations: locations?.map((l: any) => ({
-            name: l.name,
-            description: l.description,
-            address: `${l.street}, ${l.city}, ${l.state}`,
-            phone: l.phone_number,
-          })) || [],
-        })
-      }
-
-      // ========================================================================
-      // MY AVAILABILITY (Mutations)
-      // ========================================================================
-      case 'add_my_blackout': {
-        const startDate = toolInput.start_date as string
-        const endDate = toolInput.end_date as string
-        const reason = (toolInput.reason as string) || null
-
-        const { data: blackout, error } = await supabase
-          .from('person_blackout_dates')
-          .insert({
-            person_id: personId,
-            start_date: startDate,
-            end_date: endDate,
-            reason,
-          })
-          .select()
-          .single()
-
-        if (error) {
-          return JSON.stringify({
-            success: false,
-            error: `Failed to add blackout date: ${error.message}`,
-          })
-        }
-
-        // Log AI activity
-        await logAIActivity({
-          parishId,
-          source: 'parishioner_chat',
-          initiatedByPersonId: personId,
-          action: 'add_blackout',
-          entityType: 'blackout_date',
-          entityId: blackout.id,
-          details: { start_date: startDate, end_date: endDate, reason },
-        })
-
-        return JSON.stringify({
-          success: true,
-          message: `Successfully marked unavailable from ${startDate} to ${endDate}`,
-          blackout: {
-            id: blackout.id,
-            start_date: startDate,
-            end_date: endDate,
-            reason,
-          },
-        })
-      }
-
-      case 'remove_my_blackout': {
-        const blackoutId = toolInput.blackout_id as string
-
-        // Verify this blackout belongs to the user
-        const { data: existing } = await supabase
-          .from('person_blackout_dates')
-          .select('id, person_id, start_date, end_date')
-          .eq('id', blackoutId)
-          .single()
-
-        if (!existing || existing.person_id !== personId) {
-          return JSON.stringify({
-            success: false,
-            error: 'Blackout date not found or does not belong to you',
-          })
-        }
-
-        const { error } = await supabase
-          .from('person_blackout_dates')
-          .delete()
-          .eq('id', blackoutId)
-          .eq('person_id', personId)
-
-        if (error) {
-          return JSON.stringify({
-            success: false,
-            error: `Failed to remove blackout date: ${error.message}`,
-          })
-        }
-
-        // Log AI activity
-        await logAIActivity({
-          parishId,
-          source: 'parishioner_chat',
-          initiatedByPersonId: personId,
-          action: 'remove_blackout',
-          entityType: 'blackout_date',
-          entityId: blackoutId,
-          details: { start_date: existing.start_date, end_date: existing.end_date },
-        })
-
-        return JSON.stringify({
-          success: true,
-          message: 'Successfully removed the blackout date',
-        })
-      }
-
-      case 'get_my_blackouts': {
-        const { data: blackouts } = await supabase
-          .from('person_blackout_dates')
-          .select('id, start_date, end_date, reason')
-          .eq('person_id', personId)
-          .is('deleted_at', null)
-          .order('start_date', { ascending: true })
-
-        return JSON.stringify({
-          success: true,
-          count: blackouts?.length || 0,
-          blackouts: blackouts || [],
-        })
-      }
-
-      // ========================================================================
-      // MY PERSONAL INFO (Mutations)
-      // ========================================================================
-      case 'update_my_info': {
-        const updateData: Record<string, unknown> = {}
-        const fields = ['phone_number', 'email', 'street', 'city', 'state', 'zipcode', 'preferred_language']
-
-        for (const field of fields) {
-          if (toolInput[field] !== undefined) {
-            updateData[field] = toolInput[field]
-          }
-        }
-
-        if (Object.keys(updateData).length === 0) {
-          return JSON.stringify({
-            success: false,
-            error: 'No fields provided to update',
-          })
-        }
-
-        const { error } = await supabase
-          .from('people')
-          .update(updateData)
-          .eq('id', personId)
-          .select()
-          .single()
-
-        if (error) {
-          return JSON.stringify({
-            success: false,
-            error: `Failed to update info: ${error.message}`,
-          })
-        }
-
-        const updatedFields = Object.keys(updateData).join(', ')
-        return JSON.stringify({
-          success: true,
-          message: `Successfully updated: ${updatedFields}`,
-          updated_fields: Object.keys(updateData),
-        })
-      }
-
-      // ========================================================================
-      // MY GROUP MEMBERSHIP (Mutations)
-      // ========================================================================
-      case 'join_group': {
-        const groupId = toolInput.group_id as string
-
-        // Check if group exists and is active
-        const { data: group } = await supabase
-          .from('groups')
-          .select('id, name, is_active')
-          .eq('id', groupId)
-          .eq('parish_id', parishId)
-          .single()
-
-        if (!group) {
-          return JSON.stringify({
-            success: false,
-            error: 'Group not found',
-          })
-        }
-
-        if (!group.is_active) {
-          return JSON.stringify({
-            success: false,
-            error: 'This group is not currently active',
-          })
-        }
-
-        // Check if already a member
-        const { data: existing } = await supabase
-          .from('group_members')
-          .select('id')
-          .eq('group_id', groupId)
-          .eq('person_id', personId)
-          .single()
-
-        if (existing) {
-          return JSON.stringify({
-            success: false,
-            error: `You are already a member of ${group.name}`,
-          })
-        }
-
-        const { error } = await supabase
-          .from('group_members')
-          .insert({
-            group_id: groupId,
-            person_id: personId,
-          })
-
-        if (error) {
-          return JSON.stringify({
-            success: false,
-            error: `Failed to join group: ${error.message}`,
-          })
-        }
-
-        return JSON.stringify({
-          success: true,
-          message: `Successfully joined ${group.name}`,
-          group_name: group.name,
-        })
-      }
-
-      case 'leave_group': {
-        const groupId = toolInput.group_id as string
-
-        // Get group name
-        const { data: group } = await supabase
-          .from('groups')
-          .select('name')
-          .eq('id', groupId)
-          .single()
-
-        // Check if member
-        const { data: membership } = await supabase
-          .from('group_members')
-          .select('id')
-          .eq('group_id', groupId)
-          .eq('person_id', personId)
-          .single()
-
-        if (!membership) {
-          return JSON.stringify({
-            success: false,
-            error: 'You are not a member of this group',
-          })
-        }
-
-        const { error } = await supabase
-          .from('group_members')
-          .delete()
-          .eq('group_id', groupId)
-          .eq('person_id', personId)
-
-        if (error) {
-          return JSON.stringify({
-            success: false,
-            error: `Failed to leave group: ${error.message}`,
-          })
-        }
-
-        return JSON.stringify({
-          success: true,
-          message: `Successfully left ${group?.name || 'the group'}`,
-        })
-      }
-
-      default:
-        return JSON.stringify({ success: false, error: `Unknown tool: ${toolName}` })
-    }
-  } catch (error) {
-    console.error(`Error executing tool ${toolName}:`, error)
-    return JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
-    })
-  }
-}
 
 // ============================================================================
 // SYSTEM PROMPT - Based on ai-conversation-parishioner.md guidelines
@@ -1106,10 +130,11 @@ export async function chatWithAI(
     // Validate CSRF token
     if (!csrfToken || !(await validateCsrfToken(csrfToken))) {
       return {
-        response: language === 'es'
-          ? 'Sesión inválida. Recarga la página.'
-          : 'Invalid session. Please reload the page.',
-        conversationId: conversationId || ''
+        response:
+          language === 'es'
+            ? 'Sesión inválida. Recarga la página.'
+            : 'Invalid session. Please reload the page.',
+        conversationId: conversationId || '',
       }
     }
 
@@ -1119,9 +144,10 @@ export async function chatWithAI(
     if (!session || session.personId !== personId) {
       console.error('Unauthorized access attempt to chat')
       return {
-        response: language === 'es'
-          ? 'No autorizado. Por favor, inicia sesión de nuevo.'
-          : 'Unauthorized. Please log in again.',
+        response:
+          language === 'es'
+            ? 'No autorizado. Por favor, inicia sesión de nuevo.'
+            : 'Unauthorized. Please log in again.',
         conversationId: conversationId || '',
       }
     }
@@ -1130,10 +156,11 @@ export async function chatWithAI(
     const rateLimitResult = rateLimit(`chat:${personId}`, RATE_LIMITS.chat)
     if (!rateLimitResult.success) {
       return {
-        response: language === 'es'
-          ? 'Has enviado demasiados mensajes. Por favor espera un momento.'
-          : 'You have sent too many messages. Please wait a moment.',
-        conversationId: conversationId || ''
+        response:
+          language === 'es'
+            ? 'Has enviado demasiados mensajes. Por favor espera un momento.'
+            : 'You have sent too many messages. Please wait a moment.',
+        conversationId: conversationId || '',
       }
     }
 
@@ -1148,14 +175,19 @@ export async function chatWithAI(
 
     if (!personData?.parish_id) {
       return {
-        response: language === 'es'
-          ? 'No se pudo encontrar tu información de parroquia.'
-          : 'Could not find your parish information.',
+        response:
+          language === 'es'
+            ? 'No se pudo encontrar tu información de parroquia.'
+            : 'Could not find your parish information.',
         conversationId: conversationId || '',
       }
     }
 
     const parishId = personData.parish_id
+
+    // Create parishioner context and get tools
+    const context = createParishionerContext(personId, parishId)
+    const tools = getToolsForAnthropicSDK(context.consumer, context.scopes)
 
     // Get conversation history if exists
     let conversationHistory: ChatMessage[] = []
@@ -1206,7 +238,11 @@ export async function chatWithAI(
 
       // Execute each tool
       for (const toolUse of toolUseBlocks) {
-        const toolResult = await executeTool(toolUse.name, toolUse.input as Record<string, unknown>, personId, parishId)
+        const result = await executeTool(
+          toolUse.name,
+          toolUse.input as Record<string, unknown>,
+          context
+        )
 
         toolResults.push({
           role: 'user',
@@ -1214,7 +250,7 @@ export async function chatWithAI(
             {
               type: 'tool_result',
               tool_use_id: toolUse.id,
-              content: toolResult,
+              content: JSON.stringify(result),
             },
           ],
         })
@@ -1262,7 +298,7 @@ export async function chatWithAI(
 
     if (!convId) {
       // Create new conversation
-      const { data: session } = await supabase
+      const { data: sessionData } = await supabase
         .from('parishioner_auth_sessions')
         .select('id')
         .eq('person_id', personId)
@@ -1271,13 +307,13 @@ export async function chatWithAI(
         .limit(1)
         .single()
 
-      if (session) {
+      if (sessionData) {
         const { data: newConv } = await supabase
           .from('ai_chat_conversations')
           .insert({
             parish_id: parishId,
             person_id: personId,
-            session_id: session.id,
+            session_id: sessionData.id,
             conversation_history: JSON.stringify(updatedHistory),
           })
           .select('id')
