@@ -56,14 +56,19 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
 
   if (existingEventTypes && existingEventTypes.length > 0) {
     // Parish already has data - return existing counts
-    const { count: petitionCount } = await supabase
+    const { data: petitionTemplates } = await supabase
       .from('petition_templates')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
       .eq('parish_id', parishId)
 
-    const { count: roleCount } = await supabase
+    const { data: groupRoles } = await supabase
       .from('group_roles')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
+      .eq('parish_id', parishId)
+
+    const { data: eventTypes } = await supabase
+      .from('event_types')
+      .select('id')
       .eq('parish_id', parishId)
 
     const { count: specialCount } = await supabase
@@ -85,8 +90,10 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
       .eq('system_type', 'mass-liturgy')
 
     return {
-      petitionTemplates: Array(petitionCount || 0).fill({ id: 'existing' }),
-      groupRoles: Array(roleCount || 0).fill({ id: 'existing' }),
+      success: true,
+      petitionTemplates: petitionTemplates || [],
+      groupRoles: groupRoles || [],
+      eventTypes: eventTypes || [],
       specialLiturgyEventTypesCount: specialCount || 0,
       generalEventTypesCount: generalCount || 0,
       massEventTypesCount: massCount || 0,
