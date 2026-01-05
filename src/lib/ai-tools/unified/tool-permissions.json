@@ -1,0 +1,590 @@
+{
+  "_comment": "AI Tool Permissions - Edit via /settings/developer-tools/permissions",
+  "_updated": "2026-01-05T04:43:53.574Z",
+  "tools": {
+    "list_people": {
+      "category": "people",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_person": {
+      "category": "people",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "search_people_by_name": {
+      "category": "people",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_my_info": {
+      "category": "people",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "update_my_info": {
+      "category": "people",
+      "requiredScope": "write_self",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "create_person": {
+      "category": "people",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "update_person": {
+      "category": "people",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "delete_person": {
+      "category": "people",
+      "requiredScope": "delete",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "list_families": {
+      "category": "families",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_family": {
+      "category": "families",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_my_family": {
+      "category": "families",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "create_family": {
+      "category": "families",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "add_family_member": {
+      "category": "families",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "remove_family_member": {
+      "category": "families",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "set_family_primary_contact": {
+      "category": "families",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "delete_family": {
+      "category": "families",
+      "requiredScope": "delete",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "list_groups": {
+      "category": "groups",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "get_group": {
+      "category": "groups",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_person_groups": {
+      "category": "groups",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_my_groups": {
+      "category": "groups",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "list_available_groups": {
+      "category": "groups",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "add_to_group": {
+      "category": "groups",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "remove_from_group": {
+      "category": "groups",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "update_group_member_role": {
+      "category": "groups",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "join_group": {
+      "category": "groups",
+      "requiredScope": "write_self",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "leave_group": {
+      "category": "groups",
+      "requiredScope": "write_self",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "list_events": {
+      "category": "events",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_calendar_events": {
+      "category": "events",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "get_public_calendar": {
+      "category": "events",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "get_my_schedule": {
+      "category": "events",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "list_masses": {
+      "category": "masses",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_mass": {
+      "category": "masses",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_mass_assignments": {
+      "category": "masses",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "find_mass_assignment_gaps": {
+      "category": "masses",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "assign_to_mass": {
+      "category": "masses",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "update_mass_time": {
+      "category": "masses",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "cancel_mass": {
+      "category": "masses",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "remove_mass_assignment": {
+      "category": "masses",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_person_availability": {
+      "category": "availability",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "check_availability": {
+      "category": "availability",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_my_blackouts": {
+      "category": "availability",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "add_blackout_date": {
+      "category": "availability",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "remove_blackout_date": {
+      "category": "availability",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "add_my_blackout": {
+      "category": "availability",
+      "requiredScope": "write_self",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "remove_my_blackout": {
+      "category": "availability",
+      "requiredScope": "write_self",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "list_contents": {
+      "category": "content",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_content": {
+      "category": "content",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "search_content": {
+      "category": "content",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "list_content_tags": {
+      "category": "content",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "list_locations": {
+      "category": "locations",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "get_location": {
+      "category": "locations",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "create_location": {
+      "category": "locations",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "update_location": {
+      "category": "locations",
+      "requiredScope": "write",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "delete_location": {
+      "category": "locations",
+      "requiredScope": "delete",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_parish_info": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "parishioner",
+        "mcp"
+      ]
+    },
+    "list_event_types": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_event_type": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "list_custom_lists": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_mass_settings": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "get_parish_settings": {
+      "category": "settings",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff",
+        "mcp"
+      ]
+    },
+    "search_documentation": {
+      "category": "documentation",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "admin",
+        "staff"
+      ]
+    },
+    "invite_to_demo_parish": {
+      "category": "developer",
+      "requiredScope": "admin",
+      "allowedConsumers": [
+        "admin",
+        "mcp"
+      ]
+    },
+    "list_demo_parish_invitations": {
+      "category": "developer",
+      "requiredScope": "admin",
+      "allowedConsumers": [
+        "admin",
+        "mcp"
+      ]
+    },
+    "revoke_demo_parish_invitation": {
+      "category": "developer",
+      "requiredScope": "admin",
+      "allowedConsumers": [
+        "admin",
+        "mcp"
+      ]
+    },
+    "get_mass_times": {
+      "category": "parishioner",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "get_liturgical_info": {
+      "category": "parishioner",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "search_readings": {
+      "category": "parishioner",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    },
+    "get_parish_locations": {
+      "category": "parishioner",
+      "requiredScope": "read",
+      "allowedConsumers": [
+        "parishioner"
+      ]
+    }
+  }
+}

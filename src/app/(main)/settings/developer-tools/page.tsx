@@ -10,6 +10,11 @@ export const dynamic = 'force-dynamic'
 export default async function DeveloperToolsPage() {
   const t = await getTranslations()
 
+  // Only available in local development
+  if (process.env.NODE_ENV !== 'development') {
+    redirect('/settings')
+  }
+
   // Check developer access - redirects if not a developer
   const { isDeveloper } = await checkIsDeveloper()
   if (!isDeveloper) {

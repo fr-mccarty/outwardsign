@@ -5,7 +5,7 @@
  * Import this file once at application startup to register all tools.
  */
 
-import { registerTools } from '../registry'
+import { registerTools, loadPermissions } from '../registry'
 import type { CategorizedTool } from '../types'
 
 // Import all tool modules
@@ -41,11 +41,12 @@ export const allTools: CategorizedTool[] = [
 ]
 
 /**
- * Register all tools with the registry.
+ * Register all tools with the registry and load permissions from config.
  * Call this once at application startup.
  */
 export function initializeTools(): void {
   registerTools(allTools)
+  loadPermissions()
 }
 
 // Re-export individual tool arrays for selective imports

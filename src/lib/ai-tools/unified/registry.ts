@@ -3,6 +3,7 @@
  *
  * Central registry of all unified AI tools.
  * Handles tool lookup, filtering, and permission checking.
+ * Permissions are loaded from tool-permissions.json at runtime.
  */
 
 import type {
@@ -11,14 +12,33 @@ import type {
   ToolScope,
   ToolExecutionContext,
   ToolResult,
+  ToolCategory,
 } from './types'
 import { hasSufficientScope } from './types'
+import permissionsConfig from './tool-permissions.json'
+
+// ============================================================================
+// PERMISSION TYPES
+// ============================================================================
+
+export interface ToolPermissionConfig {
+  category: ToolCategory
+  requiredScope: ToolScope
+  allowedConsumers: ToolConsumer[]
+}
+
+export interface ToolPermissionsFile {
+  _comment?: string
+  _updated: string
+  tools: Record<string, ToolPermissionConfig>
+}
 
 // ============================================================================
 // REGISTRY STATE
 // ============================================================================
 
 const toolRegistry: Map<string, CategorizedTool> = new Map()
+let permissionsLoaded = false
 
 // ============================================================================
 // REGISTRATION
@@ -41,6 +61,54 @@ export function registerTools(tools: CategorizedTool[]): void {
   for (const tool of tools) {
     registerTool(tool)
   }
+}
+
+/**
+ * Load and apply permissions from the JSON config file.
+ * This overwrites tool permissions with those from the config.
+ */
+export function loadPermissions(): void {
+  if (permissionsLoaded) return
+
+  const config = permissionsConfig as ToolPermissionsFile
+
+  for (const [toolName, permissions] of Object.entries(config.tools)) {
+    const tool = toolRegistry.get(toolName)
+    if (tool) {
+      // Apply permissions from config
+      tool.requiredScope = permissions.requiredScope
+      tool.allowedConsumers = permissions.allowedConsumers
+      tool.category = permissions.category
+    }
+  }
+
+  permissionsLoaded = true
+}
+
+/**
+ * Get the current permissions config (for the editor UI).
+ */
+export function getPermissionsConfig(): ToolPermissionsFile {
+  return permissionsConfig as ToolPermissionsFile
+}
+
+/**
+ * Get all tool permissions as an array (for the editor UI).
+ */
+export function getAllToolPermissions(): Array<{
+  name: string
+  description: string
+  category: ToolCategory
+  requiredScope: ToolScope
+  allowedConsumers: ToolConsumer[]
+}> {
+  return Array.from(toolRegistry.values()).map(tool => ({
+    name: tool.name,
+    description: tool.description,
+    category: tool.category,
+    requiredScope: tool.requiredScope,
+    allowedConsumers: [...tool.allowedConsumers],
+  }))
 }
 
 // ============================================================================

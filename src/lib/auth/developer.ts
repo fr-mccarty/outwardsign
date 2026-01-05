@@ -2,13 +2,13 @@
  * Developer Authentication
  *
  * Provides developer-only features and checks.
- * Developer access is granted to specific email addresses.
+ * Developer access is granted to the email set in DEVELOPER_EMAIL env var.
  */
 
 import { createClient } from '@/lib/supabase/server'
 
-// Developer email addresses that have access to developer features
-export const DEVELOPER_EMAILS = ['fr.mccarty@gmail.com'] as const
+// Developer email from environment variable (uses DEV_USER_EMAIL)
+export const DEVELOPER_EMAIL = process.env.DEV_USER_EMAIL || ''
 
 // The demo parish ID used for developer testing and demos
 export const DEMO_PARISH_ID = '00000000-0000-0000-0000-000000000001'
@@ -17,8 +17,8 @@ export const DEMO_PARISH_ID = '00000000-0000-0000-0000-000000000001'
  * Check if an email address belongs to a developer
  */
 export function isDeveloperEmail(email: string | null | undefined): boolean {
-  if (!email) return false
-  return DEVELOPER_EMAILS.includes(email.toLowerCase() as typeof DEVELOPER_EMAILS[number])
+  if (!email || !DEVELOPER_EMAIL) return false
+  return email.toLowerCase() === DEVELOPER_EMAIL.toLowerCase()
 }
 
 /**

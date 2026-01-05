@@ -20,7 +20,6 @@ export default async function TemplateBrowserPage() {
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
     { label: t('nav.settings'), href: '/settings' },
-    { label: t('settings.developerTools.title'), href: '/settings/developer-tools' },
     { label: 'Template Browser' }
   ]
 

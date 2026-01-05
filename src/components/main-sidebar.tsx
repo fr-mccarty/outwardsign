@@ -32,6 +32,7 @@ import {
   FileText,
   Wrench,
   Shield,
+  Layers,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -39,6 +40,7 @@ import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants"
+import { useIsDeveloper } from "@/components/developer-context"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import { SYSTEM_TYPE_METADATA } from "@/lib/constants/system-types"
 import type { EventType } from "@/lib/types"
@@ -52,6 +54,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
   const t = useTranslations()
   const pathname = usePathname()
+  const isDeveloper = useIsDeveloper()
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -376,9 +379,9 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     icon: FileText,
                   },
                   {
-                    title: t('settings.sections.developer'),
-                    url: "/settings/developer-tools",
-                    icon: Wrench,
+                    title: "Template Browser",
+                    url: "/settings/template-browser",
+                    icon: Layers,
                   },
                 ]}
                 defaultOpen={false}
@@ -395,6 +398,29 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Local Developer Tools - Only visible to developers in local development */}
+        {isDeveloper && process.env.NODE_ENV === 'development' && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Local Developer</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <CollapsibleNavSection
+                  name="Local Developer"
+                  icon={Wrench}
+                  items={[
+                    {
+                      title: "AI Tool Permissions",
+                      url: "/settings/developer-tools/permissions",
+                      icon: Shield,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t p-2">
