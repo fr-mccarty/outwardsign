@@ -602,6 +602,7 @@
       "parishEvents": "Parish Events",
       "parishEventsDescription": "Configure parish event types and event presets for quick scheduling.",
       "parish": "Parish",
+      "parishUsers": "Parish Users",
       "contentData": "Content & Data",
       "contentDataDescription": "Manage your content library, custom lists, petitions, and category tags.",
       "developer": "Developer"

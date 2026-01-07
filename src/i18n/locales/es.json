@@ -601,6 +601,7 @@
       "parishEvents": "Eventos Parroquiales",
       "parishEventsDescription": "Configura tipos de eventos parroquiales y preajustes de eventos para programación rápida.",
       "parish": "Parroquia",
+      "parishUsers": "Usuarios de la Parroquia",
       "contentData": "Contenido y Datos",
       "contentDataDescription": "Administra tu biblioteca de contenido, listas personalizadas, peticiones y etiquetas de categoría.",
       "developer": "Desarrollador"

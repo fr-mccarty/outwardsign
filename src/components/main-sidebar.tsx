@@ -370,6 +370,11 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     icon: Church,
                   },
                   {
+                    title: t('settings.sections.parishUsers'),
+                    url: "/settings/parish/users",
+                    icon: Users,
+                  },
+                  {
                     title: "OAuth Settings",
                     url: "/settings/parish/oauth-settings",
                     icon: Shield,
